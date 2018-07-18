@@ -1,0 +1,61 @@
+###id###########################################################################
+# marc_local.properties -- local overrides to standard VuFind MARC mappings.  #
+#                          All settings in this file override equivalent      #
+#                          settings in marc.properties.                       #
+###############################################################################
+id = 907a, first
+
+# date added is the bib record create date
+date_added = custom, getDateAdded(907c, MM-dd-yy)
+time_since_added = custom, getRelativeTimeAdded(907c, MM-dd-yy)
+
+ctrlnum = 035a
+#callnumber = custom, getLocalCallNumbers(945:fa:l)
+collection = "EI Network"
+institution = custom, getLocationCodes(945l, 998a), system_map.properties
+building = custom, getLocationCodes(945l, 998a), location_map.properties
+items = 945y, (pattern_map.item_num)
+#pattern_map.item_num.pattern_0 = \.(i.......)*=>$1
+#pattter map to remove leading . and check digit to match with MyMillennium API format
+pattern_map.item_num.pattern_0 = ^\.((i[0-9]*).$)=>$2
+
+#override definitions in marc.properties
+###TEST###auth_author = 100abcd:110abcd, first
+author = 100abcd:110abcd, first
+author-letter = 100a:110a, first
+
+#format = custom, getFormat(false), format_map.properties
+#format_boost = custom, getFormat(true), format_boost_map.properties
+#format_category = custom, getFormat(false), format_category_map.properties
+
+format = custom, getFormatFromCollectionOrStd(998d, false), format_map.properties
+format_boost = custom, getFormatFromCollectionOrStd(998d, true), format_boost_map.properties
+format_category = custom, getFormatFromCollectionOrStd(998d, false), format_category_map.properties
+
+language_boost = 008[35-37]:041a:041d:041j, language_boost_map.properties, first
+language_boost_es = 008[35-37]:041a:041d:041j, language_boost_es_map.properties, first
+ 
+#Additional fields for marmot catalog
+###TEST###fiction_nonfiction_full = custom, getLocationCodes(945l,998a), location_fiction_nonfiction_map.properties
+###TEST###literary_form_full = custom, getLocationCodes(945l,998a), location_genre_map.properties
+literary_form = custom, getLiteraryForm, literary_form_map.properties
+###TEST###target_audience_full = custom, getLocationCodes(945l,998a), location_age_map.properties
+target_audience = custom, getTargetAudience, target_audience_map.properties
+num_holdings = custom, getNumHoldings(945l)
+###TEST###mpaa_rating = custom, getMpaaRating
+available_at = custom, getAvailableLocationsEIN
+
+#ratings
+#rating = custom, getRating(907a)
+#rating_facet = custom, getRatingFacet(907a)
+
+# remove deleted and suppressed records
+bib_suppression = custom, checkSuppression(945l, zzzz, 998e, n)
+#bib_suppression = "notsuppressed"
+
+#Changes for titles searching per Cathy Lamoureaux recommendations
+title_alt = 130adfgklnpst:210a:222a:240a:246a:247a:505t:534t:700t:710t:711t:730adfgklnpst:740a:762st:767st:770st:772st:773st:774st:775st:776st:777st:786st:787st
+series = 440ap:760t:800abcdfpqt:810t:811t:830ap
+
+#Changes for adding date added to prefiltered lists 
+#date_added = 998b

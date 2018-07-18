@@ -1,0 +1,16 @@
+# GNU Emacs temporary files
+
+ChangeLog
+\#*
+.\#*
+TAGS
+*~
+vendor/.git
+data/*
+local/*
+marc/*.marc*
+import/*
+*.csv
+logs/*
+solr/*
+*.BACKUP

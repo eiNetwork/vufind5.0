@@ -1,0 +1,144 @@
+.facet-group {
+  display: block;
+  margin-bottom: 1rem;
+  padding-left: 0;
+
+  [data-toggle="collapse"] {
+    cursor: pointer;
+
+    &::after {
+      content: '\25B2';
+      float: right;
+
+      body.rtl & { float: left; }
+    }
+  }
+  .collapsed::after {content: '\25BC';}
+
+  .collapse,
+  .collapsing,
+  & > .facet {
+    border-left: 1px solid @list-group-border;
+    border-right: 1px solid @list-group-border;
+  }
+  & > .facet:first-child { border-top: 1px solid @list-group-border; }
+}
+
+
+.facet,
+.facet-group .title {
+  display: flex;
+  padding: .5rem;
+  width: 100%;
+  line-height: 1.5rem;
+  background-color: transparent;
+
+  .text {
+    flex-grow: 1;
+  }
+
+  .badge {
+    flex-shrink: 0;
+    max-height: 19px;
+    line-height: 1.1rem;
+  }
+
+  .exclude {
+    flex-shrink: 0;
+    text-align: center;
+    padding-left: 0.5rem;
+  }
+}
+.facet {
+  border-bottom: 1px solid @list-group-border;
+}
+.facet-group .title {
+  display: block;
+  padding-right: 8px;
+  border: 1px solid @list-group-border;
+  font-weight: bold;
+  text-align: inherit;
+}
+
+.top-facets {
+  margin-left: -.5rem;
+  margin-right: -.5rem;
+}
+.top-facets .facet,
+.top-facets .narrow-toggle,
+.top-facets > strong {
+  display: inline-block;
+  width: auto;
+  padding: .25rem .5rem;
+  border: 0;
+  white-space: nowrap;
+}
+.top-facets .narrow-toggle { text-decoration: underline; }
+
+.checkbox-filter {
+  display: block;
+  padding-bottom: 1rem;
+  font-weight: bold;
+  color: @text-color;
+}
+.facet-group > .checkbox,
+.sidebar .facet.checkbox {
+  margin: 0;
+  padding-left: 2rem;
+}
+
+.active-filters .facet,
+.facet-group .active {
+  background-color: @list-group-active-bg;
+  color: #fff;
+
+  .jstree-icon,
+  a { color: #fff; }
+}
+.facet.active .badge,
+.jstree-node.active .badge,
+.jstree-node.active .badge .fa {
+  background-color: #fff;
+  color: @brand-primary;
+}
+
+.narrow-toggle { text-align: center; }
+
+.sidebar .format {
+  &:extend(.label);
+  &:extend(.label-info);
+}
+.top-row .applied {
+  font-weight: bold;
+  &:hover {
+    color: @state-danger-text;
+    .fa.fa-check:before {
+      content: "\f00d";
+    }
+  }
+}
+
+.full-facet-list { margin-top: 1rem; }
+.full-facet-list .active .fa.fa-times {
+  float: right;
+  margin-top: .25rem;
+  margin-left: 0.5rem;
+}
+body.rtl .full-facet-list .active .fa.fa-times { float: left; }
+
+.jstree-node {
+  .facet {
+    padding: 0 0.5rem 0 0;
+    border: none;
+  }
+}
+.jstree-facet {
+  .jstree-anchor {
+    padding: 0;
+  }
+  .list-group-item {
+    padding-right: 0;
+    border: 0;
+    border-bottom: 1px solid @list-group-border;
+  }
+}
