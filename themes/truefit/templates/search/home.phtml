@@ -1,0 +1,261 @@
+<?
+  // Set page title.
+  $this->headTitle($this->translate('Catalog'));
+
+  // Disable top search box -- this page has a special layout.
+  $this->layout()->searchbox = false;
+
+  // Set default value if necessary:
+  if (!isset($this->searchClassId)) {
+    $this->searchClassId = 'Solr';
+  }
+
+  // Load search actions and settings (if any):
+  $options = $this->searchOptions($this->searchClassId);
+  $basicSearch = $options->getSearchAction();
+  $advSearch = $options->getAdvancedSearchAction();
+
+  $this->layout()->breadcrumbs = false;
+?>
+
+<div class="searchHomeContent">
+  <?=$this->flashmessages()?>
+  <? if ($this->ils()->getOfflineMode() == "ils-offline"): ?>
+    <div class="alert alert-warning">
+      <h2><?=$this->transEsc('ils_offline_title')?></h2>
+      <p><strong><?=$this->transEsc('ils_offline_status')?></strong></p>
+      <p><?=$this->transEsc('ils_offline_home_message')?></p>
+      <? $supportEmail = $this->escapeHtmlAttr($this->systemEmail()); ?>
+      <p><a href="mailto:<?=$supportEmail?>"><?=$supportEmail?></a></p>
+    </div>
+  <? endif; ?>
+  <?=$this->render("search/splashsearchbox.phtml")?>
+</div>
+<script type="text/javascript">
+  var sliderTimeout = null;
+  var scrollSpeed = 0;
+  var MAX_SPEED = 10;
+  function MoveSlider2(slider) {
+    sliderTimeout = setTimeout( function() {
+      var leftBtn = slider.children[0].children[0];
+      var rightBtn = slider.children[2].children[0];
+      var sliderTable = slider.children[1].children[0];
+
+      leftBtn.disabled = false;
+      rightBtn.disabled = false;
+      var newLeft = parseInt($(sliderTable).css("left")) + scrollSpeed;
+      var halt = false;
+      if( newLeft >= 0 ) {
+        newLeft = 0;
+        leftBtn.disabled = true;
+        halt = true;
+      } else if( newLeft <= (-3 * sliderTable.parentElement.offsetWidth) ) {
+        newLeft = -3 * sliderTable.parentElement.offsetWidth;
+        rightBtn.disabled = true;
+        halt = true;
+      }
+
+      $(sliderTable).css("left", newLeft);
+
+      if( halt ) {
+        sliderTimeout = null;
+      } else if( scrollSpeed ) {
+        scrollSpeed = (scrollSpeed <= -MAX_SPEED) ? -MAX_SPEED : ((scrollSpeed >= MAX_SPEED) ? MAX_SPEED : ((scrollSpeed < 0) ? (scrollSpeed - 1) : (scrollSpeed + 1)));
+        MoveSlider2(slider);
+      }
+    }, 33);
+  }
+
+  function HaltSlider(button) {
+    clearTimeout(sliderTimeout);
+    sliderTimeout = null;
+    button.blur();
+    scrollSpeed = 0;
+  }
+
+  jQuery(document).ready(function() {
+    // if they're trying to show the text notices help, give it to them
+    if( window.location.href.toLowerCase().indexOf("/myresearch/smshelp") != -1 ) {
+      Lightbox.addOpenAction( function() { 
+        $('#modal').on('shown.bs.modal', function() { location.hash = "#section3-6" });
+      } );
+      Lightbox.get('Help','Home');
+    }
+    // if they're trying to show the pin reset dialog, give it to them
+    else if( window.location.href.toLowerCase().indexOf("/myresearch/pinreset") != -1 ) {
+      Lightbox.addOpenAction( function() { 
+        $('#modal').on('shown.bs.modal', function() { ToggleLoginModal(document.getElementById('loginModalReset')); });
+      } );
+      Lightbox.get('MyResearch','Login');
+    }
+    // if they're trying to show the register dialog, give it to them
+    else if( window.location.href.toLowerCase().indexOf("/myresearch/getcard") != -1 ) {
+      Lightbox.addOpenAction( function() { 
+        $('#modal').on('shown.bs.modal', function() { ToggleLoginModal(document.getElementById('loginModalRegister')); });
+      } );
+      Lightbox.get('MyResearch','Login');
+    }
+
+    // bind events to the buttons
+    $(".neSliderButton").each( function() { 
+      $(this).css({"height":$(this).parent().css("height")});
+      $(this).on("touchstart", function() { 
+        $(this).addClass("noHover"); 
+        $(this).focus();
+        $(this).mouseenter();
+      } );
+      $(this).on("touchend", function() { 
+        $(this).mouseout(); 
+      } ); 
+      $(this).on("click", function() { 
+        if( $(this).hasClass("noHover") ) {
+          $(this).mouseout(); 
+        }
+      } ); 
+    } );
+  } );
+
+  $(window).on("load", function() { 
+    // scan through the covers and throw out any that don't show up
+    $(".sliderWindow").each( function() {
+      var validImagesSeen = 0;
+      $(this).find(".neImg").each( function() {
+        var thisSize = 0;
+        var iTime = null;
+        var url = this.src;
+        if (url && url.length > 0 && (iTime = performance.getEntriesByName(url)[0]))
+        {
+          thisSize = iTime.decodedBodySize;
+        }
+        if( (validImagesSeen >= 20) || (thisSize == 5382) /*VF5UPGRADE*/|| (thisSize == 368)/*VF5UPGRADE*/ ) {
+          $(this).parents(".neTD").css("display","none");
+        } else {
+          $(this).parents(".neTD").css("display","table-cell");
+          validImagesSeen++;
+        }
+      } );
+    } );
+  } );
+</script>
+<div class="splashNewest">
+  <? if(is_object($this->BookResults) && count($BookResults = $this->BookResults->results->getResults()) > 0): ?>
+    <a href="Search/Results?type=Keyword&sort=date_added+desc&filter%5B%5D=%7Eformat%3A%22Large+Print%22&filter%5B%5D=%7Eformat%3A%22Print+Book%22&filter%5B%5D=%7Etime_since_added%3A%22Month%22"><div class="neHeader">Newest Print Books</div></a>
+    <table style="width:100%">
+      <tr>
+        <td style="width:12%">
+          <button class="sliderButton neSliderButton" disabled onmouseenter="scrollSpeed = 1; MoveSlider2(this.parentElement.parentElement);" onmouseout="HaltSlider(this)"><span class="sr-only">Scroll Left</span><i class="fa fa-chevron-left"></i></button>
+        </td>
+        <td style="width:76%" class="sliderWindow">
+          <table style="width:400%; position:relative; left:0px"><tr>
+          <? foreach ($BookResults as $index => $entry): ?>
+            <td class="neTD" onMouseEnter="ShowDescriptionToolTip('<?=$entry->getUniqueID()?>', this);" onMouseLeave="HideDescriptionToolTip();"<?=(($index < 20) ? "" : " style=\"display:none\"")?>><a href="<?=$this->recordLink()->getUrl($entry)?>">
+              <img class="neImg" src="<?= $this->escapeHtmlAttr($this->record($entry)->getThumbnail('large')) ?>" alt="<?=$this->escapeHtmlAttr($this->record($entry)->getTitle())?>" />
+            </a></td>
+          <? endforeach ?>
+          </tr></table>
+        </td>
+        <td style="width:12%">
+          <button class="sliderButton neSliderButton" onmouseenter="scrollSpeed = -1; MoveSlider2(this.parentElement.parentElement);" onmouseout="HaltSlider(this)"><span class="sr-only">Scroll Right</span><i class="fa fa-chevron-right"></i></button>
+        </td>
+      </tr>
+    </table>
+    <br>
+  <? endif; ?>
+  <? if(is_object($this->DVDResults) && count($DVDResults = $this->DVDResults->results->getResults()) > 0): ?>
+    <a href="Search/Results?type=Keyword&sort=date_added+desc&filter%5B%5D=%7Eformat%3A%22DVD%22&filter%5B%5D=%7Etime_since_added%3A%22Month%22"><div class="neHeader">Newest DVDs</div></a>
+    <table style="width:100%">
+      <tr>
+        <td style="width:12%">
+          <button class="sliderButton neSliderButton" disabled onmouseenter="scrollSpeed = 1; MoveSlider2(this.parentElement.parentElement);" onmouseout="HaltSlider(this)"><span class="sr-only">Scroll Left</span><i class="fa fa-chevron-left"></i></button>
+        </td>
+        <td style="width:76%" class="sliderWindow">
+          <table style="width:400%; position:relative; left:0px"><tr>
+          <? foreach ($DVDResults as $index => $entry): ?>
+            <td class="neTD" onMouseEnter="ShowDescriptionToolTip('<?=$entry->getUniqueID()?>', this);" onMouseLeave="HideDescriptionToolTip();"<?=(($index < 20) ? "" : " style=\"display:none\"")?>><a href="<?=$this->recordLink()->getUrl($entry)?>">
+              <img class="neImg" src="<?= $this->escapeHtmlAttr($this->record($entry)->getThumbnail('large')) ?>" alt="<?=$this->escapeHtmlAttr($this->record($entry)->getTitle())?>" />
+            </a></td>
+          <? endforeach ?>
+          </tr></table>
+        </td>
+        <td style="width:12%">
+          <button class="sliderButton neSliderButton" onmouseenter="scrollSpeed = -1; MoveSlider2(this.parentElement.parentElement);" onmouseout="HaltSlider(this)"><span class="sr-only">Scroll Right</span><i class="fa fa-chevron-right"></i></button>
+        </td>
+      </tr>
+    </table>
+    <br>
+  <? endif; ?>
+  <? if(is_object($this->eBookResults) && count($ebookResults = $this->eBookResults->results->getResults()) > 0): ?>
+    <a href="Search/Results?type=Keyword&sort=date_added+desc&filter%5B%5D=%7Eformat%3A%22Adobe+EPUB+ebook%22&filter%5B%5D=%7Eformat%3A%22Adobe+PDF+eBook%22&filter%5B%5D=%7Eformat%3A%22Ebook+Download%22&filter%5B%5D=%7Eformat%3A%22Kindle+Book%22&filter%5B%5D=%7Eformat%3A%22OverDrive+Read%22&filter%5B%5D=%7Etime_since_added%3A%22Month%22"><div class="neHeader">Newest eBooks</div></a>
+    <table style="width:100%">
+      <tr>
+        <td style="width:12%">
+          <button class="sliderButton neSliderButton" disabled onmouseenter="scrollSpeed = 1; MoveSlider2(this.parentElement.parentElement);" onmouseout="HaltSlider(this)"><span class="sr-only">Scroll Left</span><i class="fa fa-chevron-left"></i></button>
+        </td>
+        <td style="width:76%" class="sliderWindow">
+          <table style="width:400%; position:relative; left:0px"><tr>
+          <? foreach ($ebookResults as $index => $entry): ?>
+            <td class="neTD" onMouseEnter="ShowDescriptionToolTip('<?=$entry->getUniqueID()?>', this);" onMouseLeave="HideDescriptionToolTip();"<?=(($index < 20) ? "" : " style=\"display:none\"")?>><a href="<?=$this->recordLink()->getUrl($entry)?>">
+              <img class="neImg" src="<?= $this->escapeHtmlAttr($this->record($entry)->getThumbnail('large')) ?>" alt="<?=$this->escapeHtmlAttr($this->record($entry)->getTitle())?>" />
+            </a></td>
+          <? endforeach ?>
+          </tr></table>
+        </td>
+        <td style="width:12%">
+          <button class="sliderButton neSliderButton" onmouseenter="scrollSpeed = -1; MoveSlider2(this.parentElement.parentElement);" onmouseout="HaltSlider(this)"><span class="sr-only">Scroll Right</span><i class="fa fa-chevron-right"></i></button>
+        </td>
+      </tr>
+    </table>
+    <br>
+  <? endif; ?>
+  <h1 class="newestHeader">Additional Resources</h1>
+  <table style="width:100%">
+    <tr>
+      <td class="additionalResourceHolder EIN-col-m-6 EIN-col-t-3"><a href="http://bookdb.nextgoodbook.com/signup/pl/f485432415b23a8962922e0b2d198227" target="_blank">
+        <div class="additionalResource"><table style="width:100%;height:100%"><tbody><tr><td>
+          <img style="width:100%" src="/themes/truefit/images/icons/selectreads-block.png" alt="Select Reads">
+        </td></tr></tbody></table></div>
+      </a></td>
+      <td class="additionalResourceHolder EIN-col-m-6 EIN-col-t-3"><a href="http://nextgoodbook.com/newsletter/landing/l/f485432415b23a8962922e0b2d198227/c/1000" target="_blank">
+        <div class="additionalResource"><table style="width:100%;height:100%"><tbody><tr><td>
+          <img style="width:100%" src="/themes/truefit/images/icons/New-Book-Alerts.jpg" alt="New Book Alerts">
+        </td></tr></tbody></table></div>
+      </a></td>
+      <td class="additionalResourceHolder EIN-hide-m EIN-col-t-3"><a href="http://authordb.nextgoodbook.com/landing/l/f485432415b23a8962922e0b2d198227" target="_blank">
+        <div class="additionalResource"><table style="width:100%;height:100%"><tbody><tr><td>
+          <img style="width:100%" src="/themes/truefit/images/icons/authorchecklogo.png" alt="Author Check">
+        </td></tr></tbody></table></div>
+      </a></td>
+      <td class="additionalResourceHolder EIN-hide-m EIN-col-t-3"><a href="http://search.ebscohost.com/login.aspx?authtype=ip,cpid&amp;custid=s4663075&amp;profile=novplus" target="_blank">
+        <div class="additionalResource"><table style="width:100%;height:100%"><tbody><tr><td>
+          <img style="width:100%" src="/themes/truefit/images/icons/novplus200.gif" alt="NoveList">
+        </td></tr></tbody></table></div>
+      </a></td>
+    </tr>
+    <tr class="EIN-hide-t EIN-hide">
+      <td class="additionalResourceHolder EIN-col-m-6"><a href="http://authordb.nextgoodbook.com/landing/l/f485432415b23a8962922e0b2d198227" target="_blank">
+        <div class="additionalResource"><table style="width:100%;height:100%"><tbody><tr><td>
+          <img style="width:100%" src="/themes/truefit/images/icons/authorchecklogo.png" alt="Author Check">
+        </td></tr></tbody></table></div>
+      </a></td>
+      <td class="additionalResourceHolder EIN-col-m-6"><a href="http://search.ebscohost.com/login.aspx?authtype=ip,cpid&amp;custid=s4663075&amp;profile=novplus" target="_blank">
+        <div class="additionalResource"><table style="width:100%;height:100%"><tbody><tr><td>
+          <img style="width:100%" src="/themes/truefit/images/icons/novplus200.gif" alt="NoveList">
+        </td></tr></tbody></table></div>
+      </a></td>
+    </tr>
+    <tr>
+      <td class="EIN-hide-m EIN-col-t-3 EIN-col-3">&nbsp;</td>
+      <td class="additionalResourceHolder EIN-col-m-6 EIN-col-t-3 EIN-col-3"><a href="http://erec.einetwork.net" target="_blank">
+        <div class="additionalResource"><table style="width:100%;height:100%"><tbody><tr><td>
+          <span>Databases and Articles</span>
+        </td></tr></tbody></table></div>
+      </a></td>
+      <td class="additionalResourceHolder EIN-col-m-6 EIN-col-t-3 EIN-col-3"><a href="http://illiad.carnegielibrary.org/illiad/logon.html" target="_blank">
+        <div class="additionalResource"><table style="width:100%;height:100%"><tbody><tr><td>
+          <span>Interlibrary Loan</span>
+        </td></tr></tbody></table></div>
+      </a></td>
+      <td class="EIN-hide-m EIN-col-t-3 EIN-col-3">&nbsp;</td>
+    </tr>
+  </table>
+</div>

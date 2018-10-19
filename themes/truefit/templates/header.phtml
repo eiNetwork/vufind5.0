@@ -1,0 +1,136 @@
+<?
+  $account = $this->auth()->getManager();
+  if( $user = $account->isLoggedIn() ) {
+    $displayName = $user->firstname . " " . $user->lastname;
+    $displayName = ucwords( strtolower( $displayName ) );
+    $patron = $this->ils()->getDriver()->patronLogin(null,null);
+    $profile = $this->ils()->getDriver()->getMyProfile($patron);
+    $notifications = []; //VF5UPGRADE$this->ils()->getDriver()->getNotifications($profile);
+    $holdsCount = 0; //VF5UPGRADE$this->ils()->getDriver()->getNumberOfMyHolds($profile);
+    $checkoutsCount = 0; //VF5UPGRADE$this->ils()->getDriver()->getNumberOfMyTransactions($profile);
+  }
+/*VF5UPGRADE
+  $retainFilters = $this->ils()->getDriver()->getSessionVar("retainFilters");
+  if( $retainFilters === null ):
+    $this->ils()->getDriver()->setSessionVar("retainFilters", true);
+    $retainFilters = true;
+  endif;
+*/
+  $retainFilters = true;
+/*VF5UPGRADE*/
+?>
+<div class="navbar-header row">
+  <div class="EIN-col-m-12">
+    <table class="EIN-col-m-12" style="white-space:nowrap"><tr>
+      <td><div style="margin-right:20px">
+        <a href="<?=$this->url('home')?>"><button class="btn-noBorderAlternate">Library Catalog</button></a>
+      </div></td>
+      <td class="EIN-col-m-12">
+<? if ($this->layout()->searchbox !== false): ?>
+      <div style="margin:0 4px"><div class="EIN-hide-m EIN-col-t-12" style="border-left:1px solid #949494;border-right:1px solid #949494;padding-right:2px">
+        <?=$this->layout()->searchbox ?>
+      </div></div>
+<? endif; ?>
+      </td>
+      <td class="EIN-hide">
+        <div class="dropdown EIN-hide">
+          <button type="button" class="dropdown-toggle btn-noBorderAlternate" data-toggle="dropdown" href="#navDropdown">
+            <span class="sr-only">Toggle navigation</span>
+            <i class="fa fa-bars"></i>
+          </button>
+        </div>
+      </td>
+      <td class="EIN-hide-m EIN-hide-t" style="padding-right:4px">
+        <a href="/Help/Home" data-lightbox><button class="EIN-hide-m EIN-hide-t btn-noBorderAlternate"><span class="headerLink">Help</span></button></a>
+      </td>
+      <td class="EIN-hide-m EIN-hide-t">
+<? if ($user): ?>
+        <button class="EIN-hide-m EIN-hide-t btn-noBorderAlternate" data-toggle="dropdown" data-target="#navDropdown"><span class="headerLink">Account<i class="fa fa-caret-down" style="margin-left:4px;margin-bottom:5px"></i></span></button>
+<? else: ?>
+        <a href="/MyResearch/Login" data-lightbox><button class="EIN-hide-m EIN-hide-t btn-noBorderAlternate"><span class="headerLink">Log In or Register</span></button></a>
+<? endif; ?>
+      </td>
+    </tr></table>
+  </div>
+  <div class="EIN-hide-m EIN-col-t-12 EIN-col-12" style="border-top:1px solid #949494"></div>
+  <div class="EIN-col-m-12">
+    <hr class="EIN-hide-t EIN-hide">
+    <div class="EIN-col-m-12 dropdown" id="navDropdown">
+      <ul role="navigation" class="dropdown-menu whiteDropdown<?= ($user ? "" : " EIN-hide")?>">
+<? if( $user): ?>
+  <? $listCount = 0; $bookCartCount = 0; ?>
+  <? foreach( $user->getLists() as $list ): ?>
+    <? if( $list->isBookCart() ): ?>
+      <? $bookCartCount = $list->count(); ?>
+    <? else: ?>
+      <? $listCount++; ?>
+    <? endif; ?>
+  <? endforeach; ?>
+        <li class="loggedInName"><?= $displayName ?></li>
+        <li><a href="<?=$this->url('myresearch-checkedout')?>"><button class="btn-dropdown btn-whiteDropdown">Checked Out<? if($checkoutsCount>0): ?><span class="badge"><?=$checkoutsCount?></span><? endif; ?></button></a></li>
+        <li><a href="<?=$this->url('myresearch-holds')?>"><button class="btn-dropdown btn-whiteDropdown">Holds<? if($holdsCount>0): ?><span class="badge"><?=$holdsCount?></span><? endif; ?></button></a></li>
+        <li><a href="<?=""/*VF5UPGRADE$this->url('myresearch-mylist')*/?>"><button class="btn-dropdown btn-whiteDropdown">Lists<? if($listCount>0): ?><span class="badge"><?=$listCount?></span><? endif; ?></button></a></li>
+        <li><a href="<?=""/*VF5UPGRADE$this->url('myresearch-bookcart')*/?>"><button class="btn-dropdown btn-whiteDropdown">Book Cart<? if($bookCartCount>0): ?><span class="badge"><?=$bookCartCount?></span><? endif; ?></button></a></li>
+        <li><a href="<?=""/*VF5UPGRADE$this->url('myresearch-readinghistory')*/?>"><button class="btn-dropdown btn-whiteDropdown">Reading History</button></a></li>
+        <li><a href="<?=$this->url('search-history')?>"><button class="btn-dropdown btn-whiteDropdown">Saved Searches</button></a></li>
+        <li><a href="<?=$this->url('myresearch-profile')?>"><button class="btn-dropdown btn-whiteDropdown">Profile</button></a></li>
+        <li><a href="<?=""/*VF5UPGRADE$this->url('myresearch-notifications')*/?>"><button class="btn-dropdown btn-whiteDropdown">Message Center<? if(count($notifications)>0): ?><span class="badge notificationsCount"><?=count($notifications)?></span><? endif; ?></button></a></li>
+        <hr class="stretchHR">
+        <li><button class="btn-dropdown btn-whiteDropdown EIN-hide" onclick="Lightbox.get('Help','Home')">Help</button></li>
+        <li><button class="btn-dropdown btn-whiteDropdown EIN-hide" onclick="Lightbox.get('MyResearch','comingsoon'); return false;" style="display:none">Locations</button></li>
+        <li><a href="<?=$this->url('myresearch-logout')?>"><button class="btn-dropdown btn-whiteDropdown"><i class="fa fa-sign-out"></i>Log Out</button></a></li>
+<? else: ?>
+        <li><button class="btn-dropdown btn-whiteDropdown" onclick="Lightbox.get('Help','Home')">Help</button></li>
+        <li><button class="btn-dropdown btn-whiteDropdown" onclick="Lightbox.get('MyResearch','comingsoon'); return false;" style="display:none">Locations</button></li>
+        <li><button class="btn-dropdown btn-whiteDropdown" onClick="Lightbox.get('MyResearch', 'Login')">Log In or Register</button></li>
+<? endif; ?>
+      </ul>
+    </div>
+    <div class="dropdown" id="searchBoxDropdown">
+      <ul role="navigation" class="dropdown-menu standardDropdown searchDropdown">
+        <li><a><button class="btn-dropdown btn-standardDropdown" onclick="toggleRetainFilters(this)"><span class="greenCheck retainFiltersCheck" style="display:<?=($retainFilters?"inline":"none")?>"><span class="sr-only">Checked</span><i class="fa fa-check"></i></span>Retain Filters</button></a></li>
+        <li style="display:none"><a><button class="btn-dropdown btn-standardDropdown" onclick="doSearchType(this)"><span class="greenCheck" style="display:inline"><span class="sr-only">Checked</span><i class="fa fa-check"></i></span>Limit to Available</button></a></li>
+        <li><a href="<?=$this->url('search-advanced')?>"><button class="btn-dropdown btn-standardDropdown"><span class="greenCheck searchTypeCheck stcAdvanced" style="display:none"><span class="sr-only">Checked</span><i class="fa fa-check"></i></span>Advanced Search</button></a></li>
+        <li><a class="disabled"><button id="saveSearchButton" class="btn-dropdown btn-standardDropdown" disabled>Save Search</button></a></li>
+        <hr class="stretchHR">
+        <li><a><button class="btn-dropdown btn-standardDropdown" onclick="doSearchType(this)" id="searchTypeBtn_Keyword"><span class="greenCheck searchTypeCheck stcKeyword" style="display:inline"><span class="sr-only">Checked</span><i class="fa fa-check"></i></span>Keyword</button></a></li>
+        <li><a><button class="btn-dropdown btn-standardDropdown" onclick="doSearchType(this)" id="searchTypeBtn_AllFields"><span class="greenCheck searchTypeCheck stcAllFields" style="display:none"><span class="sr-only">Checked</span><i class="fa fa-check"></i></span>All Fields</button></a></li>
+        <li><a><button class="btn-dropdown btn-standardDropdown" onclick="doSearchType(this)" id="searchTypeBtn_Title"><span class="greenCheck searchTypeCheck stcTitle" style="display:none"><span class="sr-only">Checked</span><i class="fa fa-check"></i></span>Title</button></a></li>
+        <li><a><button class="btn-dropdown btn-standardDropdown" onclick="doSearchType(this)" id="searchTypeBtn_Author"><span class="greenCheck searchTypeCheck stcAuthor" style="display:none"><span class="sr-only">Checked</span><i class="fa fa-check"></i></span>Author</button></a></li>
+        <li><a><button class="btn-dropdown btn-standardDropdown" onclick="doSearchType(this)" id="searchTypeBtn_Contributor"><span class="greenCheck searchTypeCheck stcContributor" style="display:none"><span class="sr-only">Checked</span><i class="fa fa-check"></i></span>Author/Artist/Contributor</button></a></li>
+        <li><a><button class="btn-dropdown btn-standardDropdown" onclick="doSearchType(this)" id="searchTypeBtn_Subject"><span class="greenCheck searchTypeCheck stcSubject" style="display:none"><span class="sr-only">Checked</span><i class="fa fa-check"></i></span>Subject</button></a></li>
+        <li><a><button class="btn-dropdown btn-standardDropdown" onclick="doSearchType(this)" id="searchTypeBtn_ISN"><span class="greenCheck searchTypeCheck stcISN" style="display:none"><span class="sr-only">Checked</span><i class="fa fa-check"></i></span>ISBN/ISSN</button></a></li>
+        <li><a><button class="btn-dropdown btn-standardDropdown" onclick="doSearchType(this)" id="searchTypeBtn_publisher"><span class="greenCheck searchTypeCheck stcpublisher" style="display:none"><span class="sr-only">Checked</span><i class="fa fa-check"></i></span>Publisher</button></a></li>
+        <li><a><button class="btn-dropdown btn-standardDropdown" onclick="doSearchType(this)" id="searchTypeBtn_Series"><span class="greenCheck searchTypeCheck stcSeries" style="display:none"><span class="sr-only">Checked</span><i class="fa fa-check"></i></span>Series</button></a></li>
+        <li><a><button class="btn-dropdown btn-standardDropdown" onclick="doSearchType(this)" id="searchTypeBtn_year"><span class="greenCheck searchTypeCheck stcyear" style="display:none"><span class="sr-only">Checked</span><i class="fa fa-check"></i></span>Year of Publication</button></a></li>
+        <li><a><button class="btn-dropdown btn-standardDropdown" onclick="doSearchType(this)" id="searchTypeBtn_toc"><span class="greenCheck searchTypeCheck stctoc" style="display:none"><span class="sr-only">Checked</span><i class="fa fa-check"></i></span>Table of Contents</button></a></li>
+      </ul>
+    </div>
+    <script type="text/javascript">
+      function doSearchType(searchButton) {
+        $(searchButton).parents("ul").find(".greenCheck").not(".retainFiltersCheck").css({"display":"none"});
+        $('.searchTypeInput').attr("value", $(searchButton).attr("id").substr(14));
+        $(searchButton).find(".greenCheck").css({"display":"inline"});
+        // undo the advanced search button if needed
+        $(".searchboxAdvanced").css({"display":"none"});
+        $(".searchboxBasic").css({"display":"initial"});
+        // repopulate the search type label
+        var text = $(searchButton).html();
+        $('#searchBoxTypeLabel').html(text.substr(text.lastIndexOf("</span>") + 7));
+        $('#searchBoxTypeLabel').show();
+        $('#searchBoxTypeLabel').removeClass("hiddenByClip");
+      }
+      function toggleRetainFilters(searchButton) {
+        $('.applied-filter').click();
+        $('.searchRetainFilters').attr("value", ($('.searchRetainFilters').attr("value") == "true") ? "false" : "true");
+        $(searchButton).find(".greenCheck").css({"display":(($('.searchRetainFilters').attr("value") == "true") ? "inline" : "none")});
+      }
+    </script>
+  </div>
+<? if ($this->layout()->searchbox !== false): ?>
+  <div class="EIN-col-m-12 EIN-hide-t EIN-hide" style="border-bottom:1px solid #949494">
+    <?=$this->layout()->searchbox ?>
+  </div>
+<? endif; ?>
+  <div class="EIN-col-m-12" style="height:10px"></div>
+</div>
