@@ -114,6 +114,16 @@ class UserList extends RowGateway implements \VuFind\Db\Table\DbTableAwareInterf
     }
 
     /**
+     * Return whether this list object is a user's book cart
+     *
+     * @return bool
+     */
+    public function isBookCart()
+    {
+        return ($this->title == "Book Cart");
+    }
+
+    /**
      * Saves the properties to the database.
      *
      * This performs an intelligent insert/update, and reloads the

@@ -1,0 +1,490 @@
+<?=$this->doctype('HTML5')?>
+<html lang="<?=$this->layout()->userLang?>"<?php if ($this->layout()->rtl): ?> dir="rtl"<?php endif; ?>>
+  <head>
+    <?php $this->headThemeResources(); ?>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+    <?=$this->headMeta()?>
+    <?=$this->headTitle()?>
+    <?php
+      // Set up OpenSearch link:
+      $this->headLink(
+        [
+          'href' => $this->url('search-opensearch') . '?method=describe',
+          'type' => 'application/opensearchdescription+xml',
+          'title' => $this->transEsc('Library Catalog Search'),
+          'rel' => 'search'
+        ]
+      );
+    ?>
+    <!-- RTL styling -->
+    <?php if ($this->layout()->rtl) {
+      $this->headLink()->appendStylesheet('vendor/bootstrap-rtl.min.css');
+    } ?>
+    <?=$this->headLink()?>
+    <?=$this->headStyle()?>
+    <?php
+      if (!isset($this->renderingError)) {
+        // Add translation strings
+        $this->jsTranslations()->addStrings(
+          [
+            'add_tag_success' => 'add_tag_success',
+            'bulk_email_success' => 'bulk_email_success',
+            'bulk_noitems_advice' => 'bulk_noitems_advice',
+            'bulk_save_success' => 'bulk_save_success',
+            'close' => 'close',
+            'collection_empty' => 'collection_empty',
+            'error_occurred' => 'An error has occurred',
+            'go_to_list' => 'go_to_list',
+            'libphonenumber_invalid' => 'libphonenumber_invalid',
+            'libphonenumber_invalidcountry' => 'libphonenumber_invalidcountry',
+            'libphonenumber_invalidregion' => 'libphonenumber_invalidregion',
+            'libphonenumber_notanumber' => 'libphonenumber_notanumber',
+            'libphonenumber_toolong' => 'libphonenumber_toolong',
+            'libphonenumber_tooshort' => 'libphonenumber_tooshort',
+            'libphonenumber_tooshortidd' => 'libphonenumber_tooshortidd',
+            'loading' => 'Loading',
+            'more' => 'more',
+            'number_thousands_separator' => [
+                'number_thousands_separator', null, ','
+            ],
+            'sms_success' => 'sms_success'
+          ]
+        );
+        // Add libphonenumber.js strings
+        $this->jsTranslations()->addStrings(
+          [
+            "Phone number invalid" => 'libphonenumber_invalid',
+            "Invalid country calling code" => 'libphonenumber_invalidcountry',
+            "Invalid region code" => 'libphonenumber_invalidregion',
+            "The string supplied did not seem to be a phone number" => 'libphonenumber_notanumber',
+            "The string supplied is too long to be a phone number" => 'libphonenumber_toolong',
+            "The string supplied is too short to be a phone number" => 'libphonenumber_tooshort',
+            "Phone number too short after IDD" => 'libphonenumber_tooshortidd'
+          ]
+        );
+        // Deal with cart stuff:
+        $cart = $this->cart();
+        if ($cart->isActive()) {
+          $this->headScript()->appendFile("vendor/cookies.js");
+          $this->headScript()->appendFile("cart.js");
+          $domain = $cart->getCookieDomain();
+          if (!empty($domain)) {
+            $this->headScript()->appendScript(
+              'VuFind.cart.setDomain("' . $domain . '");'
+            );
+          }
+          $cookiePath = $cart->getCookiePath();
+          if (!empty($cookiePath)) {
+            $this->headScript()->appendScript(
+              'VuFind.cart.setCookiePath("' . $cookiePath . '");'
+            );
+          }
+          $this->jsTranslations()->addStrings(
+            [
+              'addBookBag' => 'Add to Book Bag',
+              'bookbagFull' => 'bookbag_full_msg',
+              'bookbagMax' => $cart->getMaxSize(),
+              'bookbagStatusFull' => 'bookbag_full',
+              'confirmDelete' => 'confirm_delete',
+              'confirmEmpty' => 'bookbag_confirm_empty',
+              'itemsAddBag' => 'items_added_to_bookbag',
+              'itemsInBag' => 'items_already_in_bookbag',
+              'removeBookBag' => 'Remove from Book Bag',
+              'viewBookBag' => 'View Book Bag'
+            ]
+          );
+        }
+        $this->headScript()->appendScript(
+          'var userIsLoggedIn = ' . ($this->auth()->isLoggedIn() ? 'true' : 'false') . ';'
+        );
+      }
+
+      // Session keep-alive
+      if ($this->keepAlive()) {
+          $this->headScript()->appendScript('var keepAliveInterval = '
+            . $this->keepAlive());
+          $this->headScript()->appendFile("keep_alive.js");
+      }
+    ?>
+    <?php
+      $root = rtrim($this->url('home'), '/');
+      $translations = $this->jsTranslations()->getJSON();
+      $dsb = DEFAULT_SEARCH_BACKEND;
+      $setupJS = <<<JS
+VuFind.path = '{$root}';
+VuFind.defaultSearchBackend = '{$dsb}';
+VuFind.addTranslations({$translations});
+JS;
+      $this->headScript()->appendScript($setupJS);
+    ?>
+    <?=$this->headScript()?>
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet" type="text/css">
+    <link href="/themes/truefit/css/einetwork.css?cacheBuster=13" media="all" rel="stylesheet" type="text/css">
+    <script src="/themes/truefit/js/hmac-sha256.js"></script>
+    <script src="/themes/truefit/js/enc-base64-min.js"></script>
+    <script src="/themes/truefit/js/backgroundLoader.js?cacheBuster=1"></script>
+  </head>
+  <body class="template-dir-<?=$this->templateDir?> template-name-<?=$this->templateName?> <?=$this->layoutClass('offcanvas-row')?><?php if ($this->layout()->rtl): ?> rtl<?php endif; ?>">
+    <!-- *google analytics* -->
+    <div>
+      <script>
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-93890249-1', 'auto');
+        ga('send', 'pageview');
+
+      </script>
+    </div>
+    <iframe id="loginFrame" name="loginFrame" style="display:none"></iframe>
+    <? // see whether or not we need to do some background loading of holds/checkouts
+      $account = $this->auth()->getManager();
+      if( $user = $account->isLoggedIn() ):
+        if( $this->ils()->getDriver()->getSessionVar('holds') === null || $this->ils()->getDriver()->getSessionVar('staleHoldsHash') !== null ):
+    ?>
+      <iframe style="display:none" id="backgroundLoaderHolds"></iframe>
+    <?
+        endif;
+        if( $this->ils()->getDriver()->getSessionVar('checkouts') === null || $this->ils()->getDriver()->getSessionVar('staleCheckoutsHash') !== null ):
+    ?>
+      <iframe style="display:none" id="backgroundLoaderCheckouts"></iframe>
+    <?
+        endif;
+      endif;
+    ?>
+    <?php // Set up the search box -- there are three possible cases:
+      // 1. No search box was set; we should default to the normal box
+      // 2. It was set to false; we should display nothing
+      // 3. It is set to a custom string; we should display the provided version
+      // Set up default search box if no data was provided from the template;
+      // this covers case 1.  Cases 2 and 3 are then covered by logic below.
+      if (!isset($this->layout()->searchbox)) {
+        $this->layout()->searchbox = $this->render('search/searchbox.phtml');
+      }
+    ?>
+    <header class="hidden-print">
+      <div class="container navbar">
+        <?php if (isset($this->layout()->srmessage)): // message for benefit of screen-reader users ?>
+          <span class="sr-only" role="heading" aria-level="1"><?=$this->layout()->srmessage ?></span>
+        <?php endif; ?>
+        <a class="sr-only" href="#content"><?=$this->transEsc('Skip to content') ?></a>
+        <?=$this->render('header.phtml')?>
+      </div>
+    </header>
+    <nav class="breadcrumbs">
+      <div class="container">
+        <?php if((!isset($this->layout()->showBreadcrumbs) || $this->layout()->showBreadcrumbs == true)
+          && !empty($this->layout()->breadcrumbs)
+          && $this->layout()->breadcrumbs !== false
+        ): ?>
+          <ul class="breadcrumb hidden-print">
+            <?php if(is_array($this->layout()->breadcrumbs)): ?>
+              <?php if(count($this->layout()->breadcrumbs) > 1): ?>
+                <?=$this->render('breadcrumbs/multi.phtml', [
+                    'parents' => $this->layout()->breadcrumbs,
+                    'title' => $this->layout()->title,
+                    'from' => $this->layout()->from
+                  ]) ?>
+              <?php else: ?>
+                <?=$this->render('breadcrumbs/default.phtml', [
+                    'parents' => $this->layout()->breadcrumbs,
+                    'title' => $this->layout()->title
+                  ]) ?>
+              <?php endif; ?>
+            <?php else: ?>
+              <?=$this->layout()->breadcrumbs ?>
+            <?php endif; ?>
+          </ul>
+        <?php endif; ?>
+      </div>
+    </nav>
+    <div role="main" class="main">
+      <div id="content" class="container">
+        <?=$this->layout()->content ?>
+      </div>
+      <span id="returnToTop" class="returnToTop" onclick="$(window).scrollTop(0)"><i class="fa fa-long-arrow-up"></i></span>
+      <script type="text/javascript">
+        var returnOffset = 150;
+        var mostRecentSearchBtn = null;
+
+        jQuery(document).ready(function() {
+          moveButtons();
+          $(window).scroll(moveButtons);
+          $(window).resize(moveButtons);
+
+<?    /* log them out if they're at a library location AND (they're logged in OR not on the home page) */ 
+  //VF5UPGRADEif( $this->ils()->getDriver()->getCurrentLocation() && ($account->isLoggedIn() || ($_SERVER["REQUEST_URI"] != "/")) ): 
+?>
+/*VF5UPGRADE
+          if( self.window === self.top ) {
+            autoLogoutResetTimer();
+          }
+*/
+<? //VF5UPGRADEendif; ?>
+        });
+
+        function moveButtons() {
+          // return to top
+          $('#returnToTop').css("margin-left", (($('#pageFooter').width() / 2) - 50) + "px");
+          if( document.body.clientHeight < $(this).height() * 2) {
+            $('#returnToTop').css("bottom", (0 - returnOffset) + "px");
+          } else if($(this).scrollTop() < returnOffset) {
+            $('#returnToTop').css("bottom", ($(this).scrollTop() - returnOffset) + "px");
+          } else if($(this).scrollTop() > (document.body.clientHeight - $(this).height() - $('#pageFooter').height() + 20))  {
+            $('#returnToTop').css("bottom", ($(this).scrollTop() - document.body.clientHeight + $(this).height() + $('#pageFooter').height() - 20) + "px");
+          } else  {
+            $('#returnToTop').css("bottom", "0px");
+          }
+
+          // search dropdown
+          if( mostRecentSearchBtn != null ) {
+            var newLeft = $(mostRecentSearchBtn).offset().left + $(mostRecentSearchBtn).width() - $('#searchBoxDropdown').children("ul").width();
+            var newTop = $(mostRecentSearchBtn).offset().top + $(mostRecentSearchBtn).height();
+            $('#searchBoxDropdown').offset({left:newLeft, top:newTop});
+            $('#searchBoxDropdown').css('width', $('#searchBoxDropdown').children("ul").outerWidth()); 
+            setTimeout( function() { $('#searchBoxDropdown button:first').focus() }, 10);
+          }
+
+          // clean up the overlap for long format names
+          $(".highlightContainer").each( function() {
+            if( $(this).children("table").outerWidth() > $(this).outerWidth() ) {
+              var margin = 5 + $(this).next().outerHeight() - $(this).children("table").position().top;
+              if( margin > 0 ) {
+                $(this).children("table").css({"margin-top":(margin + "px")});
+              }
+            } else {
+              $(this).children("table").css({"margin-top":"initial"});
+            }
+          } );
+
+          // adjust to prevent scroll bars for music count
+          $(".hideOverflow").css({"overflow-x":(($(".main .container").width() == $(window).innerWidth())?"hidden":"visible")});
+        }
+      </script>
+      <div id="realLoginContents" style="display:none">
+        <form role="login" method="post" action="<?=$this->url('myresearch-home')?>" name="loginForm" id="DUMMY_loginForm" target="loginFrame" >
+          <div style="margin:auto">
+          <div class="textBoxContainer">
+            <span class="sr-only">Library Card Number</span>
+            <input type="text" name="username" id="DUMMY_login_username" value="Enter your Library Card Number" onfocus="ClearFormError(this); if (this.value=='Enter your Library Card Number') {this.value = '';this.style.color='#3d3d3d';}" onblur="if (this.value=='') {this.value = 'Enter your Library Card Number';this.style.color='#949494';}" class="form-control textBox"/>
+            <i class="fa fa-exclamation-circle formErrorIcon"></i>
+            <span id="DUMMY_login_usernameError" class="formError"></span>
+          </div><br>
+          <div class="textBoxContainer">
+            <span class="sr-only">PIN</span>
+            <input type="password" name="password" id="DUMMY_login_password" value="Enter your PIN" onfocus="ClearFormError(this); if (this.value=='Enter your PIN') { this.value = ''; this.type='password'; this.style.color='#3d3d3d';}" onblur="if (this.value=='') { this.value = 'Enter your PIN'; this.type='password'; this.style.color='#949494';}" class="form-control textBox"/>
+            <i class="fa fa-exclamation-circle formErrorIcon"></i>
+            <span id="DUMMY_login_passwordError" class="formError"></span>
+          </div>
+          </div>
+          <input type="hidden" name="auth_method" value="<?=$account->getAuthMethod()?>">
+          <input type="hidden" name="csrf" value="<?=$this->escapeHtmlAttr($account->getCsrfHash())?>" />
+          <input type="submit" class="submitButton" style="display:none">
+        </form>
+        <button style="margin-top:10px" class="btn-noBorderAlternate" id="DUMMY_loginModalReset" onclick="ToggleLoginModal(this);">
+          <span class="headerLink">I forgot or want to change my PIN</span>
+        </button><br>
+        <button style="margin-top:10px" class="btn-noBorderAlternate" id="DUMMY_loginModalRegister" onclick="ToggleLoginModal(this);">
+          <span class="headerLink">I need a library card</span>
+        </button>
+      </div>
+    </div>
+    <footer role="contentinfo" class="hidden-print">
+      <div id="pageFooter" class="container" style="padding-top:0px;border-top:none">
+        <?=$this->render('footer.phtml')?>
+        <?=$this->layout()->poweredBy ?>
+      </div>
+    </footer>
+    <!-- MODAL IN CASE WE NEED ONE -->
+    <div id="modal" class="modal fade hidden-print" tabindex="-1" role="dialog" aria-labelledby="modalTitle" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="btn-noBorderAlternate close" id="modalClose" data-dismiss="modal"><span class="sr-only">Close</span><i class="fa fa-close"></i></button>
+            <h4 id="modalTitle" class="modal-title"></h4>
+          </div>
+          <div style="position:relative">
+            <div class="modal-body" style="color:#3d3d3d; overflow:auto">
+              <span><i class="fa fa-spinner"></i></span>
+              <span>&nbsp;<?=$this->transEsc('Loading') ?>...</span>
+            </div>
+            <div class="modalScrollBar" onmousedown="StartScrollBarDrag(false); return false;" ontouchstart="StartScrollBarDrag(true); return false;"><div class="modalScrollSlider"></div><div class="modalScrollExpandedClickZone"></div></div>
+          </div>
+          <div class="modal-footer"></div>
+        </div>
+      </div>
+    </div>
+    <div id="descriptionToolTip" class="EIN-col-m-12 EIN-col-t-6 EIN-col-6 btn-alternate" style="position:absolute; text-align:left; display:none; background:#ededed; z-index:200;">
+      <div style="font-weight:700; width:100%; text-align:center; padding-bottom:5px">Description</div>
+      <span id="descriptionToolTipContents"></span>
+    </div>
+    <div id="locationsToolTip" class="btn-alternate" style="position:absolute; text-align:left; display:none; background:#ededed; z-index:200;" onmouseenter="PreserveLocationsToolTip();" onmouseleave="saveLoc = false; HideLocationsToolTip();">
+      <div class="locationsToolTipAvailable" style="font-weight:700; width:100%; text-align:center; padding-bottom:5px">Available at:</div>
+      <span class="locationsToolTipAvailable" id="locationsToolTipAvailableContents"></span>
+      <div class="locationsToolTipSplit"><br></div>
+      <div class="locationsToolTipUnavailable" style="font-weight:700; width:100%; text-align:center; padding-bottom:5px">Unavailable at:</div>
+      <span class="locationsToolTipUnavailable" id="locationsToolTipUnavailableContents"></span>
+      <div class="locationsToolTipSplit2"><br></div>
+      <div class="locationsToolTipOnOrder" style="font-weight:700; width:100%; text-align:center; padding-bottom:5px">On Order at:</div>
+      <span class="locationsToolTipOnOrder" id="locationsToolTipOnOrderContents"></span>
+    </div>
+    <div class="offcanvas-toggle" data-toggle="offcanvas"><i class="fa" title="<?=$this->transEsc('sidebar_expand') ?>"></i></div>
+    <div class="offcanvas-overlay" data-toggle="offcanvas"></div>
+    <?=$this->googleanalytics()?>
+    <?=$this->piwik()?>
+    <script type="text/javascript">
+      $("#modal").on("shown.bs.modal", sizeModal);
+      $(window).resize(sizeModal);
+      var initialOffset = -1;
+      var maxRange = -1;
+      var scrollLogic = function(e) {
+        var pageY = initialOffset;
+        if( e.hasOwnProperty("pageY") ) {
+          pageY = e.pageY;
+        } else if( e.originalEvent.touches.length == 1 ) {
+          pageY = e.originalEvent.touches[0].pageY;
+        } else {
+          return;
+        }
+        if( initialOffset == -1 ) {
+          initialOffset = $('.modalScrollSlider').offset().top - $('.modalScrollBar').offset().top - pageY;
+        }
+        var target = pageY + initialOffset;
+        if( target < 0 ) {
+          target = 0;
+        } else if( target > ($('.modalScrollBar').height() - $('.modalScrollSlider').height()) ) {
+          target = $('.modalScrollBar').height() - $('.modalScrollSlider').height();
+        }
+        var factor = target / ($('.modalScrollBar').height() - $('.modalScrollSlider').height());
+        $('.modalScrollSlider').css({"top":(target + "px")});
+        $('.modal-body').scrollTop(factor * maxRange);
+      };
+      var mouseUpLogic = function(e) {
+        $(document).unbind("mousemove touchmove", scrollLogic);  
+        $(document).unbind("mouseup touchend", mouseUpLogic); 
+        initialOffset = -1; 
+      };
+      function StartScrollBarDrag(isMobile) {
+        $(document).bind(isMobile ? "touchmove" : "mousemove", scrollLogic);
+        $(document).bind(isMobile ? "touchend" : "mouseup", mouseUpLogic);
+      }
+      function sizeModal() {
+        setTimeout( function() {
+          var targetPos = $('.modal-body').scrollTop();
+          $('.modal-body').css("max-height","none");
+          var offset = parseInt($('.modal-dialog').css('margin-top').replace('px', '')) + 
+                       parseInt($('.modal-dialog').css('margin-bottom').replace('px', '')) + 
+                       parseInt($('.modal-dialog').css('border-top-width').replace('px', '')) + 
+                       parseInt($('.modal-dialog').css('border-bottom-width').replace('px', '')) + 
+                       $('.modal-header').outerHeight() + $('.modal-footer').outerHeight();
+          var max = $(window).height() - offset;
+          var barHeight = max - 30;
+          var sliderHeight = barHeight * barHeight / $('.modal-body').outerHeight();
+          maxRange = $('.modal-body').outerHeight() - max;
+          $('.modalScrollBar').css({"height":(barHeight + "px"),"display":"none"});
+          $('.modalScrollSlider').css({"height":(sliderHeight + "px")});
+          VuFind.listen('VuFind.lightbox.closed', function() {
+            $('.modal-footer').html("");
+            $('.modalScrollBar').css({"height":"0px","display":"none"});
+            $('.modalScrollSlider').css({"height":"0px", "top":"0px"});
+            $('.modal-body').scrollTop(0);
+            initialOffset = -1;
+            maxRange = -1;
+          } );
+          $('.modal-body').scrollTop(targetPos);
+          $('.modalScrollSlider').css({"top":((targetPos * (barHeight - sliderHeight) / maxRange) + "px")});
+        }, 20);
+      }
+      var descTimeout;
+      function ShowDescriptionToolTip(id,target) {
+        descTimeout = setTimeout(function() {
+/*VF5UPGRADE*
+          $.ajax({
+            dataType: 'json',
+            url: VuFind.path + '/AJAX/JSON?method=getDescription',
+            data: {id:id},
+            success: function(response) {
+              if(response.status == 'OK' && response.data.description) {
+                $('#descriptionToolTipContents').html(response.data.description);
+                var left = $(target).offset().left + ($(target).outerWidth() / 2) - ($('#descriptionToolTip').outerWidth() / 2);
+                $('#descriptionToolTip').css({"display":"initial", "left":((left > 0) ? left : 0), "top":($(target).offset().top + $(target).height())});
+              }
+            }
+          });
+/**/
+        }, 500);
+      }
+      function HideDescriptionToolTip() {
+        clearTimeout( descTimeout );
+        $('#descriptionToolTip').css({"display":"none"});
+      }
+      var locTimeout;
+      var clearLocTimeout;
+      var saveLoc = false;
+      function ShowLocationsToolTip(target) {
+        saveLoc = false;
+        clearTimeout( clearLocTimeout );
+        locTimeout = setTimeout(function() {
+          var target2 = $(target).parents('.ajaxItem');
+          var availability = jQuery.parseJSON($(target).find('.availabilityDetailsJSON').html());
+          var availableHTML = "";
+          for( locationName in availability["available"] ) {
+            var copies = availability["available"][locationName];
+            availableHTML += "<span class='EIN-col-m-12'>" + locationName + ":&nbsp;<span style='float:right'>" + copies + ((copies == 1) ? " copy" : " copies") + "</span></span><br>";
+          }
+          var unavailableHTML = "";
+          for( locationName in availability["unavailable"] ) {
+            var copies = availability["unavailable"][locationName];
+            unavailableHTML += "<span class='EIN-col-m-12'>" + locationName + ":&nbsp;<span style='float:right'>" + copies + ((copies == 1) ? " copy" : " copies") + "</span></span><br>";
+          }
+          var onOrderHTML = "";
+          for( locationName in availability["onOrder"] ) {
+            var copies = availability["onOrder"][locationName];
+            onOrderHTML += "<span class='EIN-col-m-12'>" + locationName + ":&nbsp;<span style='float:right'>" + copies + ((copies == 1) ? " copy" : " copies") + "</span></span><br>";
+          }
+          $('#locationsToolTipAvailableContents').html(availableHTML);
+          $('#locationsToolTipUnavailableContents').html(unavailableHTML);
+          $('#locationsToolTipOnOrderContents').html(onOrderHTML);
+          $('.locationsToolTipAvailable').css("display", (availableHTML == "") ? "none" : "block");
+          $('.locationsToolTipUnavailable').css("display", (unavailableHTML == "") ? "none" : "block");
+          $('.locationsToolTipOnOrder').css("display", (onOrderHTML == "") ? "none" : "block");
+          $('.locationsToolTipSplit').css("display", ((availableHTML != "") && ((onOrderHTML != "") || (unavailableHTML != ""))) ? "block" : "none");
+          $('.locationsToolTipSplit2').css("display", ((onOrderHTML != "") && (unavailableHTML != "")) ? "block" : "none");
+          var left = target2.offset().left + (target2.outerWidth() / 2) - ($('#locationsToolTip').outerWidth() / 2);
+          $('#locationsToolTip').css({"display":"initial", "left":((left > 0) ? left : 0), "top":($(target).offset().top + $(target).height())});
+          setTimeout(function() {
+            var left = target2.offset().left + (target2.outerWidth() / 2) - ($('#locationsToolTip').outerWidth() / 2);
+            $('#locationsToolTip').css({"left":((left > 0) ? left : 0)});
+          }, 30);
+        }, 100);
+      }
+      function PreserveLocationsToolTip() {
+        saveLoc = true;
+      }
+      function HideLocationsToolTip() {
+        clearTimeout( clearLocTimeout );
+        clearLocTimeout = setTimeout(function() {
+          if( !saveLoc ) {
+            clearTimeout( locTimeout );
+            $('#locationsToolTip').css({"display":"none"});
+          }
+        }, 250);
+      }
+      function ToggleLocationsToolTip(target) {
+        if( $('#locationsToolTip').css("display") == "none" ) {
+          ShowLocationsToolTip(target);
+        } else {
+          HideLocationsToolTip();
+        }
+      }
+/**/
+    </script>
+    <?php if ($this->recaptcha()->active()): ?>
+      <?=$this->inlineScript(\Zend\View\Helper\HeadScript::FILE, "https://www.google.com/recaptcha/api.js?onload=recaptchaOnLoad&render=explicit&hl=" . $this->layout()->userLang, 'SET')?>
+    <?php endif; ?>
+  </body>
+</html>
