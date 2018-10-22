@@ -41,6 +41,22 @@ use VuFind\Exception\Mail as MailException;
 class SearchController extends AbstractSolrSearch
 {
     /**
+     * Handle an advanced search
+     *
+     * @return mixed
+     */
+    public function advancedAction()
+    {
+        // Standard setup from base class:
+        $view = parent::advancedAction();
+
+        // Set up facet information:
+        $view->formatCategories = $this->getConfig()->FormatCategories;
+
+        return $view;
+    }
+
+    /**
      * Show facet list for Solr-driven collections.
      *
      * @return mixed

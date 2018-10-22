@@ -1,0 +1,207 @@
+<?
+  // Set page title.
+  $this->headTitle($this->translate('Advanced Search'));
+
+  // Disable top search box -- this page has a special layout.
+  $this->layout()->searchbox = false;
+
+  // Set up breadcrumbs:
+  $this->layout()->breadcrumbs = '<li>';
+  $lastSearchLink = $this->searchMemory()->getLastSearchLink($this->transEsc('Search'));
+  $this->layout()->breadcrumbs .= !empty($lastSearchLink)
+    ? $lastSearchLink : $this->transEsc('Search');
+  $this->layout()->breadcrumbs .= '</li> <li class="active">' . $this->transEsc('Advanced') . '</li>';
+
+  // Set up saved search details:
+  if (isset($this->saved) && is_object($this->saved)) {
+    $searchDetails = $this->saved->getParams()->getQuery();
+    if ($searchDetails instanceof \VuFindSearch\Query\Query) {
+        // Not an advanced query -- ignore it.
+        $searchDetails = $groups = false;
+    } else {
+        $groups = $searchDetails->getQueries();
+    }
+    $hasDefaultsApplied = $this->saved->getParams()->hasDefaultsApplied();
+    $searchFilters = $this->saved->getParams()->getFilterList();
+    $hiddenFilters = $this->saved->getParams()->getHiddenFilters();
+  } else {
+    $hasDefaultsApplied = $searchDetails = $searchFilters = $groups = false;
+    $hiddenFilters = $this->searchTabs()->getHiddenFilters($this->searchClassId, true);
+  }
+
+  // Step 1: Load the javascript
+  $this->headScript()->appendFile(
+    isset($this->advancedSearchJsOverride) ? $this->advancedSearchJsOverride : 'advanced_search.js'
+  );
+  // Step 2: Build the page
+  $this->headScript()->appendScript(
+    $this->partial(
+      isset($this->buildPageOverride) ? $this->buildPageOverride : 'search/advanced/build_page.phtml',
+      ['options' => $this->options, 'searchDetails' => $searchDetails]
+    )
+  );
+
+  // Collect previous search queries
+  $setSearchGroups = [];
+  $setGroupCount = 0;
+  $setQueries = [];
+  $groupJoin ='AND';
+  if (isset($searchDetails) && is_object($searchDetails)) {
+    $groupJoin = $searchDetails->getOperator();
+    foreach ($searchDetails->getQueries() as $group=>$searchGroup) {
+      $setSearchGroups[$group] = $searchGroup->isNegated() ? 'NOT' : $searchGroup->getOperator();
+      if ($setGroupCount < $group) {
+        $setGroupCount = $group;
+      }
+      if (!isset($setQueries[$group])) {
+        $setQueries[$group] = [];
+      }
+      foreach ($searchGroup->getQueries() as $search) {
+        $setQueries[$group][] = $search;
+      }
+    }
+  }
+?>
+
+<?=$this->flashmessages(false)?>
+
+<div class="EIN-col-m-12 padded">
+  <form name="searchForm" id="advSearchForm" method="get" action="<?=$this->url($this->options->getSearchAction())?>">
+    <?php foreach ($hiddenFilters as $key => $filter): ?>
+      <?php foreach ($filter as $value): ?>
+        <input type="hidden" name="hiddenFilters[]" value="<?=$this->escapeHtmlAttr($key) . ':' . $this->escapeHtmlAttr($value)?>" />
+      <?php endforeach; ?>
+    <?php endforeach; ?>
+    <input type="hidden" name="sort" value="relevance">
+    <h1 class="pageTitle">
+      <button class="btn-default btn-wide gap" onclick="$('#advSearchMasterButton').click();" style="line-height:20px;"><?= $this->transEsc('Advanced Search')?>&nbsp;<i class="fa fa-search searchButtonDecoration"></i></button>
+    </h1>
+    <input type="hidden" name="sort" value="relevance">
+    <? /* An empty div. This is the target for the javascript that builds this screen */ ?>
+    <span id="groupPlaceHolder" class="hidden">
+      <div class="EIN-col-m-12 center">
+        <div class="EIN-col-m-12 center">
+          <a onClick="addGroup(); return false;"><button class="btn-default btn-wide"><?= $this->transEsc('add_search_group') ?></button></a>
+        </div>
+        <div id="groupJoin" class="EIN-col-m-12 EIN-col-t-6 center">
+          <div class="EIN-col-m-12 EIN-hide-t EIN-hide" style="height:10px"></div>
+          <label for="groupJoinOptions"><?=$this->transEsc("search_match")?>:&nbsp;</label>
+          <div style="display:inline;position:relative">
+            <input type="hidden" name="join" id="groupJoinOptions" value="<?=$groupJoin?>">
+            <button class="btn-alternate advSearchJoinButton" id="advSearchJoin" data-toggle="dropdown" data-target="#advSearchJoinDropdown"><span><?=$this->transEsc("group_" . $groupJoin)?></span><i class="fa fa-caret-down"></i></button>
+            <div class="EIN-col-m-12 dropdown" id="advSearchJoinDropdown">
+              <ul role="navigation" class="dropdown-menu standardDropdown">
+                <li><button class="btn-dropdown btn-standardDropdown manageListDropdown" onclick="advSearchDropdownClick(this, 'AND'); return false;"><?=$this->transEsc("group_AND")?></button></li>
+                <li><button class="btn-dropdown btn-standardDropdown manageListDropdown" onclick="advSearchDropdownClick(this, 'OR'); return false;"><?=$this->transEsc("group_OR")?></button></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </span>
+    <? /* fallback to a fixed set of search groups/fields if JavaScript is turned off */ ?>
+    <div class="no-js">
+      <? if(!empty($this->formOverride)): ?>
+        <?=$this->formOverride ?>
+      <? else: ?>
+        <? for($group=0 ; $group<3 || $group<=$setGroupCount ; $group++): ?>
+          <? if($group == 0): ?>
+            <div id="new_group_template">
+          <? endif; ?>
+          <div id="group<?=$group ?>" class="EIN-col-m-12 advSearchGroup">
+            <button class="btn-noBorderAlternate close hidden"><span class="sr-only">Remove Group</span><i class="fa fa-close"></i></button>
+            <div class="EIN-col-m-12">
+              <label class="advSearchGroupTitle"><?=$this->transEsc("adv_search_label")?>:</label>
+            </div>
+            <div class="EIN-col-m-12">
+              <? for($search=0 ; $search<3 || (isset($setQueries[$group]) && $search<count($setQueries[$group])) ; $search++): ?>
+                <? if($group == 0 && $search == 0): ?>
+                  <div id="new_search_template" class="EIN-col-m-12">
+                <? endif; ?>
+                <div id="search<?=$group.'_'.$search ?>" class="EIN-col-m-12 advSearchSearch">
+                  <button class="btn-noBorderAlternate close hidden"><span class="sr-only">Remove Field</span><i class="fa fa-close"></i></button>
+                  <div class="EIN-col-m-12">
+                    <div class="EIN-col-m-12 EIN-col-t-6 EIN-col-7">
+                      <? $value = isset($setQueries[$group][$search]) ? $this->escapeHtml($setQueries[$group][$search]->getString()) : ""; ?>
+                      <span class="sr-only">Enter your search term</span>
+                      <input name="lookfor<?=$group ?>[]" id="search_lookfor<?=$group.'_'.$search ?>" onfocus="SearchFocus(this)" onblur="SearchBlur(this)" class="form-control textBox<?=(($value=="")?" initialSearch":"")?>" type="text" value="<?=$value?>" onkeypress="return CheckForEnter(event);">
+                    </div>
+                    <div class="EIN-col-m-12 EIN-hide-t EIN-hide" style="height:5px"></div>
+                    <div class="EIN-col-m-12 EIN-col-t-6 EIN-col-5 center">
+                      <span class="advSearchGroupTitle">in</span>
+                      <div style="display:inline;position:relative">
+                        <input class="type"  type="hidden" name="type<?=$group?>[]" id="search_type<?=$group.'_'.$search ?>" value="">
+                        <button class="btn-alternate advSearchTypeButton" id="advSearchGroupType<?=$group.'_'.$search ?>" data-toggle="dropdown" data-target="#advSearchGroupType<?=$group.'_'.$search ?>Dropdown"><span>Type</span><i class="fa fa-caret-down"></i></button>
+                        <div class="EIN-col-m-12 dropdown" id="advSearchGroupType<?=$group.'_'.$search ?>Dropdown">
+                          <ul role="navigation" class="dropdown-menu standardDropdown">
+                          <? foreach ($this->options->getAdvancedHandlers() as $searchVal => $searchDesc): ?>
+                            <li><button class="btn-dropdown btn-standardDropdown manageListDropdown btnTypeValue<?=$this->escapeHtml($searchVal)?>" onclick="advSearchDropdownClick(this, '<?=$this->escapeHtml($searchVal)?>'); return false;"><?=$this->transEsc($searchDesc)?></button></li>
+                          <? endforeach; ?>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <? if($group == 0 && $search == 0): ?>
+                  </div>
+                  <div class="EIN-col-m-12 center search_place_holder hidden"></div>
+                <? endif; ?>
+              <? endfor; ?>
+            </div>
+            <div class="EIN-col-m-12 EIN-col-t-6 EIN-col-6 center">
+              <a class="add_search_link hidden"><button class="btn-default btn-wide"><?= $this->transEsc('add_search') ?></button></a>
+            </div>
+            <div class="EIN-col-m-12 EIN-hide-t EIN-hide" style="height:10px"></div>
+            <div class="EIN-col-m-12 EIN-col-t-6 EIN-col-6 match center">
+              <label class="advGroupSearchTitle"><?=$this->transEsc("search_match")?>:&nbsp;</label>
+              <div style="display:inline;position:relative">
+                <input type="hidden" name="bool<?=$group ?>[]" id="search_bool<?=$group ?>" value="AND" class="advSearchMatch">
+                <button class="btn-alternate advSearchMatchButton" id="advSearchMatch<?=$group?>" data-toggle="dropdown" data-target="#advSearchMatch<?=$group?>Dropdown"><span><?=$this->transEsc("search_AND")?></span><i class="fa fa-caret-down"></i></button>
+                <div class="EIN-col-m-12 dropdown" id="advSearchMatch<?=$group?>Dropdown">
+                  <ul role="navigation" class="dropdown-menu standardDropdown">
+                    <li><button class="btn-dropdown btn-standardDropdown manageListDropdown btnJoinValueAND" onclick="advSearchDropdownClick(this, 'AND'); return false;"><?=$this->transEsc("search_AND")?></button></li>
+                    <li><button class="btn-dropdown btn-standardDropdown manageListDropdown btnJoinValueOR"  onclick="advSearchDropdownClick(this, 'OR');  return false;"><?=$this->transEsc("search_OR")?></button></li>
+                    <li><button class="btn-dropdown btn-standardDropdown manageListDropdown btnJoinValueNOT" onclick="advSearchDropdownClick(this, 'NOT'); return false;"><?=$this->transEsc("search_NOT")?></button></li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+          <? if($group == 0): ?>
+            </div>
+          <? endif; ?>
+        <? endfor; ?>
+      <? endif; ?>
+    </div>
+    <? if (isset($this->extraAdvancedControls)): ?>
+      <?=$this->extraAdvancedControls ?>
+    <? endif; ?>
+    <div class="EIN-col-m-12 center" style="margin-top:20px;margin-bottom:10px">
+      <button class="btn-alternate btn-wide" onclick="ResetAdvSearchForm(); return false;"><?= $this->transEsc('Reset')?></button>
+      <button class="btn-default btn-wide gap" id="advSearchMasterButton" onclick="CleanSearchBoxes();"><?= $this->transEsc('Search')?>&nbsp;<i class="fa fa-search searchButtonDecoration"></i></button>
+    </div>
+  </form>
+</div>
+<script type="text/javascript">
+  function SearchFocus(elem) {
+    var elemParent = $(elem).parent();
+    elemParent.css({"background-color":"#ededed"});
+    if( elemParent.find(".initialSearch").length > 0 ) {
+      elemParent.find(".initialSearch")[0].value = '';
+      elemParent.find(".initialSearch").css({"color":"#3d3d3d"});
+      elemParent.find(".initialSearch").focusout( function() {
+        elemParent.css({"background-color":"#fff"});
+      } );
+      elemParent.find(".initialSearch").removeClass("initialSearch");
+    }
+  }
+
+  function SearchBlur(elem) {
+    if( elem.value == '' ) {
+      elem.value = 'Enter your search term';
+      $(elem).css({"color":"#949494"});
+      $(elem).addClass("initialSearch");
+    }
+  }
+</script>

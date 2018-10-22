@@ -1,0 +1,91 @@
+<? if (isset($this->ranges) && !empty($this->ranges)): ?>
+  <? $params = $this->searchParams($this->searchClassId); $params->activateAllFacets(); ?>
+  <? foreach ($this->ranges as $current): $escField = $this->escapeHtmlAttr($current['field']); ?>
+    <? $extraInputAttribs = ($current['type'] == 'date') ? 'maxlength="4" onkeypress="return SquashEnter(event) && DigitsOnly(event);" onkeyup="UpdateSlider();"' : ''; ?>
+    <fieldset class="EIN-col-m-12">
+      <table style="width:100%"><tr>
+        <td class="EIN-hide-m EIN-col-t-2 EIN-col-2">&nbsp;</div>
+        <td class="EIN-col-m-12 EIN-col-t-8 EIN-col-8">
+          <label class="EIN-col-m-12 advSearchGroupTitle center"><?=$this->transEsc($params->getFacetLabel($current['field']))?></label>
+          <input type="hidden" name="<?=$this->escapeHtmlAttr($current['type'])?>range[]" value="<?=$escField?>"/>
+          <div class="EIN-col-m-12 advSearchRange">
+            <div class="EIN-col-m-1">&nbsp;</div>
+            <div class="EIN-col-m-2" style="text-align:right">
+              <label for="<?=$escField?>from" style="margin-top:2px"><?=$this->transEsc('date_from')?>:&nbsp;</label>
+            </div>
+            <div class="EIN-col-m-3">
+              <? $minValue = isset($current['values'][0]) ? $this->escapeHtmlAttr($current['values'][0]) : ''; ?>
+              <input type="text" name="<?=$escField?>from" id="<?=$escField?>from" value="<?=($minValue=='')?'????':$minValue?>" class="form-control textBox" onfocus="if (this.value=='????') {this.value = '';this.style.color='#3d3d3d';}" onblur="if (this.value=='') {this.value = '????';this.style.color='#949494';}"<? if($minValue!=""): ?>style="color:#3d3d3d"<?endif;?> <?=$extraInputAttribs?>/>
+            </div>
+            <div class="EIN-col-m-2" style="text-align:right">
+              <label for="<?=$escField?>to" style="margin-top:2px"><?=$this->transEsc('date_to')?>:&nbsp;</label>
+            </div>
+            <div class="EIN-col-m-3">
+              <? $maxValue = isset($current['values'][1]) ? $this->escapeHtmlAttr($current['values'][1]) : ''; ?>
+              <input type="text" name="<?=$escField?>to" id="<?=$escField?>to" value="<?=($maxValue=='')?'????':$maxValue?>" class="form-control textBox" onfocus="if (this.value=='????') {this.value = '';this.style.color='#3d3d3d';}" onblur="if (this.value=='') {this.value = '????';this.style.color='#949494';}"<? if($maxValue!=""): ?>style="color:#3d3d3d"<?endif;?> <?=$extraInputAttribs?>/>
+            </div>
+            <div class="EIN-col-m-1">&nbsp;</div>
+          </div>
+          <? if ($current['type'] == 'date'): ?>
+            <div aria-hidden="true" class="slider-container">
+              <input type="text" id="<?=$escField?><?=$this->escapeHtmlAttr($current['type'])?>Slider">
+            </div>
+            <?
+              $this->headScript()->appendFile('vendor/bootstrap-slider.min.js');
+              $min = !empty($current['values'][0]) ? min($current['values'][0], 1400) : 1400;
+              $future = date('Y', time()+31536000);
+              $max = !empty($current['values'][1]) ? max($future, $current['values'][1]) : $future;
+              $low  = !empty($current['values'][0]) ? $current['values'][0] : $min;
+              $high = !empty($current['values'][1]) ? $current['values'][1] : $max;
+              $min = intval($min);
+              $max = intval($max);
+              $low = intval($low);
+              $high = intval($high);
+              $reversed = $this->layout()->rtl ? 'true' : 'false';
+              $init = !empty($current['values'][0]) ? 'fillTexts()' : '';
+              $script = <<<JS
+$(document).ready(function() {
+  var fillTexts = function() {
+    var v = {$escField}dateSlider.getValue();
+    $('#${escField}from').val(v[0]);
+    $('#${escField}to').val(v[1]);
+    $('#${escField}from').css("color","#3d3d3d");
+    $('#${escField}to').css("color","#3d3d3d");
+  };
+  var {$escField}dateSlider = $('#{$escField}dateSlider')
+    .slider({
+       'min':{$min},
+       'max':{$max},
+       'handle':"square",
+       'tooltip':"hide",
+       'value':[{$low},{$high}],
+       'reversed': {$reversed}
+    })
+    .on('slide', fillTexts)
+    .data('slider');
+  {$init}
+});
+
+function SquashEnter(e) {
+  return (e.keyCode ? e.keyCode : (e.which ? e.which : e.charCode)) != 13;
+}
+
+function DigitsOnly(e) {
+  return (e.keyCode ? e.keyCode : (e.which ? e.which : e.charCode)) >= 48 && (e.keyCode ? e.keyCode : (e.which ? e.which : e.charCode)) <= 57;
+}
+
+function UpdateSlider() {
+  var min = parseInt($('#${escField}from').val());
+  var max = parseInt($('#${escField}to').val());
+  $('#{$escField}dateSlider').slider('setValue', [(min < max) ? min : max, (min < max) ? max : min]);
+}
+JS;
+            ?>
+            <?=$this->inlineScript(\Zend\View\Helper\HeadScript::SCRIPT, $script, 'SET'); ?>
+          <? endif; ?>
+        </td>
+        <td class="EIN-hide-m EIN-col-t-2 EIN-col-2">&nbsp;</div>
+      </tr></table>
+    </fieldset>
+  <? endforeach; ?>
+<? endif; ?>
