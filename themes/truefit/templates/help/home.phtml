@@ -1,0 +1,687 @@
+<h2><?=$this->translate('Catalog Help')?></h2>
+<div class="EIN-col-m-12">
+  <div><a href="/Help/Changes" style="color:#3f51b5;font-size:24px;text-decoration:initial;font-weight:700" data-lightbox-ignore>What are the latest changes to the catalog?</a></div><br><br>
+  <div>
+    <div class="helpSectionHeader">Search for:&nbsp;
+      <input type="text" onkeyup="SearchHelp(this);" value="Enter a term" class="formControl textBox" onfocus="if (this.value=='Enter a term') {this.value = '';this.style.color='#3d3d3d';}" onblur="if (this.value=='') {this.value = 'Enter a term';this.style.color='#949494';}" />
+    </div>
+  </div>
+  <div style="height:20px"></div>
+  <div class="panel panel-advSearchAccordion">
+    <div class="panel-heading">
+      <h4 class="panel-title">
+        <a data-toggle="collapse" href="#quickJumpMenu" class="facetAccordionTitle collapsed">Quick Jump Menu<i class="fa fa-caret-down"></i><i class="fa fa-caret-up"></i></a>
+      </h4>
+    </div>
+    <div id="quickJumpMenu" class="panel-collapse collapse facetAccordionContent">
+      <div class="panel-body">
+        <div class="EIN-col-m-6 EIN-col-t-4 helpQuickJumpSection">
+          <a href="#section1" class="helpLink">Searching Tips</a><br>
+          <div class="helpLinkSubsection"><a href="#section1-1" class="helpLink">Entering Search Terms</a></div>
+          <div class="helpLinkSubsection"><a href="#section1-2" class="helpLink">Phrase Searches</a></div>
+          <div class="helpLinkSubsection"><a href="#section1-3" class="helpLink">Wildcard Searches</a></div>
+          <div class="helpLinkSubsection"><a href="#section1-4" class="helpLink">Fuzzy Searches</a></div>
+          <div class="helpLinkSubsection"><a href="#section1-5" class="helpLink">Promixity Searches</a></div>
+          <div class="helpLinkSubsection"><a href="#section1-6" class="helpLink">Range Searches</a></div>
+          <div class="helpLinkSubsection"><a href="#section1-7" class="helpLink">Boosting a Term</a></div>
+          <div class="helpLinkSubsection"><a href="#section1-8" class="helpLink">Boolean Operators</a></div>
+          <div class="helpLinkSubsection"><a href="#section1-9" class="helpLink">OR Operator</a></div>
+          <div class="helpLinkSubsection"><a href="#section1-10" class="helpLink">AND Operator</a></div>
+          <div class="helpLinkSubsection"><a href="#section1-11" class="helpLink">+ Operator</a></div>
+          <div class="helpLinkSubsection"><a href="#section1-12" class="helpLink">NOT Operator</a></div>
+          <div class="helpLinkSubsection"><a href="#section1-13" class="helpLink">- Operator</a></div>
+        </div>
+        <div class="EIN-col-m-6 EIN-col-t-4 helpQuickJumpSection">
+          <a href="#section2" class="helpLink">Filtering My Search Results</a><br>
+          <div class="helpLinkSubsection"><a href="#section2-1" class="helpLink">Using Filters</a></div>
+          <div class="helpLinkSubsection"><a href="#section2-2" class="helpLink">Can Filters Be Combined?</a></div>
+          <div class="helpLinkSubsection"><a href="#section2-3" class="helpLink">Using the Sort Function</a></div>
+          <div class="helpLinkSubsection"><a href="#section2-4" class="helpLink">Location Filter</a></div>
+          <div class="helpLinkSubsection"><a href="#section2-5" class="helpLink">Material Type Filter</a></div>
+          <div class="helpLinkSubsection"><a href="#section2-6" class="helpLink">Age Group Filter</a></div>
+          <div class="helpLinkSubsection"><a href="#section2-7" class="helpLink">Literary Form Filter</a></div>
+          <div class="helpLinkSubsection"><a href="#section2-8" class="helpLink">Subject Filter</a></div>
+          <div class="helpLinkSubsection"><a href="#section2-9" class="helpLink">Author Filter</a></div>
+          <div class="helpLinkSubsection"><a href="#section2-10" class="helpLink">Language Filter</a></div>
+          <div class="helpLinkSubsection"><a href="#section2-11" class="helpLink">Added in the Last</a></div>
+        </div>
+        <div class="EIN-col-m-6 EIN-col-t-4 helpQuickJumpSection">
+          <a href="#section3" class="helpLink">Other Topics</a><br>
+          <div class="helpLinkSubsection"><a href="#section3-1" class="helpLink">Other Search Options and Advanced Search</a></div>
+          <div class="helpLinkSubsection"><a href="#section3-2" class="helpLink">Saving Searches</a></div>
+          <div class="helpLinkSubsection"><a href="#section3-3" class="helpLink">How to Place a <?=$this->transEsc('hold_uppercase')?></a></div>
+          <div class="helpLinkSubsection"><a href="#section3-4" class="helpLink">Accessing EContent Items</a></div>
+        </div>
+        <div class="EIN-col-m-6 EIN-col-t-4 helpQuickJumpSection">
+          <a href="#section4" class="helpLink">Account</a><br>
+          <div class="helpLinkSubsection"><a href="#section4-1" class="helpLink">Accessing Your Library Account</a></div>
+          <div class="helpLinkSubsection"><a href="#section4-2" class="helpLink">Preferred Libraries</a></div>
+          <div class="helpLinkSubsection"><a href="#section4-3" class="helpLink">Checked Out</a></div>
+          <div class="helpLinkSubsection"><a href="#section4-4" class="helpLink">How to Renew Items</a></div>
+          <div class="helpLinkSubsection"><a href="#section4-5" class="helpLink"><?=$this->transEsc('holds_uppercase')?></a></div>
+          <div class="helpLinkSubsection"><a href="#section4-6" class="helpLink">How to Freeze <?=$this->transEsc('holds_uppercase')?></a></div>
+          <div class="helpLinkSubsection"><a href="#section4-7" class="helpLink">Lists and Book Cart</a></div>
+          <div class="helpLinkSubsection"><a href="#section4-8" class="helpLink">Reading History</a></div>
+          <div class="helpLinkSubsection"><a href="#section4-9" class="helpLink">Saved Searches</a></div>
+          <div class="helpLinkSubsection"><a href="#section4-10" class="helpLink">Profile</a></div>
+          <div class="helpLinkSubsection"><a href="#section4-11" class="helpLink">Text Notifications FAQ</a></div>
+        </div>
+        <div class="EIN-col-m-6 EIN-col-t-4 helpQuickJumpSection">
+          <a href="#section5" class="helpLink">Online Content</a><br>
+          <div class="helpLinkSubsection"><a href="#section5-1" class="helpLink">Online Content</a></div>
+          <div class="helpLinkSubsection"><a href="#section5-2" class="helpLink">OverDrive</a></div>
+          <div class="helpLinkSubsection"><a href="#section5-3" class="helpLink">OneClickdigital</a></div>
+          <div class="helpLinkSubsection"><a href="#section5-4" class="helpLink">Other Online Resources</a></div>
+        </div>
+        <div class="EIN-col-m-6 EIN-col-t-4 helpQuickJumpSection">
+          <a href="#section6" class="helpLink">Advanced Searching Tips</a><br>
+          <div class="helpLinkSubsection"><a href="#section6-1" class="helpLink">Search Fields</a></div>
+          <div class="helpLinkSubsection"><a href="#section6-2" class="helpLink">Search Groups</a></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div style="height:20px"></div>
+  <div class="helpSection" id="section1">
+    <div class="helpSectionHeader">Searching Tips</div>
+    <div class="helpSubsection" id="section1-1">
+      <div class="helpSubsectionHeader">Entering Search Terms</div>
+      <div class="helpContent">Most of the time, all you need to do is enter a word or phrase in the box labeled <span class="helpEmphasis">"Search For..."</span> at the top of the page, and either
+        press enter or click the magnifying glass to perform your search. There are some special techniques that you can enter in the Search box.
+      </div>
+    </div>
+    <div class="helpSubsection" id="section1-2">
+      <div class="helpSubsectionHeader">Phrase Searches</div>
+      <div class="helpContent">To perform a phrase search wrap the entire search phrase in quotes.<br><br>
+        By putting double quotes around a set of words, you are telling the catalog to consider the exact words in that exact order without any change.
+      </div>
+    </div>
+    <div class="helpSubsection" id="section1-3">
+      <div class="helpSubsectionHeader">Wildcard Searches</div>
+      <div class="helpContent">To perform a single character wildcard search use the <span class="helpEmphasis">?</span> symbol.  For example, to search for "text" or "test" you can use the search:<br><br>
+        <span class="helpEmphasis">te?t</span><br><br>
+        To perform a multiple character, 0 or more, wildcard search use the <span class="helpEmphasis">*</span> symbol.  For example, to search for test, tests or tester, you can use the search:<br><br>
+        <span class="helpEmphasis">test*</span><br><br>
+        You can also use the wildcard searches in the middle of a term.<br><br>
+        <span class="helpEmphasis">te*t</span><br><br>
+        Note: You cannot use a <span class="helpEmphasis">*</span> or <span class="helpEmphasis">?</span> symbol as the first character of a search.
+      </div>
+    </div>
+    <div class="helpSubsection" id="section1-4">
+      <div class="helpSubsectionHeader">Fuzzy Searches</div>
+      <div class="helpContent">Use the tilde <span class="helpEmphasis">~</span> symbol at the end of a Single word Term. For example to search for a term similar in spelling to "roam" use the fuzzy search:<br><br>
+        <span class="helpEmphasis">roam~</span><br><br>
+        This search will find terms like foam and roams.<br><br>
+        An additional parameter can specify the required similarity. The value is between 0 and 1, with a value closer to 1 only terms with a higher similarity will be matched. For example:<br><br>
+        <span class="helpEmphasis">roam~0.8</span><br><br>
+        The default that is used if the parameter is not given is 0.5.
+      </div>
+    </div>
+    <div class="helpSubsection" id="section1-5">
+      <div class="helpSubsectionHeader">Promixity Searches</div>
+      <div class="helpContent">Use the tilde <span class="helpEmphasis">~</span> symbol at the end of a Multiple word Term. For example, to search for economics and keynes that are within 10 words apart:<br><br>
+        <span class="helpEmphasis">"economics Keynes"~10</span>
+      </div>
+    </div>
+    <div class="helpSubsection" id="section1-6">
+      <div class="helpSubsectionHeader">Range Searches</div>
+      <div class="helpContent">To perform a range search you can use the <span class="helpEmphasis">[ ]</span> characters. For example to search for a term that starts with either A, B, or C:<br><br>
+        <span class="helpEmphasis">[A TO C]</span><br><br>
+        The same can be done with numeric fields such as the Year:<br><br>
+        <span class="helpEmphasis">[2002 TO 2003]</span>
+      </div>
+    </div>
+    <div class="helpSubsection" id="section1-7">
+      <div class="helpSubsectionHeader">Boosting a Term</div>
+      <div class="helpContent">To apply more value to a term, you can use the <span class="helpEmphasis">^</span> character. For example, you can try the following search:<br><br>
+        <span class="helpEmphasis">economics Keynes^5</span><br><br>
+        Which will give more value to the term "Keynes"
+      </div>
+    </div>
+    <div class="helpSubsection" id="section1-8">
+      <div class="helpSubsectionHeader">Boolean Operators</div>
+      <div class="helpContent">Boolean operators allow terms to be combined with logic operators. The following operators are allowed: <span class="helpEmphasis">AND</span>, <span class="helpEmphasis">+</span>,
+        <span class="helpEmphasis">OR</span>, <span class="helpEmphasis">NOT</span> and <span class="helpEmphasis">-</span>.<br><br>
+        Note: Boolean operators must be ALL CAPS
+      </div>
+    </div>
+    <div class="helpSubsection" id="section1-9">
+      <div class="helpSubsectionHeader">OR Operator</div>
+      <div class="helpContent">The <span class="helpEmphasis">OR</span> operator is the default conjunction operator. This means that if there is no Boolean operator between two terms, the
+        <span class="helpEmphasis">OR</span> operator is used. The <span class="helpEmphasis">OR</span> operator links two terms and finds a matching record if either of the terms exist in a record.<br><br>
+        To search for documents that contain either "economics Keynes" or just "Keynes" use the query:<br><br>
+        <span class="helpEmphasis">"economics Keynes" Keynes</span><br><br>
+        or<br><br>
+        <span class="helpEmphasis">"economics Keynes" OR Keynes</span>
+      </div>
+    </div>
+    <div class="helpSubsection" id="section1-10">
+      <div class="helpSubsectionHeader">AND Operator</div>
+      <div class="helpContent">The <span class="helpEmphasis">AND</span> operator matches records where both terms exist anywhere in the field of a record.<br><br>
+        To search for records that contain "economics" and "Keynes" use the query:<br><br>
+        <span class="helpEmphasis">"economics" AND "Keynes"</span>
+      </div>
+    </div>
+    <div class="helpSubsection" id="section1-11">
+      <div class="helpSubsectionHeader">+ Operator</div>
+      <div class="helpContent">The <span class="helpEmphasis">+</span> or required operator requires that the term after the <span class="helpEmphasis">+</span> symbol exist somewhere in the field of a record.<br><br>
+        To search for records that must contain "economics" and may contain "Keynes" use the query:<br><br>
+        <span class="helpEmphasis">+economics Keynes</span>
+      </div>
+    </div>
+    <div class="helpSubsection" id="section1-12">
+      <div class="helpSubsectionHeader">NOT Operator</div>
+      <div class="helpContent">The <span class="helpEmphasis">NOT</span> operator excludes records that contain the term after <span class="helpEmphasis">NOT</span>.<br><br>
+        To search for documents that contain "economics" but not "Keynes" use the query:<br><br>
+        <span class="helpEmphasis">"economics" NOT "Keynes"</span><br><br>
+        Note: The <span class="helpEmphasis">NOT</span> operator cannot be used with just one term. For example, the following search will return no results:<br><br>
+        <span class="helpEmphasis">NOT "economics"</span>
+      </div>
+    </div>
+    <div class="helpSubsection" id="section1-13">
+      <div class="helpSubsectionHeader">- Operator</div>
+      <div class="helpContent">The <span class="helpEmphasis">-</span> or prohibit operator excludes documents that contain the term after the <span class="helpEmphasis">-</span> symbol.<br><br>
+        To search for documents that contain "economics" but not "Keynes" use the query:<br><br>
+        <span class="helpEmphasis">"economics" -"Keynes"</span>
+      </div>
+    </div>
+  </div>
+  <div class="EIN-col-m-12 helpSection" id="section2">
+    <div class="helpSectionHeader">Filtering My Search Results</div>
+    <div class="helpSubsection" id="section2-1">
+      <div class="helpSubsectionHeader">Using Filters</div>
+      <div class="helpContent">You can narrow your search results using filters that are shown in the left column of the search results page (or the <span class="helpEmphasis">Filter Results</span> modal when
+        using the mobile interface).  Clicking one or more of the options listed will limit your search based on the criteria selected. The number shown in parentheses next to each option indicates the quantity
+        of items available for a given category.<br><br>
+        The filters you have selected appear at the top of your search results. You can remove an individual filter by clicking the <span class="helpEmphasis">X</span> for that filter.
+      </div>
+    </div>
+    <div class="helpSubsection" id="section2-2">
+      <div class="helpSubsectionHeader">Can Filters Be Combined?</div>
+      <div class="helpContent">Yes. Clicking on several filters will further narrow your results set. For example, choosing <span class="helpEmphasis">Print book</span> as a material type and
+        <span class="helpEmphasis">Fiction</span> as a literary form will limit your results to items that satisfy both criteria.
+      </div>
+    </div>
+    <div class="helpSubsection" id="section2-3">
+      <div class="helpSubsectionHeader">Using the Sort Function</div>
+      <div class="helpContent">Using the sort dropdown, which is located to the right of the total number of the search results, it is possible to order your search results in six different ways.<br><br>
+        The default sort is by <span class="helpEmphasis">Relevance</span>, which displays your results in order of their relevance to your search criteria. In other words, items that most closely match your
+        criteria are displayed first.<br><br>
+        You can also sort by <span class="helpEmphasis">Newest First</span> or <span class="helpEmphasis">Oldest First</span>, which orders your results from most current or oldest publication date.<br><br>
+        Choosing to Sort by <span class="helpEmphasis">Author</span> will arrange your results alphabetically by author last name. Likewise, <span class="helpEmphasis">Title</span> sorts alphabetically by Title,
+        omitting leading articles such as "A" and "The".<br><br>
+        <span class="helpEmphasis">Date Added</span> will order your results to show the titles most recently added to the library collection first.
+      </div>
+    </div>
+    <div class="helpSubsection" id="section2-4">
+      <div class="helpSubsectionHeader">Location Filter</div>
+      <div class="helpContent">The <span class="helpEmphasis">Location</span> filter will limit your search results to the library locations selected. More than one location can be selected.<br><br>
+        If you are in a library, that library will show at the top of the Location List, so that you can easily limit your search to items held there.<br><br>
+        If you are logged in, your home, preferred, and/or alternate libraries will show at the top of the location list.
+      </div>
+    </div>
+    <div class="helpSubsection" id="section2-5">
+      <div class="helpSubsectionHeader">Material Type Filter</div>
+      <div class="helpContent">Limits your search results to the <span class="helpEmphasis">Material Type</span> selected. For example, DVD or Blu-Ray. You can select multiple material types or a group of material
+        types to include in your search results. To select an entire group of material types, click on the checkbox for that group. For example, clicking the <span class="helpEmphasis">Music</span> checkbox will
+        select <span class="helpEmphasis">Music CD</span>, <span class="helpEmphasis">Music LP/Cassette</span>, and <span class="helpEmphasis">Music Score</span> material types.
+      </div>
+    </div>
+    <div class="helpSubsection" id="section2-6">
+      <div class="helpSubsectionHeader">Age Group Filter</div>
+      <div class="helpContent">Allows you to limit your search results to one of three age groups: <span class="helpEmphasis">Children</span>, <span class="helpEmphasis">Teen</span>, and
+        <span class="helpEmphasis">Adult</span>. These groups are based on shelving locations, so items may fall into multiple categories due to differences in shelving by library locations. Some items may not
+        fall into any category if they are only shelved in general interest locations.
+      </div>
+    </div>
+    <div class="helpSubsection" id="section2-7">
+      <div class="helpSubsectionHeader">Fiction/Nonfiction Filter</div>
+      <div class="helpContent">Allows you to limit your search results to either <span class="helpEmphasis">Fiction</span> or <span class="helpEmphasis">Non Fiction</span> material, based on shelving location.
+        Since most of the items shelved specifically as fiction or non-fiction are print books, this filter is effective primarily for print books. Other types of material (i.e. music, video, magazines) are
+        not usually shelved as fiction or non-fiction and are generally not included in this filter.
+      </div>
+    </div>
+    <div class="helpSubsection" id="section2-8">
+      <div class="helpSubsectionHeader">Subject Filter</div>
+      <div class="helpContent">Allows you to limit your search results according to specific <span class="helpEmphasis">Subject</span> terms. The Subject terms contained in a title's bibliographic record belong
+        to a controlled vocabulary called the Library of Congress Subject Headings. Controlled vocabularies group similar items by subject, which makes them ideal for filtering your search results.<br><br>
+        Because this list is designed to be browsed, it contains only a small subset of broad subject terms and not every possible subject is represented here. Combining a keyword search with the use of
+        <span class="helpEmphasis">Subject</span> filters may help narrow your results to a more specific subject.
+      </div>
+    </div>
+    <div class="helpSubsection" id="section2-9">
+      <div class="helpSubsectionHeader">Author Filter</div>
+      <div class="helpContent">Limits your search results to materials by a particular <span class="helpEmphasis">Author</span> based on your search term.
+      </div>
+    </div>
+    <div class="helpSubsection" id="section2-10">
+      <div class="helpSubsectionHeader">Language Filter</div>
+      <div class="helpContent">Limits your search results to materials available in a specified <span class="helpEmphasis">Language</span> based on your search term.
+      </div>
+    </div>
+    <div class="helpSubsection" id="section2-11">
+      <div class="helpSubsectionHeader">Added in the Last</div>
+      <div class="helpContent">This filter allows you to select items that have been recently added to the library catalog.
+      </div>
+    </div>
+  </div>
+  <div class="EIN-col-m-12 helpSection" id="section3">
+    <div class="helpSectionHeader">Other Topics</div>
+    <div class="helpSubsection" id="section3-1">
+      <div class="helpSubsectionHeader">Other Search Options and Advanced Search</div>
+      <div class="helpContent">By default, the library catalog does a <span class="helpEmphasis">Keyword</span> search, meaning that it searches for the word or phrase you enter in the search box in any of the
+        information (i.e. title, author, description, notes) in the catalog. You can change the type of search that to search for only specific fields instead, such as <span class="helpEmphasis">Title</span>,
+        <span class="helpEmphasis">Author</span>, <span class="helpEmphasis">Author/Artist/Contributor</span> (helpful for music and video searches), or <span class="helpEmphasis">ISBN</span>. To select one of
+        these alternate search types, or <span class="helpEmphasis">Advanced Search</span>, click the gear icon (<span class="helpEmphasis"><i class="fa fa-cog"></i></span>) just to the right of the magnifying
+        glass icon (<span class="helpEmphasis"><i class="fa fa-search"></i></span>), and select a search type from the drop down menu.</div>
+    </div>
+    <div class="helpSubsection" id="section3-2">
+      <div class="helpSubsectionHeader">Saving Searches</div>
+      <div class="helpContent">If you frequently do the same search, you can save your search so that you can easily rerun it. To save your search, click the gear icon
+        (<span class="helpEmphasis"><i class="fa fa-cog"></i></span>) just to the right of the magnifying glass icon (<span class="helpEmphasis"><i class="fa fa-search"></i></span>), and select
+        <span class="helpEmphasis">Save Search</span> from the drop down menu. If you're not already logged in, you will be asked to log in first. You can view and run your saved searches from the
+        <span class="helpEmphasis">Saved Searches</span> page in your Account.
+      </div>
+    </div>
+    <div class="helpSubsection" id="section3-3">
+      <div class="helpSubsectionHeader">How to Place a <?=$this->transEsc('hold_uppercase')?></div>
+      <div class="helpContent">A <?=$this->transEsc('hold_lowercase')?> is an order for the first available item to be sent to the library you designate as a pickup location. The item will be held for you at that library, and you will
+        receive an email or phone message (depending on your account preferences) that the item it ready to pick up. There are several ways that you can place a <?=$this->transEsc('hold_lowercase')?>.<br><br>
+        <ul><li>Click the <span class="helpEmphasis"><?=$this->transEsc('hold_button_place_hold')?></span> button on the Search results</li>
+        <li>Click the check box next to an item on a List or in your Book Cart, and at the top of the page, click the <span class="helpEmphasis">On Selected</span> drop down menu and choose
+        <span class="helpEmphasis"><?=$this->transEsc('hold_button_place_hold')?></span>.</li></ul><br>
+        You can see the status of your <?=$this->transEsc('holds_lowercase')?> on the <span class="helpEmphasis"><?=$this->transEsc('Holds')?></span> page on the Account menu. You can also cancel, freeze, and change the pickup location of your <?=$this->transEsc('holds_lowercase')?> on this page.
+       </div>
+    </div>
+    <div class="helpSubsection" id="section3-4">
+      <div class="helpSubsectionHeader">Accessing EContent Items</div>
+      <div class="helpContent">The library catalog includes econtent items as well as physical material. To locate econtent items, you can filter your search results by material type and select econtent material
+        type (i.e. <span class="helpEmphasis">eBook</span>, <span class="helpEmphasis">OverDrive Listen</span>, <span class="helpEmphasis">OverDrive MP3 Audiobook</span>,
+        <span class="helpEmphasis">Streaming Video</span>), or you can filter by location and select the location <span class="helpEmphasis">Digital Collection</span>.<br><br>
+        <ul><li>Some items can be accessed directly from the library catalog. If this is the case, you will see links to the online version on search results and the details page.</li>
+        <li>Econtent items from OverDrive must be checked out before they can be accessed. If this is the case, the search results will display a <span class="helpEmphasis">Check Out</span> button. Once the item
+        is checked out, go to the <span class="helpEmphasis">Checked Out</span> page and click <span class="helpEmphasis">Actions</span> to either download the item or access it online.</li></ul>
+      </div>
+    </div>
+  </div>
+  <div class="EIN-col-m-12 helpSection" id="section4">
+    <div class="helpSectionHeader">Account</div>
+    <div class="helpSubsection" id="section4-1">
+      <div class="helpSubsectionHeader">Accessing Your Library Account</div>
+      <div class="helpContent">When you are logged in, you can access the Account drop down menu at the top right corner of the page. Depending on the device you are using, the Account menu will either be labeled
+        <span class="helpEmphasis">Account</span>, or it will be the <span class="helpEmphasis"><i class="fa fa-bars"></i></span> icon. You can use the Account menu to see what you have checked out,
+        renew items, download ebooks, view/cancel/freeze your <?=$this->transEsc('holds_lowercase')?>, view your reading history, and set your preferences.
+      </div>
+    </div>
+    <div class="helpSubsection" id="section4-2">
+      <div class="helpSubsectionHeader">Preferred Libraries</div>
+      <div class="helpContent">As a patron, you have the option to select two <span class="helpEmphasis">Preferred Libraries</span> (in order of preference) where you would like to pick up your requested items.
+        When these choices are specified, your first choice becomes the default pickup location for when you place a <?=$this->transEsc('hold_lowercase')?>. If you're logged in, your preferred libraries are also used in your search results in
+        the following ways:<br><br>
+        <ul><li>When you <span class="helpEmphasis">Filter Results</span> by location, your preferred libraries show at the top of the list.</li>
+        <li>The initial search results screen will indicate if the title is available at your preferred libraries.</li>
+        <li>If the item is available at one of your preferred libraries, the <span class="helpEmphasis">Availability Details</span> will show the copies available at your preferred libraries first.</li></ul><br>
+        To make these selections, go the <span class="helpEmphasis">Profile</span> page from the main navigation menu. Click on the <span class="helpEmphasis">Preferred Libraries</span> section and make your
+        Preferred and Alternative Library selections. After choosing your preferences from the drop down menus, the catalog will save your settings and refresh the page.
+      </div>
+    </div>
+    <div class="helpSubsection" id="section4-3">
+      <div class="helpSubsectionHeader">Checked Out</div>
+      <div class="helpContent"><span class="helpEmphasis">Checked Out</span> lists what you have checked out, when it is due, and how many times it has been renewed. The items are sorted by due date, with the
+        items due soonest listed first. In the left panel, you can choose to show only overdue items, or only items due this week.
+      </div>
+    </div>
+    <div class="helpSubsection" id="section4-4">
+      <div class="helpSubsectionHeader">How to Renew Items</div>
+      <div class="helpContent">You can renew items that you have checked out on the <span class="helpEmphasis">Checked Out</span> page. To go to the <span class="helpEmphasis">Checked Out</span> page, log in at
+        the top right corner of the page. Once you are logged in, click the Account drop down menu at the top right and select <span class="helpEmphasis">Checked Out</span>. You can renew an individual item by
+        clicking the <span class="helpEmphasis">Renew</span> button. To renew multiple items at the same time, click the check box to the left of the items you want to renew, and then click
+        <span class="helpEmphasis">Renew Selected</span> at the top of the page. A popup box will indicate which items have been successfully renewed. An item will not be renewed if another user has requested
+        it, or if there is the maximum number of renewals has been reached. The number of renewals permitted for an item varies by library. You cannot renew items if your library account has a problem, such as
+        an expired card or unpaid fines above a certain amount. The <span class="helpEmphasis">Message Center</span> on your account menu will usually indicate problems with your library account. Please call
+        your local library to find out how to resolve your problem.
+      </div>
+    </div>
+    <div class="helpSubsection" id="section4-5">
+      <div class="helpSubsectionHeader"><?=$this->transEsc('Holds')?></div>
+      <div class="helpContent">To go to the <span class="helpEmphasis"><?=$this->transEsc('Holds')?></span> page, log in at the top right corner of the page. Once you are logged in, click the Account drop down menu at the top right and
+        select <span class="helpEmphasis"><?=$this->transEsc('Holds')?></span>. The <span class="helpEmphasis"><?=$this->transEsc('Holds')?></span> page shows your <?=$this->transEsc('holds_lowercase')?> and their status.<br><br>
+        <ul><li>The <span class="helpEmphasis">Pending</span> status means that your <?=$this->transEsc('hold_lowercase')?> is waiting for an available item.</li>
+        <li>The <span class="helpEmphasis">In Transit</span> status mean that an item is on its way to the pickup library.</li>
+        <li><span class="helpEmphasis">Ready for Pickup</span> means your requested item is being held for you at the pickup library.</li>
+        <li><span class="helpEmphasis">Frozen</li> means that you're a holding your place in the queue of people waiting for this item, but the item won't be held for you until you unfreeze the <?=$this->transEsc('hold_lowercase')?> and you're
+        the next person in the queue.</li></ul><br>
+        If a <?=$this->transEsc('hold_lowercase')?> is in <span class="helpEmphasis">Pending</span> status, you can <span class="helpEmphasis">Cancel</span>, <span class="helpEmphasis">Freeze</span>, or
+        <span class="helpEmphasis">Change Pickup Location</span> for that <?=$this->transEsc('hold_lowercase')?>. To do any of these functions, check the box to the left of the <?=$this->transEsc('hold_lowercase')?> to select the item, and at the top of the page, click the drop
+        down menu labeled <span class="helpEmphasis">On Selected</span>, and click the desired action for the selected <?=$this->transEsc('holds_lowercase')?>.
+      </div>
+    </div>
+    <div class="helpSubsection" id="section4-6">
+      <div class="helpSubsectionHeader">How to Freeze <?=$this->transEsc('holds_uppercase')?></div>
+      <div class="helpContent">Freezing <?=$this->transEsc('holds_lowercase')?> offers a way to avoid having your requested items expire when you are out of town or otherwise unable to them up from the library. If your <?=$this->transEsc('hold_lowercase')?> reaches the top of
+        the queue while it is frozen, it will be skipped so that <?=$this->transEsc('holds_lowercase')?> placed by other patrons can be filled. When you reactivate your <?=$this->transEsc('hold_lowercase')?>, you will be placed at the front of the queue.<br><br>
+        There are two situations in which a <?=$this->transEsc('hold_lowercase')?> cannot be frozen:
+        <ol><li>The <?=$this->transEsc('hold_lowercase')?> is more than 255 days old.</li>
+        <li>The <?=$this->transEsc('hold_lowercase')?> is about to be filled (this means the item is available, on the holdshelf or in transit to the holdshelf.</li></ol><br>
+        To freeze a <?=$this->transEsc('hold_lowercase')?>, go to the <span class="helpEmphasis"><?=$this->transEsc('Holds')?></span> page from the main navigation menu. You can freeze <?=$this->transEsc('holds_lowercase')?> by checking the appropriate boxes in the
+        <span class="helpEmphasis">Pending<span> section and choosing the <span class="helpEmphasis">Freeze</span> option from the <span class="helpEmphasis">On Selected</span> dropdown.
+      </div>
+    </div>
+    <div class="helpSubsection" id="section4-7">
+      <div class="helpSubsectionHeader">Lists and Book Cart</div>
+      <div class="helpContent">Lists and <span class="helpEmphasis">Book Cart</span> enable you to save items of interest while you continue to browse the library catalog. These items will remain in your list
+        from session to session. To save an item to a list or your book cart, simply click the <span class="helpEmphasis">Cart/Lists</span> button found to the right of the item on the search results or the item
+        detail page, then select your list or <span class="helpEmphasis">Book Cart</span> from the menu. If you have not already logged in to your account, you will be prompted to enter your library card number
+        and PIN. Once you log in, the item will be added to your list or Book cart.<br><br>
+        To view your Lists or Book Cart, log in at the top right corner of the page. Once you are logged in, click the Account drop down menu at the top right and select either <span class="helpEmphasis">Lists</span>
+        or <span class="helpEmphasis">Book Cart</span>. On the Lists page, you can click the name of the list in the left panel to view the contents of the list.<br><br>
+        From your list or cart, you can remove or request items you have added. To remove a single item, click the <span class="helpEmphasis">Carts/Lists</span> button, then click the list name to remove the item
+        from that list. To request a single item, click the <span class="helpEmphasis"><?=$this->transEsc('hold_button_place_hold')?></span> button. It is also possible to remove or request multiple items in your book cart at one time by using the checkboxes
+        to the left and the <span class="helpEmphasis">On Selected</span> button at the top of the page. Book Carts are limited to 300 items, and Lists are limited to 300 items for each list.
+       </div>
+    </div>
+    <div class="helpSubsection" id="section4-8">
+      <div class="helpSubsectionHeader">Reading History</div>
+      <div class="helpContent">You have the option to record the history of items that you have checked out. Reading history can be recorded only for physical items checked out from the library. Ebooks that you
+        have checked out are not included in the reading history. Your checked out items are not recorded in Reading History until you turn it on. To turn it on, go to <span class="helpEmphasis">Reading History</span>
+        , and click the button labeled <span class="helpEmphasis">Enable Reading History</span>. To disable Reading History, you must delete any items in your Reading History, and click
+        <span class="helpEmphasis">Disable Reading History</span>.<br><br>
+        The Reading History displays 50 items at a time. To show more items, click <span class="helpEmphasis">Show More</span> at the bottom of the page.<br><br>
+        By default, the Reading History is sorted to show the most recently checked out items first. To change the sort to title or author, click the drop down menu at the top of the page and
+        select a different sort option.<br><br>
+        To delete titles from Reading History, check the box to the left of the titles you want to delete to select them, and click <span class="helpEmphasis">Delete Selected</span> at the top of the page.
+      </div>
+    </div>
+    <div class="helpSubsection" id="section4-9">
+      <div class="helpSubsectionHeader">Saved Searches</div>
+      <div class="helpContent">The Saved Searches page allows you to view, run, and deleted searches that you have saved. To go to the Saved Searches page, log in at the top right corner of the page. Once you are
+        logged in, click the Account drop down menu at the top right and select <span class="helpEmphasis">Saved Searches</span>. Click the link for the search in the first column.
+      </div>
+    </div>
+    <div class="helpSubsection" id="section4-10">
+      <div class="helpSubsectionHeader">Profile</div>
+      <div class="helpContent">The Profile page allows you to view, and set preferences related to your account. To go to the Profile page, log in at the top right corner of the page. Once you are logged in, click the
+        Account drop down menu at the top right and select <span class="helpEmphasis">Profile</span>. Some information, such as name, address, library card number, home library, and expiration date is displayed for
+        information only. Please contact your local library if you need to change this information.<br><br>
+        <ul><li>To change your email or phone number, select click <span class="helpEmphasis">About Me</span> in the left panel, and click the pencil icon to the right.</li>
+        <li>The Notification Preference indicates whether you would like to receive an email or phone call when an item is ready for pickup or overdue. The profile shows your current notification preference. Click
+        the drop down to change it.</li>
+        <li>By default, physical items and econtent are shown together on the Checked Out and <?=$this->transEsc('Holds')?> pages. You can change this option if you would like to display physical items and econtent separately.</li>
+        <li>Select <span class="helpEmphasis">Change PIN</span> to change your library card PIN number.</li>
+        <li>Select <span class="helpEmphasis">Preferred Libraries</span> to select your Preferred and Alternate libraries. Your Home Library is based on your addresss. Please contact your local library if you need to
+        change your address. </li>
+        <li>If you use econtent items from OverDrive, you can change your loan period for eBooks, Audiobooks, and eVideo on the <span class="helpEmphasis">OverDrive Options</span> page.</li></ul>
+       </div>
+    </div>
+    <div class="helpSubsection" id="section4-11">
+      <div class="helpSubsectionHeader">Text Notifications FAQ</div>
+      <div class="helpContent">
+        <div class="helpFAQHeader">What are Text Notifications?</div>
+        <div class="helpFAQSection">Text Notifications are an optional subscription service that enables subscribers to connect to their library accounts via text message. Users
+          can receive notifications, renew checked out items, and request information about their <?=$this->transEsc('holds_lowercase')?>, checked out items, and late fees with this service.<br><br>This is a free service offered to anyone
+          registered at an Allegheny County public library. Depending on your cellular phone plan, additional per-message charges may be assessed by your carrier.
+        </div>
+        <div class="helpFAQHeader">How do I sign up?</div>
+        <div class="helpFAQSection">
+          <ol><li>Add <span class="helpEmphasis">(412) 459-7442</span> to your cellphone contacts. This is not required, but it is recommended.</li>
+          <li>Simply text <span class="helpEmphasis">SIGNUP+your-14-digit-barcode+PIN</span> to <span class="helpEmphasis">(412) 459-7442</span>.</li></ol><br>
+          <span style="font-weight:700">Please note, you must include the plus signs (+) between each element of the text.</span><br><br>Once you sign up, you will receive texts confirming your successful
+          sign up and asking if you want to supply an email address as an additional contact. This is optional and will only be used to contact you in the event that your notices are undeliverable.
+        </div>
+        <div class="helpFAQHeader">What types of notices can I get?</div>
+        <div class="helpFAQSection">You can opt in or out of any of the following notice types by texting the associated keyword to <span class="helpEmphasis">(412) 459-7442</span>. When you sign
+          up you will be enrolled in <?=$this->transEsc('hold_lowercase')?> pickup, renewal, and overdue notices by default.<br><br>
+          <table style="width:100%">
+            <tr style="font-weight:700"><td>Notice Type</td><td>Keyword</td><td>Default<td></tr>
+            <tr><td><?=$this->transEsc('hold_uppercase')?> pickup</td><td class="helpEmphasis">HOLDS</td><td>Enrolled<td></tr>
+            <tr><td>Renewal</td><td class="helpEmphasis">RENEW</td><td>Enrolled<td></tr>
+            <tr><td>Overdue</td><td class="helpEmphasis">OVERDUE</td><td>Enrolled<td></tr>
+            <tr><td>Late Fee</td><td class="helpEmphasis">LATEFEE</td><td>Not Enrolled<td></tr>
+          </table><br>Additionally, all registered users will receive library card expiration notices 30 days before their library cards expire.<br><br>Text notifications are supplemental to existing
+          notification methods (phone, email, regular mail) and you will continue to receive notices via these methods when you sign up for this service.
+        </div>
+        <div class="helpFAQHeader">How can I renew items?</div>
+        <div class="helpFAQSection">To renew individual items by list, text the keyword <span class="helpEmphasis">RL</span>.<br><br>To renew all checked out items, text the keyword
+          <span class="helpEmphasis">RA</span>.
+        </div>
+        <div class="helpFAQHeader">Is there a fee to sign up for this service?</div>
+        <div class="helpFAQSection">Text Notifications are a free service offered to anyone registered at an Allegheny County public library. Depending on your cellular phone plan, additional per-message
+          charges may be assessed by your carrier. Please call your carrier to inquire about any charges they might impose BEFORE subscribing.
+        </div>
+        <div class="helpFAQHeader">Will I continue to receive library notices via email, US mail, or phone call?</div>
+        <div class="helpFAQSection">Yes. Text notifications are supplemental to existing notification methods (phone, email, regular mail) and you will continue to receive notices via these methods when you
+          sign up for this service.
+        </div>
+        <div class="helpFAQHeader">I enrolled in Text Notifications but I am not receiving notices.  What should I do?</div>
+        <div class="helpFAQSection">The system is configured to send your confirmation messages within 60 seconds of receipt, but there may be an additional delay before your cell phone carrier delivers them.
+          Though messages are usually delivered promptly (within 1 to 5 minutes), this is not always the case. If you have signed up and you have not received these messages after 4 hours, email
+          <span class="helpEmphasis">einetwork.support@shoutbomb.com.</span>
+        </div>
+        <div class="helpFAQHeader">When are notices sent?</div>
+        <div class="helpFAQSection">Notices are sent daily between the hours of 9:00 AM and 8:00 PM, however you can access your account information at any time using the keywords listed in the Keyword
+          Quick Reference section under "How can I use this service get information about my account?".<br><br>
+          <span style="font-weight:700"><?=$this->transEsc('hold_uppercase')?> Pickup Notices</span><br>
+          <div style="margin-left:10px"><?=$this->transEsc('hold_uppercase')?> pickup notices are sent when a requested item is available at your pickup location.</div><br>
+          <span style="font-weight:700">Late Fee Notices</span><br>
+          <div style="margin-left:10px">If you opt in to late fee notices, you will receive notices the first notice when you owe $10 or more. Subsequent notices will be sent at 7 days, 14 days, and 21 days.</div><br>
+          <span style="font-weight:700">Renewal Notices</span><br>
+          <div style="margin-left:10px">Renewal notices are sent 3 days before an item is due.</div><br>
+          <span style="font-weight:700">Overdue Notices</span><br>
+          <div style="margin-left:10px">The first overdue notice will be sent when the item is past due. Subsequent overdue notices will be sent when an item is 7 days, 14 days, and 21 days overdue.</div><br>
+          <span style="font-weight:700">Library Card Expiration Notices</span><br>
+          <div style="margin-left:10px">Library card expiration notices are sent 30 days before your library card expires.</div>
+        </div>
+        <div class="helpFAQHeader">How do I update my phone number to continue receiving text notifications?</div>
+        <div class="helpFAQSection">Text <span class="helpEmphasis">SWITCHPHONE</span> to <span class="helpEmphasis">(412) 459-7442</span> and follow the prompts.<br><br>
+          <div style="margin-left:10px">We will check the following:<br><br>If you have just changed carriers (for example, from AT&T to Verizon).<br><br>
+            <div style="margin-left:10px">In this case, you will receive 2 messages: one confirming the update of your user account and one looking up any messages sent in the last 7 days to redeliver.</div>
+            <br>If your phone number has changed.<br><br>
+            <div style="margin-left:10px">In this case, Shoutbomb will request the patron barcode you used when you initially registered.<br><br>Once you provide this information, you will receive 2 messages:
+              one confirming the update of your user account and one looking up any messages sent in the last 7 days to redeliver.</div>
+          </div>
+        </div>
+        <div class="helpFAQHeader">How do I add an additional library card to my text notice account?</div>
+        <div class="helpFAQSection">To add additional cards, text <span class="helpEmphasis">ADDCARD</span> to <span class="helpEmphasis">(412) 459-7442</span> and follow the prompts.<br><br>
+          You will be asked to text the additional library card number you wish to add. If this is a valid card number, you will then be prompted to text the PIN associated with this library card number.
+          If the PIN is valid you will receive a text confirming that you have successfully added the new card.
+        </div>
+        <div class="helpFAQHeader">How do I remove a secondary card that I've added?</div>
+        <div class="helpFAQSection">To remove a secondary card, text <span class="helpEmphasis">DROPCARD</span> to <span class="helpEmphasis">(412) 459-7442</span> and follow the prompts.<br><br>
+          <div style="margin-left:10px">If only one secondary card was added with <span class="helpEmphasis">ADDCARD</span>, that barcode will automatically be removed from the account.<br>If multiple secondary
+            cards were added, you will receive a response that associates each card number with an item number (1, 2, 3, etc.). Just respond with the item number associated with the barcode you wish to drop.
+          </div><br>You will
+          receive a confirmation message indicating that you have successfully removed the card.
+        </div>
+        <div class="helpFAQHeader">How do I unsubscribe from Text Notifications?</div>
+        <div class="helpFAQSection">Text <span class="helpEmphasis">QUIT+your-14-digit-barcode</span> to <span class="helpEmphasis">(412) 459-7442</span>.
+        </div>
+        <div class="helpFAQHeader">How can I use this service to get information about my account?</div>
+        <div class="helpFAQSection">Keyword Quick Reference<br><br>To receive information about your library account, text the following keywords to <span class="helpEmphasis">(412) 459-7442</span>.<br><br>
+          <table style="width:100%">
+            <tr style="text-align:center;font-weight:700">
+              <td>Keyword</td>
+              <td>Description</td>
+            </tr>
+            <tr>
+              <td class="helpEmphasis">SIGNUP+your-14-digit-barcode+PIN</td>
+              <td>Sign up for text notices. Note that the plus signs (+) are required.</td>
+            </tr>
+            <tr>
+              <td class="helpEmphasis">TEST</td>
+              <td>Test your connection to the SMS service.</td>
+            </tr>
+            <tr>
+              <td class="helpEmphasis">HL</td>
+              <td>Request a list of items on hold.</td>
+            </tr>
+            <tr>
+              <td class="helpEmphasis">OL</td>
+              <td>Request a list of overdue items.</td>
+            </tr>
+            <tr>
+              <td class="helpEmphasis">OA</td>
+              <td>Renew all overdue items.</td>
+            </tr>
+            <tr>
+              <td class="helpEmphasis">OI</td>
+              <td>List overdue items not eligible for renewal.</td>
+            </tr>
+            <tr>
+              <td class="helpEmphasis">RI</td>
+              <td>List of all items not eligible for renewal.</td>
+            </tr>
+            <tr>
+              <td class="helpEmphasis">RW</td>
+              <td>List of items not eligible for renewal and why.</td>
+            </tr>
+            <tr>
+              <td class="helpEmphasis">RA</td>
+              <td>Renew all checked out items.</td>
+            </tr>
+            <tr>
+              <td class="helpEmphasis">RL</td>
+              <td>Renew individual items by list.</td>
+            </tr>
+            <tr>
+              <td class="helpEmphasis">ADDEMAIL+your-14-digit-barcode</td>
+              <td>Add an email address for additional verification.</td>
+            </tr>
+            <tr>
+              <td class="helpEmphasis">DROPEMAIL+your-14-digit-barcode</td>
+              <td>Remove email from card.</td>
+            </tr>
+            <tr>
+              <td class="helpEmphasis">ADDCARD+14-digit-barcode</td>
+              <td>Add an additional library barcode to your text notice account.</td>
+            </tr>
+            <tr>
+              <td class="helpEmphasis">DROPCARD+14-digit-barcode</td>
+              <td>Remove any secondary library barcode from your text notice account.</td>
+            </tr>
+            <tr>
+              <td class="helpEmphasis">HELP</td>
+              <td>Lists keywords.</td>
+            </tr>
+            <tr>
+              <td class="helpEmphasis">RESEND</td>
+              <td>Sends last message.</td>
+            </tr>
+            <tr>
+              <td class="helpEmphasis">QUIT+your-14-digit-barcode</td>
+              <td>Unsubscribe from text notification service.</td>
+            </tr>
+            <tr>
+              <td class="helpEmphasis">SWITCHPHONE</td>
+              <td>Change your phone number.</td>
+            </tr>
+            <tr>
+              <td class="helpEmphasis">MYCARDS</td>
+              <td>Lists registered cards.</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="EIN-col-m-12 helpSection" id="section5">
+    <div class="helpSectionHeader">Online Content</div>
+    <div class="helpSubsection" id="section5-1">
+      <div class="helpSubsectionHeader">Online Content</div>
+      <div class="helpContent">Your library card enables you to access eBooks, Audiobooks, music downloads and many other types of eResources from various sources. For more information, including access
+        details, supported devices, and more, visit the <a class="helpLink" href="http://eresources.einetwork.net/">Allegheny County Library Association's eResources page</a>.<br><br>
+        Some of these items, including OverDrive and OneClickdigital resources, can be discovered by searching the library catalog but require you to set up a free account on another site in order to
+        access them. See below for information on accessing these items through the online catalog.
+      </div>
+    </div>
+    <div class="helpSubsection" id="section5-2">
+      <div class="helpSubsectionHeader">OverDrive</div>
+      <div class="helpContent">Click the Checkout button to the right of the item information on the search results or item detail page. If you are not already logged in to your account, you will be prompted
+        to enter your library card number and PIN. If your checkout has been successful, a message banner will appear at the top of the page letting you know that the item has been checked out and available
+        for download from your <span class="helpEmphasis">Checked Out</span> page.  You can go to this page at any time by clicking the link from the main navigation menu.
+      </div>
+    </div>
+    <div class="helpSubsection" id="section5-3">
+      <div class="helpSubsectionHeader">OneClickdigital</div>
+      <div class="helpContent">Accessing OneClickdigital items requires setting up a free OneClickdigital account. It is recommended that you do this before searching the catalog for OneClickdigital items.
+        To do this, <a class="helpLink" href="http://carnegielbyofpittpa.oneclickdigital.com/Home/Featured.aspx">click here</a> to go to the OneClickdigital site and click the Create New Account link in the
+        upper right hand corner.<br><br>
+        To access OneClickdigital items from the library catalog, click the Access Online button to the right of the item record on either the search results page or the item detail page. This will take you to the
+        OneClickdigital item information page. From there click Checkout Now! and you will be prompted to log in with your OneClickdigital credentials.
+      </div>
+    </div>
+    <div class="helpSubsection" id="section5-4">
+      <div class="helpSubsectionHeader">Other Online Resources</div>
+      <div class="helpContent">You might also encounter materials such as digitized images, government documents, and public domain eBooks in your library catalog search results. These items can be accessed by
+        clicking the Access Online button to the right of the item information on the search results or item detail page, or by navigating to the item detail page and clicking the link at the bottom of the
+        record. Some of these items may require you to hold a valid library card for access.<br><br>
+        <a class="helpLink" href="http://eresources.einetwork.net/">Click here</a> for more information about these and other eResources available from your library.
+      </div>
+    </div>
+  </div>
+  <div class="EIN-col-m-12 helpSection" id="section6">
+    <div class="helpSectionHeader">Advanced Searching Tips</div>
+    <div class="helpSubsection" id="section6-1">
+      <div class="helpSubsectionHeader">Search Fields</div>
+      <div class="helpContent">When you first visit the <span class="helpEmphasis">Advanced Search</span> page, you are presented with several search fields. In each field, you can type the keywords you want to
+        search for. Search operators are allowed.<br><br>
+        Each field is accompanied by a drop-down that lets you specify the type of data (title, author, etc.) you are searching for. You can mix and match search types however you like.<br><br>
+        The <span class="helpEmphasis">Match</span> setting lets you specify how multiple search fields should be handled.<br><br>
+        <span class="helpEmphasis">ALL Terms</span> - Return only records that match every search field.<br>
+        <span class="helpEmphasis">ANY Terms</span> - Return any records that match at least one search field.<br>
+        <span class="helpEmphasis">NO Terms</span> -- Return all records EXCEPT those that match search fields.<br><br>
+        The <span class="helpEmphasis">Add Search Field</span> button may be used to add additional search fields to the form. You may use as many search fields as you wish.
+      </div>
+    </div>
+    <div class="helpSubsection" id="section6-2">
+      <div class="helpSubsectionHeader">Search Groups</div>
+      <div class="helpContent">For certain complex searches, a single set of search fields may not be enough. For example, suppose you want to find books about the history of China or India. If you did an
+        <span class="helpEmphasis">ALL Terms</span> search for China, India, and History, you would only get books about China AND India. If you did an <span class="helpEmphasis">ANY Terms</span> search, you
+        would get books about history that had nothing to do with China or India.<br><br>
+        Search Groups provide a way to build searches from multiple groups of search fields. Every time you click the <span class="helpEmphasis">Add Search Group</span> button, a new group of fields is added.
+        Once you have multiple search groups, you can remove unwanted groups with the <span class="helpEmphasis">X</span> button in the top right corner, and you can specify whether you want to match on
+        <span class="helpEmphasis">ANY</span> or <span class="helpEmphasis">ALL</span> search groups.<br><br>
+        In the history of China or India example described above, you could solve the problem using search groups like this:<br><br>
+        In the first search group, enter "India" and "China" and make sure that the <span class="helpEmphasis">Match</span> setting is <span class="helpEmphasis">ANY Terms</span>.<br>
+        Add a second search group and enter "history."<br>
+        Make sure the match setting next to the <span class="helpEmphasis">Add Search Group</span> button is set to <span class="helpEmphasis">ALL Groups</span>.
+      </div>
+    </div>
+  </div>
+</div>
+<script type="text/javascript">
+  function CheckForResize(item) {
+    if( $(item).parents('.modal').length > 0 ) {
+      sizeModal();
+    }
+  }
+
+  function SearchHelp(searchBox) {
+    // hide all the sections, undo this later if they have a child which is shown
+    $('.helpSection').css("display", "none");
+    $('.helpLink').addClass("disabled");
+
+    $('.helpContent').each( function() {
+      if( $(this).html().indexOf(searchBox.value) != -1 ) {
+        $(this).parents('.helpSection').css("display", "block");
+        $(this).parents('.helpSubsection').css("display", "block");
+        $('#quickJumpMenu a[href="#' + $(this).parents('.helpSubsection').attr('id') + '"]').removeClass("disabled").attr('onclick','setTimeout(sizeModal, 50)');
+        $('#quickJumpMenu a[href="#' + $(this).parents('.helpSection').attr('id') + '"]').removeClass("disabled").attr('onclick','setTimeout(sizeModal, 50)');
+      } else {
+        $(this).parents('.helpSubsection').css("display", "none");
+        $('#quickJumpMenu a[href="#' + $(this).parents('.helpSubsection').attr('id') + '"]').addClass("disabled").attr('onclick','return false;');
+      }
+    } );
+
+    sizeModal();
+  }
+
+  $(document).ready( function() {
+    $('.helpLink').attr('onclick','setTimeout(sizeModal, 50)');
+    $('#quickJumpMenu').on('hidden.bs.collapse', sizeModal);
+    $('#quickJumpMenu').on('shown.bs.collapse', sizeModal);
+    setTimeout(sizeModal, 100);
+  } );
+</script>
+<div class="modal-footer">
+  <button class="btn-alternate btn-wide" onclick="$('#modalClose').click()"><?=$this->transEsc('Close')?></button>
+</div>

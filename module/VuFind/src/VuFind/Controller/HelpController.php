@@ -55,4 +55,14 @@ class HelpController extends AbstractBase
             ['topic' => $this->params()->fromQuery('topic')]
         );
     }
+
+    /**
+     * Shows the patron the changelog
+     *
+     * @return mixed
+     */
+    public function changesAction()
+    {
+        return $this->createViewModel();
+    }
 }

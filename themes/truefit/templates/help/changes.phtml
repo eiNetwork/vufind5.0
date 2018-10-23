@@ -1,0 +1,186 @@
+<?
+  // Set page title.
+  $this->headTitle($this->translate('Changes to Library Catalog'));
+?>
+<div class="EIN-col-m-12">
+  <div class="privacyTitle">
+    <?=$this->translate('Changes to Library Catalog')?>
+  </div>
+  <div>
+    <p>Thank you for your survey feedback!   Your input has been invaluable and we are working to make improvements.   Below are updates about some of the changes.  <a href="https://www.surveymonkey.com/r/5SLSW8Y" target="_blank">Please let us know what you think.</a></p>
+    <p>Please note that all changes to the Library Catalog have been tested in recent versions of major web browsers.</p>
+  </div><br>
+  <div class="privacyText">
+    <div class="privacySubtitle">Recent Changes:</div><br>
+    <div class="privacyHeader">Library Catalog v2.5.0 (October 16, 2018)</div><br>
+    <div>
+      <ul>
+        <li>Search improvements for general terms such as "wellness".</li>
+        <li>Improved relevancy for title searching.</li>
+        <li>More intuitive language to refer to item requests.</li>
+        <li>OverDrive titles will now be removed from your Book Cart when they are requested.</li>
+      </ul>
+    </div>
+    <div>
+      <span id="accordionLessChanges">
+        <div style="height:10px"></div>
+        <a class="moreLink" onClick="ToggleAccordion('Changes',1)">Show Earlier Changes</a>
+      </span>
+      <span id="accordionMoreChanges" style="display:none">
+        <br><div class="privacyHeader">Library Catalog v2.4.0 (September 17, 2018)</div><br>
+        <div>
+          <ul>
+            <li>Improved Reading History navigation with less scrolling.</li>
+            <li>Added the ability to export your Reading History to CSV files.</li>
+            <li>Provided a link to access your OverDrive Reading History (you may be prompted to log in the OverDrive site with your library barcode number).</li>
+          </ul>
+        </div>
+        <br><div class="privacyHeader">Library Catalog v2.3.0 (July 24, 2018)</div><br>
+        <div>
+          <ul>
+            <li>Expand the search type/options button to include the search type label to make it easier to click.</li>
+            <li>Improve the title search by making it easier to match partial titles.</li>
+            <li>Allow patrons with more than one phone number on their account to see and update all of those numbers.</li>
+            <li>Tweaked the way our age group and fiction/non fiction facets are loaded to increase the accuracy of those labels.</li>
+            <li>Permit patrons to pay fines online without requiring the additional step of signing into the Classic Catalog.</li>
+          </ul>
+        </div>
+        <br><div class="privacyHeader">Library Catalog v2.2.1 (July 11, 2018)</div><br>
+        <div>
+          <ul>
+            <li>Fixed a bug where search results were sometimes showing outdated availability information.</li>
+          </ul>
+        </div>
+        <br><div class="privacyHeader">Library Catalog v2.2.0 (June 28, 2018)</div><br>
+        <div>
+          <ul>
+            <li>Adjusted search parameters so you should see more relevant results.</li>
+            <li>Adjusted the landing page so that you should see more popular results.</li>
+            <li>Improved the highlighting for your search results.</li>
+            <li>Selected search type no longer disappears when you mouse over the search box.</li>
+            <li>Fixed a bug causing the Reset button to not work properly on the Advanced Search page.</li>
+          </ul>
+        </div>
+        <br><div class="privacyHeader">Library Catalog v2.1.1 (June 18, 2018)</div><br>
+        <div>
+          <ul>
+            <li>Fixed a bug which sometimes caused items due yesterday to appear as due today.</li>
+          </ul>
+        </div>
+        <br><div class="privacyHeader">Library Catalog v2.1.0 (June 12, 2018)</div><br>
+        <div>
+          <ul>
+            <li>Back by popular demand: the Limit to Available filter for searches! Due to circumstances beyond our control, this option disappeared from recent versions of the catalog. We've been able to re-introduce it in this version of the catalog, so enjoy!</li>
+            <li>Language tags are now shown for non-English materials. This should help patrons to find items in their preferred languages when placing <?=$this->transEsc('holds_lowercase')?>.</li>
+            <li>Placing <?=$this->transEsc('holds_lowercase')?> on items will now remove them from your book cart. This is now more closely aligned to the book cart behavior in previous versions of the catalog.</li>
+          </ul>
+        </div>
+        <br><div class="privacyHeader">Library Catalog v2.0.1 (May 31, 2018)</div><br>
+        <div>
+          <ul>
+            <li>Fixed a bug that was preventing item availability information from being properly updated.</li>
+          </ul>
+        </div>
+        <br><div class="privacyHeader">Library Catalog v2.0.0 (May 24, 2018)</div><br>
+        <div>
+          <ul>
+            <li>Item statuses now display significantly faster due to changes in the way this information is retrieved.</li>
+            <li>The language of item availability tags has been refined for improved clarity.  They will now tell you how many libraries have available items.</li>
+            <li>Mousing over (desktop) or tapping (mobile) an item availability tag will show you where an item is available.</li>
+          </ul>
+        </div>
+        <br><div class="privacyHeader">March 21, 2018</div><br>
+        <div>
+          <ul>
+            <li>To make it easier to apply multiple filters for a search, facets now require you to press the "Apply Filters" button before the results are refreshed.</li>
+          </ul>
+        </div>
+        <br><div class="privacyHeader">December 5, 2017</div><br>
+        <div>
+          <ul>
+            <li>All pages incorporating tabs now remember your selected tab and show the proper information when you reload or update that page.</li>
+          </ul>
+        </div>
+        <br><div class="privacyHeader">November 13, 2017</div><br>
+        <div>
+          <ul>
+            <li>A "Remove All Filters" button has been added to the search results page to allow you to reset your search with a single click instead of clicking through each filter individually.</li>
+            <li>All empty text input boxes now display a hint about what information is expected to be entered.</li>
+          </ul>
+        </div>
+        <br><div class="privacyHeader">October 30, 2017</div><br>
+        <div>
+          <ul>
+            <li>Improvements have been made to the display of clickable subject headings on an item detail page to make it easier to tell which subjects are included in your search.</li>
+          </ul>
+        </div>
+        <br><div class="privacyHeader">October 9, 2017</div><br>
+        <div>
+          <ul>
+            <li><?=$this->transEsc('holds_uppercase')?> and checked out items are now updated more frequently without the need to log out of your account and log back in.</li>
+            <li>A "Refresh Checkouts" button has been added to allow you to update your Checkout data as needed.  This is useful if you recently renewed an item but the page has not been updated to reflect this renewal.</li>
+          </ul>
+        </div>
+        <br><div class="privacyHeader">September 20, 2017</div><br>
+        <div>
+          <ul>
+            <li>The currently selected search type now displays in the right side of the search bar.</li>
+            <li>New <i class="fa fa-clock-o" style="padding:0 3px"></i> icon to help identify the number of patrons on the waitlist for a title.  </li>
+          </ul>
+        </div>
+        <br><div class="privacyHeader">August 22, 2017</div><br>
+        <div>
+          <ul>
+            <li>You can now see the total number of people waiting for a title to become available.</li>
+            <li>An optional setting has been added to your Account Profile that lets you choose between viewing physical and e-content items in two separate lists or together in one list (default) on your Checked Out and <?=$this->transEsc('Holds')?> pages.  To change this setting, go to Account --> Profile and look for the option labeled "E-Content Checkouts and <?=$this->transEsc('Holds')?>."</li>
+          </ul>
+        </div>
+        <br><div class="privacyHeader">August 14, 2017</div><br>
+        <div>
+          <ul>
+            <li>Changes have been made to allow your web browser to save your login information.</li>
+            <li>Functionality for sorting your Reading History by Checkout Date (the default), Title, or Author has been reintroduced in the Library Catalog.</li>
+          </ul>
+        </div><br>
+        <a class="moreLink" onClick="ToggleAccordion('Changes',0)">Hide Earlier Changes</a>
+      </span>
+    </div>
+  </div><br>
+  <div class="privacyText">
+    <div class="privacySubtitle">Your FAQs:</div><br>
+    <ul>
+      <li><span class="privacyHeader">I have not been receiving notification emails when my requested items are ready to be picked up.</span>
+        <p>If you are not receiving email notifications from your library, please take the following steps:</p>
+        <ol>
+          <li>Verify that your email address and notice preference are correct.
+            <ul>
+              <li>Log on to your Library Catalog Account.</li>
+              <li>Click Account (or the <i class="fa fa-bars" style="font-size:14px; margin:0px 3px"></i> icon on mobile devices) in the upper right hand corner to access the Account menu, then click Profile.  From here you can check that your notice preference is set to email and your email address is correct.  If not, please edit them.</li>
+            </ul>
+          </li>
+          <li>Check your Junk or Spam folder for missing notice emails.</li>
+          <li>Add the "einetwork.net" domain to your "allowed sender" list. This is sometimes called a whitelist and the process for whitelisting domains differs depending on the email provider.</li>
+        </ol>
+        <p>If you have done all of the above and you are still not receiving notice emails, please contact your local library.</p>
+      </li>
+      <li><span class="privacyHeader">What's the difference between placing a <?=$this->transEsc('hold_uppercase')?> and adding a title to my Book Cart?</span>
+        <ul>
+          <li>When you click the "<?=$this->transEsc('hold_button_place_hold')?>" button in the Library Catalog, you are asking your library to set aside a copy of a specific title for you when it becomes available.</li>
+          <li>Your Book Cart allows you to store interesting titles until you are ready to take bulk actions on them.  For example, you can select specific titles or all titles in your Book Cart and place requests for them by clicking the "<?=$this->transEsc('hold_button_place_hold')?>" button.  You can also organize titles from your Book Cart into custom Lists where you can easily find them later.</li>
+        </ul>
+      </li>
+      <li><span class="privacyHeader">How can I change my search type (e.g. from Keyword to Title or Author)?</span>
+        <ul>
+          <li>A <i class="fa fa-cog" style="font-size:14px; margin:0px 3px"></i> icon appears on the far right side of the search bar next to the search type label.  Clicking either this icon or the label displays available search types and other search options (Advanced Search, Save Search, etc.).  Click to select the search type you would like to use.</li>
+        </ul>
+      </li>
+    </ul>
+  </div><br>
+  <script type="text/javascript">
+    function ToggleAccordion(hashCode,showMore) {
+      $('#accordionMore' + hashCode).css({"display":(showMore ? "inline" : "none")});
+      $('#accordionLess' + hashCode).css({"display":(showMore ? "none" : "inline")});
+      moveButtons();
+    }
+  </script>
+</div>
