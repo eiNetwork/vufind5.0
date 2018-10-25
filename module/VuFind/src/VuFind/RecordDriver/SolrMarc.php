@@ -44,4 +44,44 @@ class SolrMarc extends SolrDefault
     use IlsAwareTrait;
     use MarcReaderTrait;
     use MarcAdvancedTrait;
+
+    /**
+     * Get a link for placing a title level hold.
+     *
+     * @return mixed A url if a hold is possible, boolean false if not
+     */
+    public function getRealTimeTitleHold()
+    {
+        if ($this->hasILS()) {
+            $biblioLevel = strtolower($this->tryMethod('getBibliographicLevel'));
+            if ("monograph" == $biblioLevel || "serial" == $biblioLevel || strstr("part", $biblioLevel)) {
+                if ($this->ils->getTitleHoldsMode() != "disabled") {
+                    return $this->titleHoldLogic->getHold($this->getUniqueID());
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Get an array of information about record holdings, obtained in real-time
+     * from the ILS.
+     *
+     * @return array
+     */
+    public function getRealTimeHoldings()
+    {
+        $id = $this->getUniqueID();
+        if( $this->hasILS() && !$this->ils->getMemcachedVar("items" . $id) ) {
+            $this->ils->setMemcachedVar("items" . $id, $this->getItems(), 900);
+        }
+        if( $this->hasILS() && !$this->ils->getMemcachedVar("cachedJson" . $id) ) {
+            $json = isset($this->fields['cachedJson']) ? $this->fields['cachedJson'] : "";
+            $json = json_decode($json, true);
+            $this->ils->setMemcachedVar("cachedJson" . $id, $json, 900);
+        }
+        return $this->hasILS() ? $this->holdLogic->getHoldings(
+            $id, $this->getConsortialIDs()
+        ) : [];
+    }
 }

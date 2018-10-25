@@ -287,4 +287,57 @@ class SolrDefault extends DefaultRecord
             && !empty($this->fields['hierarchy_parent_id'])
             ? $this->fields['hierarchy_parent_id'][0] : '';
     }
+
+    /**
+     * Get an array of all the formats associated with the record.
+     *
+     * @return array
+     */
+    public function getFormats()
+    {
+        if( isset($this->fields['format']) ) {
+            $formats = $this->fields['format'];
+            // weed out categories
+            foreach($formats as $key => $value) {
+                if( strpos($value, "Category:") !== false ) {
+                    unset($formats[$key]);
+                }
+            }
+            return $formats;
+        } else {
+            return [];
+        }
+    }
+
+    /**
+     * Get the items attached to the record.
+     *
+     * @return array
+     */
+    public function getItems()
+    {
+        $items = [];
+        $json = isset($this->fields['cachedJson']) ? $this->fields['cachedJson'] : "";
+        $json = json_decode($json, true);
+        if( isset($json["holding"]) ) {
+            foreach( $json["holding"] as $thisJson ) {
+                $items[] = "i" . $thisJson["itemId"];
+            }
+        }
+        return $items;
+    }
+
+    public function hasOnlineAccess()
+    {
+        // our OverDrive model doesn't support multi-use
+        if( isset($this->fields['econtent_source']) && in_array("OverDrive", $this->fields['econtent_source']) ) {
+            return false;
+        }
+        foreach( $this->getUrls() as $thisUrl ) {
+            if( $thisUrl["type"] == "accessOnline" ) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
