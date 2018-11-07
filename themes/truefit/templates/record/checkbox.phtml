@@ -1,0 +1,83 @@
+<? 
+  $id = isset($this->overruleId) ? $this->overruleId : $this->id;
+  $page = isset($this->page) ? $this->page : null;
+  $checkOn = false; 
+  if( isset($_COOKIE["catalogCheckboxes"]) ) {
+    $c = json_decode($_COOKIE["catalogCheckboxes"], true);
+    $checkOn = isset($c[$page]) && in_array($id, $c[$page]);
+  }
+?>
+<span class="sr-only">
+  <input class="checkbox-select-item" type="checkbox" name="ids[]" value="<?=$this->escapeHtmlAttr($id) ?>" onClick="$(this).parent().siblings('.checkToggleOn').click()"<?=($checkOn ? " checked" : "")?>/>
+</span>
+<input type="hidden" name="idsAll[]" value="<?=$this->escapeHtmlAttr($id) ?>"/>
+<input type="hidden" name="pageCategory" value="<?=$this->escapeHtmlAttr($page)?>" />
+<span class="checkToggle<?=($checkOn ? "On" : "Off")?>" aria-hidden="true" onClick="ToggleRecordCheck($(this).next()); ToggleRecordCheck($(this)); RemoveRecordCheckCookie($(this));"><i class="fa fa-check-square"></i></span>
+<span class="checkToggle<?=($checkOn ? "Off" : "On")?>" aria-hidden="true" onClick="ToggleRecordCheck($(this).prev()); ToggleRecordCheck($(this)); AddRecordCheckCookie($(this));"><i class="fa fa-square-o"></i></span>
+<script type="text/javascript">
+  function ToggleRecordCheck(item) {
+    if(item.hasClass('checkToggleOn')) {
+      // update the visual buttons
+      item.removeClass('checkToggleOn');
+      item.addClass('checkToggleOff');
+    } else {
+      // update the visual buttons
+      item.removeClass('checkToggleOff');
+      item.addClass('checkToggleOn');
+
+      // set the form's checkbox
+      var target = item.prevAll('.sr-only').children('.checkbox-select-item');
+      target.prop("checked", (item.children('.fa-check-square').length > 0));
+      var parentForm = ($(target).parents('.ajaxListContents').length > 0) ? $(target).parents('.ajaxListContents').siblings('form') : $(target).parents('.ajaxItem').siblings('form');
+      parentForm.find('.checkbox-select-item[value=\'' + $(target).attr('value') + '\']').prop('checked',item.children('.fa').hasClass('fa-check-square'));
+      parentForm.find('.checkbox-select-all').prop('checked', true);
+      parentForm.find('.checkbox-select-item').each( function() {
+        parentForm.find('.checkbox-select-all').prop('checked', parentForm.find('.checkbox-select-all').prop('checked') && this.checked);
+      } );
+
+      // correct the bulk button
+      setTimeout( function() {
+        ScanBulkButton(parentForm);
+      } );
+    }
+  }
+
+  function AddRecordCheckCookie(item) {
+    var currentVal = {};
+    var c = getCookie('catalogCheckboxes');
+    if( typeof c !== 'undefined' ) {
+      currentVal = JSON.parse( getCookie('catalogCheckboxes') );
+    }
+    var thisArr = currentVal;
+    var page = item.prevAll('input[name=\'pageCategory\']').attr('value');
+    var id = item.prevAll('input[name=\'idsAll[]\']').attr('value');
+    if( page ) {
+      if( !currentVal.hasOwnProperty(page) ) {
+        currentVal[page] = [];
+      }
+      thisArr = currentVal[page];
+    }
+    if( thisArr.indexOf(id) == -1 ) {
+      thisArr.push(id);
+    }
+    if( page ) {
+      currentVal[page] = thisArr;
+    }
+    createCookie('catalogCheckboxes', JSON.stringify(currentVal));
+  }
+
+  function RemoveRecordCheckCookie(item) {
+    var c = getCookie('catalogCheckboxes');
+    if( typeof c !== 'undefined' ) {
+      var currentVal = JSON.parse(c);
+      var page = item.prevAll('input[name=\'pageCategory\']').attr('value');
+      var id = item.prevAll('input[name=\'idsAll[]\']').attr('value');
+      if( page && currentVal.hasOwnProperty(page) && currentVal[page].indexOf(id) != -1 ) {
+        currentVal[page].splice( currentVal[page].indexOf(id), 1);
+      } else if( !page && currentVal.indexOf(id) != -1 ) {
+        currentVal.splice( currentVal.indexOf(id), 1);
+      }
+      createCookie('catalogCheckboxes', JSON.stringify(currentVal));
+    }
+  }
+</script>

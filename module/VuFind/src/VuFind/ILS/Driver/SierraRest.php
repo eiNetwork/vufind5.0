@@ -818,7 +818,7 @@ class SierraRest extends AbstractBase implements TranslatorAwareInterface,
 
         foreach ($details as $holdId) {
             $result = $this->makeRequest(
-                ['v3', 'patrons', 'holds', $holdId], [], 'DELETE', $patron
+                ['v3', 'patrons', 'holds', $holdId], '', 'DELETE', $patron
             );
 
             if (!empty($result['code'])) {

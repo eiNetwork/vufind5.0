@@ -1,0 +1,170 @@
+<?
+  // Set up some convenience variables:
+  $id = $this->driver->getUniqueId();
+  $source = $this->driver->getResourceSource();
+  $account = $this->auth()->getManager();
+  $user = $account->isLoggedIn();
+  $record = $this->record($this->driver);
+  $holdType = (isset($this->holdType) ? $this->holdType : "none");
+
+  $showChangeTarget = (!isset($this->hold["available"]) || !$this->hold["available"]) && !$this->hold["in_transit"];
+  $showFreeze = $showChangeTarget && (!isset($this->hold["frozen"]) || !$this->hold["frozen"]);
+  $showUnfreeze = $showChangeTarget && isset($this->hold["frozen"]) && $this->hold["frozen"];
+?>
+<div class="row result<? if($this->driver->supportsAjaxStatus()): ?> ajaxItem<? endif ?> EIN-col-m-12">
+  <table class="EIN-col-m-12"><tr>
+    <td class="EIN-col-m-1" style="margin:auto">
+      <span class="pull-left flip"><?=$this->record($this->driver)->getHoldCheckbox($this->hold["requestId"], $holdType) ?></span>
+      <input type="hidden" value="<?=$this->escapeHtmlAttr($id)?>" class="hiddenId" />
+      <input type="hidden" value="<?=$this->escapeHtmlAttr($source)?>" class="hiddenSource" />
+      <? if( $showChangeTarget ): ?>
+        <input type="hidden" value="<?=(isset($this->hold["overDriveId"]) ? "email" : "pickup")?>" class="changeTarget" />
+      <? endif; ?>
+      <? if( $showFreeze ): ?>
+        <input type="hidden" value="true" class="freezeTarget" />
+      <? endif; ?>
+      <? if( $showUnfreeze ): ?>
+        <input type="hidden" value="true" class="unfreezeTarget" />
+      <? endif; ?>
+    </td>
+    <td class="EIN-col-m-11" style="padding-right:10px">
+      <div class="EIN-col-m-12<?= ((isset($this->hold["overDriveId"]) && $this->hold["status"] == "i") ? " EIN-col-t-8 EIN-col-8" : "" ) ?>">
+        <h1 property="name" class="itemTitle">
+          <? if( isset($this->hold["ILL"]) && $this->hold["ILL"] ): ?>
+            <?=$this->escapeHtml($this->hold["title"])?>
+          <? else: ?>
+            <a href="<?=$this->recordLink()->getUrl($this->driver)?>"><?=$this->escapeHtml((($this->driver->getShortTitle() == "") ? trim($this->driver->getTitle(),"\0\t\n\x0B\r /") : (trim($this->driver->getShortTitle(),"\0\t\n\x0B\r /") . ' ' . trim($this->driver->getSubtitle(),"\0\t\n\x0B\r /") . ' ' . trim($this->driver->getTitleSection(),"\0\t\n\x0B\r /"))) . (isset($this->hold["volumeInfo"]) ? (" (" . $this->hold["volumeInfo"] . ")") : ""))?>
+          <? endif ?>
+          <? if( isset($this->hold["item_id"]) ): ?>
+            <span class="hidden volumeInfo"><?=substr($this->hold["item_id"], 2, -1)?></span>
+          <? endif; ?>
+          <? if( !isset($this->hold["ILL"]) || !$this->hold["ILL"] ): ?>
+            </a>
+          <? endif; ?>
+        </h1>
+
+        <? $authors = $this->driver->getDeduplicatedAuthors(); ?>
+        <? if( isset($this->hold["ILL"]) && $this->hold["ILL"] ): ?>
+          <h4 property="author" class="itemAuthor"><?=$this->escapeHtml($this->hold["author"])?></h4>
+        <? elseif (isset($authors['main']) && !empty($authors['main'])): ?>
+          <h4 property="author" class="itemAuthor">by <a href="<?=$record->getLink('author', $authors['main'])?>" class="authorLink"><?=$this->escapeHtml($authors['main'])?></a></h4>
+        <? endif; ?>
+
+        <table>
+          <? $languages = $this->driver->getLanguages(); $showLanguages = false; ?>
+          <? foreach( $languages as $thisLanguage ): ?>
+            <? $showLanguages |= ($thisLanguage != "English"); ?>
+          <? endforeach; ?>
+          <? if ($showLanguages): ?>
+            <? $languageCount = 0; $hash = md5($this->driver->getUniqueID()); foreach( $languages as $thisLanguage ): ?>
+              <? if( $languageCount == 3 ): ?>
+                <tr class="languageAccordionLess<?=$hash?>" style="display:table-row;font-size:14px">
+                  <td class="EIN-hide-m itemDetailCategory">&nbsp;</td>
+                  <td style="padding-bottom:5px"><a class="moreLink" onclick="ToggleLanguageAccordion('<?=$hash?>',1);">More</a></td>
+                </tr>
+              <? endif; ?>
+              <tr<?=(($languageCount >= 3) ? (" class=\"languageAccordionMore" . $hash . "\" style=\"display:none\"") : "")?>>
+                <? if ($languageCount == 0): ?>
+                  <td rowspan=<?=((count($languages) <= 3)?count($languages):"3")?> class="EIN-hide-m itemDetailCategory"><?=("Language" . (($this->driver->getFormatCategory()=="Video")?" and/or Subtitles:":":"))?></td>
+                <? elseif ($languageCount >= 3): ?>
+                  <td class="EIN-hide-m itemDetailCategory">&nbsp</td>
+                <? endif; ?>
+                <td style="padding-bottom:5px">
+                  <span class="languageTag"><?=$thisLanguage?></span>
+                  <? $languageCount++; ?>
+                </td>
+              </tr>
+            <? endforeach; ?>
+            <? if( $languageCount > 3 ): ?>
+              <tr class="languageAccordionMore<?=$hash?>" style="display:none;font-size:14px">
+                <td class="EIN-hide-m itemDetailCategory">&nbsp;</td>
+                <td><a class="moreLink" onclick="ToggleLanguageAccordion('<?=$hash?>',0);">Less</a></td>
+              </tr>
+              <script type="text/javascript">
+                function ToggleLanguageAccordion(hashCode,showMore) {
+                  $('.languageAccordionMore' + hashCode).css({"display":(showMore ? "table-row" : "none")});
+                  $('.languageAccordionLess' + hashCode).css({"display":(showMore ? "none" : "table-row")});
+                  moveButtons();
+                }
+              </script>
+            <? endif; ?>
+          <? endif; ?>
+
+          <? $formats = $this->driver->getFormats(); if (!empty($formats)): ?>
+            <? $firstTime = true; foreach( $formats as $thisFormat ): ?>
+              <tr>
+                <td class="EIN-hide-m itemDetailCategory"><?=($firstTime?"Format:":"&nbsp;")?></td>
+                <td style="padding-bottom:5px; width:100%">
+                  <span class="formatTag"><?=$thisFormat?></span>
+
+                  <? if( $firstTime ): ?>
+                    <? $publications = $this->driver->getPublicationDetails(); if (!empty($publications)): ?>
+                      <? foreach ($publications as $field): ?>
+                        <? $pubDate = $field->getDate(); if (!empty($pubDate)): ?>
+                          <span property="publicationDate" class="publishDate"><?=$this->escapeHtml($pubDate)?></span>
+                        <? break; endif; ?>
+                      <? endforeach; ?>
+                    <? endif; ?>
+                    <? $firstTime = false; ?>
+                  <? endif; ?>
+                </td>
+              </tr>
+            <? endforeach; ?>
+          <? endif; ?>
+
+          <? if( $holdType == "hold_all" ): ?>
+            <tr>
+              <td colspan="2">
+                <div class="EIN-col-m-12" style="height:10px"></div>
+                Status: <span class="bold"><?=$this->transEsc('holdtype_' . ($this->hold["available"] ? 'ready' : ($this->hold["in_transit"] ? 'transit' : ($this->hold["frozen"] ? 'frozen' : 'hold'))))?></span>
+              </td>
+            </tr>
+          <? endif; ?>
+          <? if( !isset($this->hold["overDriveId"]) ): ?>
+            <tr>
+              <td colspan="2">
+                <? if( $holdType != "hold_all" ): ?>
+                  <div class="EIN-col-m-12" style="height:10px"></div>
+                <? endif; ?>
+                Pick up at: <span class="bold"><?=$this->hold["location"]?></span>
+              </td>
+            </tr>
+            <? if( isset($this->hold["available"]) && $this->hold["available"] && isset($this->hold["released"]) ): ?>
+              <tr>
+                <td colspan="2">
+                  Pick up by: <span class="bold"><?=$this->hold["released"]?></span>
+                </td>
+              </tr>
+            <? endif; ?>
+            <? if( false && $this->hold["status"] != "i" && $this->hold["status"] != "b" && $this->hold["status"] != "j" && isset($this->hold["expire"]) ): ?>
+              <tr>
+                <td colspan="2">
+                  Not wanted after: <span class="bold"><?=strftime("%b %e, %Y", strtotime($this->hold["expire"]))?></span>
+                </td>
+              </tr>
+            <? endif; ?>
+          <? else: ?>
+            <tr>
+              <td colspan="2">
+                <? if( $holdType != "hold_all" ): ?>
+                  <div class="EIN-col-m-12" style="height:10px"></div>
+                <? endif; ?>
+                Notify me at: <span class="bold"><?=$this->hold["notifyEmail"]?></span>
+              </td>
+            </tr>
+          <? endif; ?>
+        </table>
+      </div>
+      <? if( isset($this->hold["overDriveId"]) && $this->hold["status"] == "i" ): ?>
+        <div class="EIN-col-m-12 EIN-col-t-4 EIN-col-4" style="padding:5px 0px 10px">
+          <div class="singleButtonGap">
+            <a href="<?= $this->recordLink()->getActionUrl($this->driver, "Checkout") ?>" target="loginFrame">
+              <button class="btn-default singleButton" onclick="$(this).html('<i class=\'fa fa-spinner bwSpinner\'></i> Loading...')">Check Out</button>
+            </a>
+          </div>
+        </div>
+      <? endif; ?>
+    </td>
+  </tr></table>
+  <div class="EIN-col-m-12"><hr style="margin:5px 0"></div>
+</div>

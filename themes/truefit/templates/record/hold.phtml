@@ -1,0 +1,166 @@
+<?=$this->flashmessages(false)?>
+<? $showWarning = $this->hasVolumesTitles || $this->localCopyTitles; ?>
+<h2><?=$this->transEsc($showWarning ? ("Some " . $this->transEsc("holds_uppercase") . " Cannot Be Placed") : (($this->changePickup?"Change ":"")."Pickup Location"))?></h2>
+<span class="backupDialogLabel" style="display:none"><?=$this->transEsc("Pickup Location")?></span>
+<div class="hold-form">
+  <span class="holdWarning" style="display:<?=($showWarning ? "inline" : "none")?>">
+    <? if( $this->hasVolumesTitles ): ?>
+      <div class="EIN-col-m-12" style="text-align:left;padding-bottom:20px">
+        <div class="EIN-col-m-12" style="font-size:16px;font-weight:700">Additional information is needed to complete your request for the following titles. Please place a <?=$this->transEsc("hold_lowercase")?> on them individually to select your desired volume:</div>
+        <? foreach( $this->hasVolumesTitles as $thisTitle ): ?>
+          <div class="EIN-col-m-12" style="padding-left:20px"><?=urldecode(explode("|", $thisTitle, 2)[1])?></div>
+        <? endforeach; ?>      
+      </div>
+    <? endif; ?>
+    <? if( $this->localCopyTitles ): ?>
+      <div class="EIN-col-m-12" style="text-align:left;padding-bottom:20px">
+        <div class="EIN-col-m-12" style="font-size:16px;font-weight:700">Your request for the following titles could not be completed because there is an available copy at your location. Please check the shelf for this item or see a librarian for assistance:</div>
+        <? foreach( $this->localCopyTitles as $thisTitle ): ?>
+          <div class="EIN-col-m-12" style="padding-left:20px"><?=urldecode(explode("|", $thisTitle, 4)[1])?></div>
+          <div class="EIN-col-m-12" style="padding-left:40px;margin:5px 0px"><span class="availableTag"><i class="fa fa-check"></i>It's Here!</span></div>
+          <div class="EIN-col-m-12" style="padding-left:40px"><span class="availableCopyText"><?=urldecode(explode("|", $thisTitle, 4)[2])?></span></div>
+          <div class="EIN-col-m-12" style="padding-left:40px"><span class="availableCopyText"><?=urldecode(explode("|", $thisTitle, 4)[3])?></span></div>
+        <? endforeach; ?>      
+      </div>
+    <? endif; ?>
+    <? if( $this->titles ): ?>
+      <div class="EIN-col-m-12" style="text-align:left;padding-bottom:20px">
+        <div class="EIN-col-m-12" style="font-size:16px;font-weight:700">You can place a <?=$this->transEsc("hold_lowercase")?> on the following titles. Please choose a pickup location on the next page:</div>
+        <? foreach( $this->titles as $thisTitle ): ?>
+          <div class="EIN-col-m-12" style="padding-left:20px"><?=urldecode(explode("|", $thisTitle, 2)[1])?></div>
+        <? endforeach; ?>      
+      </div>
+    <? endif; ?>
+  </span>
+  <? if( !$this->bulkHold || $this->ids ): ?>
+    <table class="pickupLocationTable" style="display:<?=($showWarning ? "none" : "table")?>">
+      <? $showPreferredLibrary = isset($this->preferredLibrary) && ($this->preferredLibrary != "none") && ($this->preferredLibrary != ""); ?>
+      <? $showAlternateLibrary = isset($this->alternateLibrary) && ($this->alternateLibrary != "none") && ($this->alternateLibrary != "") && (!isset($this->preferredLibrary) || ($this->alternateLibrary != $this->preferredLibrary)); ?>
+      <? $showHomeLibrary = isset($this->homeLibrary) && ($this->homeLibrary != "99") && ($this->homeLibrary != "none") && (!isset($this->preferredLibrary) || ($this->homeLibrary != $this->preferredLibrary)) && (!isset($this->alternateLibrary ) || ($this->homeLibrary != $this->alternateLibrary)); ?>
+      <? $selectedID = $showPreferredLibrary ? $this->preferredLibrary : ($showAlternateLibrary ? $this->alternateLibrary : ($showHomeLibrary ? $this->homeLibrary : "")) ?>
+      <? if($selectedID != ""): ?>
+        <tr><td colspan="2" class="modalSubheading center">Preferred Libraries</td></tr>
+        <? foreach ($this->pickup as $lib): ?>
+          <? if($showPreferredLibrary && $this->preferredLibrary == $lib['locationID'] ): ?>
+            <tr>
+              <td><span class="bigGreenCheck" name="check-<?=$this->escapeHtmlAttr($lib['locationID']).(($lib['locationID'] == $selectedID)?"":"\" style=\"color:#fff")?>"><span class="sr-only">Checked</span><i class="fa fa-check"></i></td>
+              <td><button class="btn-dropdown btn-standardDropdown btn-pickupLocationPreferred" onclick="return SelectPickupLocation('<?=$this->escapeHtmlAttr($lib['locationID'])?>');"><?=$this->escapeHtml($lib['locationDisplay'])?></button></td>
+            </tr>
+            <? break; ?>
+          <? endif; ?>
+        <? endforeach; ?>
+        <? foreach ($this->pickup as $lib): ?>
+          <? if($showAlternateLibrary && $this->alternateLibrary == $lib['locationID'] ): ?>
+            <tr>
+              <td><span class="bigGreenCheck" name="check-<?=$this->escapeHtmlAttr($lib['locationID']).(($lib['locationID'] == $selectedID)?"":"\" style=\"color:#fff")?>"><span class="sr-only">Checked</span><i class="fa fa-check"></i></td>
+              <td><button class="btn-dropdown btn-standardDropdown btn-pickupLocationPreferred" onclick="return SelectPickupLocation('<?=$this->escapeHtmlAttr($lib['locationID'])?>');"><?=$this->escapeHtml($lib['locationDisplay'])?></button></td>
+            </tr>
+            <? break; ?>
+          <? endif; ?>
+        <? endforeach; ?>
+        <? foreach ($this->pickup as $lib): ?>
+          <? if($showHomeLibrary && $this->homeLibrary == $lib['locationID'] ): ?>
+            <tr>
+              <td><span class="bigGreenCheck" name="check-<?=$this->escapeHtmlAttr($lib['locationID']).(($lib['locationID'] == $selectedID)?"":"\" style=\"color:#fff")?>"><span class="sr-only">Checked</span><i class="fa fa-check"></i></td>
+              <td><button class="btn-dropdown btn-standardDropdown btn-pickupLocationPreferred" onclick="return SelectPickupLocation('<?=$this->escapeHtmlAttr($lib['locationID'])?>');"><?=$this->escapeHtml($lib['locationDisplay'])?> (Home)</button></td>
+            </tr>
+            <? break; ?>
+          <? endif; ?>
+        <? endforeach; ?>
+        <tr><td colspan="2">&nbsp;</td></tr>
+        <tr><td colspan="2" class="center"><button class="btn-default btn-wide" onclick="ToggleOtherLibraries(this)">Show Other Libraries</button></tr>
+        <tr class="otherLibraryRow" style="display:none"><td colspan="2">&nbsp;</td></tr>
+        <tr class="otherLibraryRow" style="display:none"><td colspan="2" class="modalSubheading center">Other Libraries</td></tr>
+      <? endif; ?>
+      <? foreach ($this->pickup as $lib): ?>
+        <? if((!isset($this->preferredLibrary) || ($this->preferredLibrary != $lib['locationID'])) && 
+              (!isset($this->alternateLibrary) || ($this->alternateLibrary != $lib['locationID'])) && 
+              (!isset($this->homeLibrary)      || ($this->homeLibrary != $lib['locationID']))): ?>
+          <tr class="otherLibraryRow"<?=(($selectedID=="") ? "" : " style='display:none'")?>>
+            <td><span class="bigGreenCheck" name="check-<?=$this->escapeHtmlAttr($lib['locationID']).(($lib['locationID'] == $selectedID)?"":"\" style=\"color:#fff")?>" style="color:#fff"><span class="sr-only">Checked</span><i class="fa fa-check"></i></td>
+            <td><button class="btn-dropdown btn-standardDropdown btn-pickupLocation" onclick="return SelectPickupLocation('<?=$this->escapeHtmlAttr($lib['locationID'])?>');"><?=$this->escapeHtml($lib['locationDisplay'])?></button></td>
+          </tr>
+        <? endif; ?>
+      <? endforeach; ?>
+    </table>
+  <? endif; ?>
+</div>
+<div class="modal-footer">
+  <div id="holdFooter">
+    <? if( $showWarning && $this->bulkHold && !$this->ids ): ?>
+      <button class="btn-default btn-wide" onclick="$('#modalClose').click();">Close</button>
+    <? elseif( $showWarning ): ?>
+      <button class="btn-default btn-wide holdWarning" onclick="HideIllegalHoldWarning();">Okay</button>
+    <? endif; ?>
+    <? if( !$showWarning || !$this->bulkHold || $this->ids ): ?>
+      <form action="" class="form-horizontal" method="post" name="placeHold" target="loginFrame" style="display:<?=($showWarning ? "none" : "block")?>"><!-- data-lightbox-onsubmit="ProcessHoldForm"> -->
+        <input type="hidden" name="gatheredDetails[comment]" value="" />
+        <input type="hidden" name="gatheredDetails[requiredBy]" value="<?=(isset($this->gatheredDetails['requiredBy']) && !empty($this->gatheredDetails['requiredBy'])) ? $this->escapeHtmlAttr($this->gatheredDetails['requiredBy']) : $this->escapeHtmlAttr($this->defaultRequiredDate)?>"/>
+        <input type="hidden" name="gatheredDetails[pickUpLocation]" value="<?=$selectedID?>">
+        <? if(isset($this->gatheredDetails['itemId']) && !empty($this->gatheredDetails['itemId'])): ?>
+          <input type="hidden" name="gatheredDetails[itemID]" value="<?=$this->gatheredDetails['itemId']?>">
+        <? endif; ?>
+        <input type="hidden" name="placeHold" value="1">
+        <? if( $this->changePickup || $this->bulkHold ): ?>
+          <input type="hidden" name="<?=($this->changePickup ? "changePickup" : "bulkHold")?>" value="true">
+          <input type="hidden" name="referrer" value="<?=$this->referrer?>">
+          <? foreach( $this->ids as $id ): ?>
+            <input type="hidden" name="<?=($this->changePickup ? "updateIDs[]" : "holdIDs[]")?>" value="<?=$id?>">
+          <? endforeach; ?>
+          <? foreach( $this->titles as $title ): ?>
+            <input type="hidden" name="holdTitles[]" value="<?=$title?>">
+          <? endforeach; ?>
+        <? endif; ?>
+        <span id="holdLocationError" class="formError">You must select a pickup location for your <?=$this->transEsc("hold_lowercase")?>.</span>
+        <button class="btn-default btn-wide"<?=(isset($this->preferredLibrary)?"":" disabled")?> onclick="ProcessHoldForm()">Okay</button>
+      </form>
+    <? endif; ?>
+  </div>
+  <div id="loadingFooter" style="display:none;padding:9px;color:#3d3d3d">
+    <span><i class="fa fa-spinner"></i></span>
+    <span>&nbsp;Loading...</span>
+  </div>
+
+  <script type="text/javascript">
+    function ToggleOtherLibraries(swapButton) {
+      var shown = $(swapButton).hasClass("shown");
+      if( shown ) {
+        $('.otherLibraryRow').css({"display":"none"});
+        $(swapButton).html("Show Other Libraries");
+        $(swapButton).removeClass("shown");
+      } else {
+        $('.otherLibraryRow').css({"display":"table-row"});
+        $(swapButton).html("Hide Other Libraries");
+        $(swapButton).addClass("shown");
+      }
+    }
+
+    function SelectPickupLocation(chosenID) {
+      var currentID = $('input[name="gatheredDetails[pickUpLocation]"]').val();
+      $('span[name="check-' + currentID + '"]').css("color","#fff");
+      $('input[name="gatheredDetails[pickUpLocation]"]').val(chosenID);
+      $('span[name="check-' + chosenID + '"]').css("color","");
+      $('#holdLocationError').css('display','none');
+    }
+
+    function HideIllegalHoldWarning() {
+      $('.holdWarning').css("display","none");
+      $('form[name="placeHold"]').css("display","block");
+      $('.pickupLocationTable').css("display","table");
+      $('#modalTitle').html($('.backupDialogLabel').html());
+    }
+
+    function ProcessHoldForm() {
+      if( ($('input[name="gatheredDetails[pickUpLocation]"]').val() == "") || ($('input[name="gatheredDetails[pickUpLocation]"]').val() == "none") ) {
+        $('#holdLocationError').css('display','inherit');
+      } else {
+        $('#holdFooter').css('display', 'none');
+        $('#loadingFooter').css('display', 'block');
+
+        $('form[name="placeHold"]').attr("action", VuFind.lightbox.getCurrentUrl());
+        $('form[name="placeHold"]').get(0).submit();
+      }
+      return false;
+    }
+  </script>
+</div>

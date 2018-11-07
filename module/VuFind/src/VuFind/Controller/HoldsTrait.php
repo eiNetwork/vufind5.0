@@ -144,8 +144,10 @@ trait HoldsTrait
                             '%%url%%' => $this->url()->fromRoute('myresearch-holds')
                         ],
                     ];
-                    $this->flashMessenger()->addMessage($msg, 'success');
-                    return $this->redirectToRecord('#top');
+                    $this->flashMessenger()->addMessage($msg, 'info');
+                    $view = $this->createViewModel(['skip' => true, 'title' => 'Hold Item', 'reloadParent' => true]);
+                    $view->setTemplate('blankModal');
+                    return $view;
                 } else {
                     // Failure: use flash messenger to display messages, stay on
                     // the current form.
@@ -181,12 +183,30 @@ trait HoldsTrait
             $defaultRequestGroup = false;
         }
 
+        // make sure these are valid locations
+        $lookForHome = $this->getUser()->home_library;
+        $lookForAlt = $this->getUser()->alternate_library;
+        $lookForPref = $this->getUser()->preferred_library;
+        foreach( $pickup as $thisLocation ) {
+            if( !isset($homeLib) && $thisLocation["locationID"] == $lookForHome ) {
+                $homeLib = $thisLocation["locationID"];
+            }
+            if( !isset($alternateLib) && $thisLocation["locationID"] == $lookForAlt ) {
+                $alternateLib = $thisLocation["locationID"];
+            }
+            if( !isset($preferredLib) && $thisLocation["locationID"] == $lookForPref ) {
+                $preferredLib = $thisLocation["locationID"];
+            }
+        }
+
         $view = $this->createViewModel(
             [
                 'gatheredDetails' => $gatheredDetails,
                 'pickup' => $pickup,
                 'defaultPickup' => $defaultPickup,
-                'homeLibrary' => $this->getUser()->home_library,
+                'homeLibrary' => isset($homeLib) ? $homeLib : "",
+                'preferredLibrary' => isset($preferredLib) ? $preferredLib : "",
+                'alternateLibrary' => isset($alternateLib) ? $alternateLib : "",
                 'extraHoldFields' => $extraHoldFields,
                 'defaultRequiredDate' => $defaultRequired,
                 'requestGroups' => $requestGroups,

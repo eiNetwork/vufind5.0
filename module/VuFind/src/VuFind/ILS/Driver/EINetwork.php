@@ -139,7 +139,7 @@ class EINetwork extends SierraRest implements
                     foreach( $cachedJson["orderRecords"] as $locationCode => $details ) {
                         $results[] = [
                                          "id" => $id,
-                                         "itemId" => null,
+                                         "item_id" => null,
                                          "availability" => false,
                                          "status" => "order",
                                          "location" => $details["location"],
@@ -165,7 +165,7 @@ class EINetwork extends SierraRest implements
                 // if they've already been taken care of, ignore them
                 if( !$thisChange["handled"] ) {
                     foreach( $results as $hKey => $thisHolding ) {
-                        if( $thisHolding["itemId"] == $thisChange["inum"] ) {
+                        if( $thisHolding["item_id"] == $thisChange["inum"] ) {
                             if( isset($thisChange["status"]) ) {
                                 $thisHolding["status"] = $thisChange["status"];
                             }
@@ -277,6 +277,146 @@ class EINetwork extends SierraRest implements
             array_splice($results2, 0, 0, [["id" => $id, "location" => "CHECKIN_RECORDS", "availability" => false, "status" => "?", "items" => [], "copiesOwned" => 0, "checkinRecords" => $results3]]);
         }
         return $results2;
+    }
+
+    /**
+     * Get Cancel Hold Details
+     *
+     * Get required data for canceling a hold. This value is used by relayed to the
+     * cancelHolds function when the user attempts to cancel a hold.
+     *
+     * @param array $holdDetails An array of hold data
+     *
+     * @return string Data for use in a form field
+     */
+    public function getCancelHoldDetails($holdDetails)
+    {
+        return $holdDetails['available'] || $holdDetails['in_transit'] ? ''
+            : $holdDetails['requestId'];
+    }
+
+    /**
+     * Cancel Holds
+     *
+     * Attempts to Cancel a hold. The data in $cancelDetails['details'] is determined
+     * by getCancelHoldDetails().
+     *
+     * @param array $cancelDetails An array of item and patron data
+     *
+     * @return array               An array of data on each request including
+     * whether or not it was successful and a system message (if available)
+     */
+    public function cancelHolds($cancelDetails)
+    {
+        // invalidate the cached data
+        $this->sessionCache->staleHoldsHash = md5(json_encode($this->sessionCache->holds));
+
+        $results = ['count' => 0, 'items' => []];
+        $overDriveHolds = [];
+        for($i=0; $i<count($cancelDetails["details"]); $i++ )
+        {
+            if( substr($cancelDetails["details"][$i], 0, 9) == "OverDrive" ) {
+                $overDriveHolds[] = substr(array_splice($cancelDetails["details"], $i, 1)[0], 9);
+                $i--;
+            }
+        }
+
+        // grab a copy of this because the OverDrive functionality can wipe it
+        $cachedHolds = $this->sessionCache->holds;
+
+/* VF5UPGRADE
+        // process the overdrive holds
+        foreach($overDriveHolds as $overDriveID ) {
+            $overDriveResults = $this->cancelOverDriveHold($overDriveID, $holds["patron"]);
+            $success &= $overDriveResults["result"];
+            $results['count']++;
+            $results['items'][$overDriveID] = ['item_id' => $overDriveID,
+                                               'success' => $overDriveResults["result"],
+                                               'status' => $overDriveResults["result"] ? 'hold_cancel_success' : 'hold_cancel_fail',
+                                               'sysMessage => $overDriveResults["result"] ? null : $this->formatErrorMessage($result['description'])];
+        }
+
+        // compare the sierra holds to my list of holds (workaround for item-level stuff)
+        if( count($holds["details"]) > 0 ) {
+            foreach( $holds["details"] as $key => $thisCancelId ) {
+                foreach( $cachedHolds as $thisHold ) {
+                    if( $thisHold["hold_id"] == $thisCancelId && isset( $thisHold["item_id"] ) ) {
+                        $success &= $this->updateHoldDetailed($holds["patron"], "requestId", "patronId", "cancel", "title", $thisHold["item_id"], null);
+                        unset($holds["details"][$key]);
+                    }
+                }
+            }
+        }
+*/
+
+        // process the sierra holds
+        if( count($cancelDetails["details"]) > 0 ) {
+            $sierraResults = parent::cancelHolds($cancelDetails);
+            $results['count'] += $sierraResults['count'];
+            $results['items'] = array_merge($results['items'], $sierraResults['items']);
+        }
+
+        return $results;
+    }
+
+    /**
+     * Get Pick Up Locations
+     *
+     * This is responsible for getting a list of valid library locations for
+     * holds / recall retrieval
+     *
+     * @param array $patron   Patron information returned by the patronLogin method.
+     * @param array $holdInfo Optional array, only passed in when getting a list
+     * in the context of placing a hold; contains most of the same values passed to
+     * placeHold, minus the patron data.  May be used to limit the pickup options
+     * or may be ignored.  The driver must not add new options to the return array
+     * based on this data or other areas of VuFind may behave incorrectly.
+     *
+     * @throws ILSException
+     * @return array        An array of associative arrays with locationID and
+     * locationDisplay keys
+     */
+    public function getPickUpLocations($patron = false, $holdInfo = null)
+    {
+        if( $this->memcached->get("pickup_locations") ) {
+            return $this->memcached->get("pickup_locations");
+        }
+
+        $locations = $this->getDbTable('Location')->getPickupLocations();
+        $pickupLocations = [];
+        foreach( $locations as $loc ) {
+            $pickupLocations[] = ["locationID" => $loc->code, "locationDisplay" => $loc->displayName];
+        }
+        $this->memcached->set("pickup_locations", $pickupLocations);
+
+        return $pickupLocations;
+    }
+
+
+    /**
+     * Place Hold
+     *
+     * Attempts to place a hold or recall on a particular item and returns
+     * an array with result details or throws an exception on failure of support
+     * classes
+     *
+     * @param array $holdDetails An array of item and patron data
+     *
+     * @throws ILSException
+     * @return mixed An array of data on the request including
+     * whether or not it was successful and a system message (if available)
+     */
+    public function placeHold($holdDetails)
+    {
+        // sanitize the ids if necessary
+        if( substr($holdDetails["id"], 0, 2) == ".b" ) {
+            $holdDetails["id"] = substr($holdDetails["id"], 2, -1);
+        }
+        if( substr($holdDetails["item_id"], 0, 2) == ".i" ) {
+            $holdDetails["item_id"] = substr($holdDetails["item_id"], 2, -1);
+        }
+
+        return parent::placeHold($holdDetails);
     }
 
     /**
@@ -427,5 +567,54 @@ class EINetwork extends SierraRest implements
     protected function translateLocation($location)
     {
         return $location['code'];
+    }
+
+    /**
+     * Fetch a bib record from Sierra
+     *
+     * @param int    $id     Bib record id
+     * @param string $fields Fields to request
+     * @param array  $patron Patron information, if available
+     *
+     * @return array|null
+     */
+    protected function getBibRecord($id, $fields, $patron = false)
+    {
+        // sanitize the id if necessary
+        if( substr($id, 0, 2) == ".b" ) {
+            $id = substr($id, 2, -1);
+        }
+
+        return parent::getBibRecord($id, $fields, $patron);
+    }
+
+    /**
+     * Utility method to calculate a check digit for a given id.
+     *
+     * @param string $id       Record ID
+     *
+     * @return character
+     */
+    public function getCheckDigit($id)
+    {
+        // pull off the item type if they included it
+        if( !is_numeric($id) ) {
+            $id = substr($id, 1);
+        }
+        // make sure it's a number
+        if( !is_numeric($id) ) {
+            return null;
+        }
+        // calculate it
+        $checkDigit = 0;
+        $multiple = 2;
+        while( $id > 0 ) {
+            $digit = $id % 10;
+            $checkDigit += $multiple * $digit;
+            $id = ($id - $digit) / 10;
+            $multiple++;
+        }
+        $checkDigit = $checkDigit % 11;
+        return ($checkDigit == 10) ? "x" : $checkDigit;
     }
 }

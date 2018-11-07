@@ -208,6 +208,9 @@ class CartController extends AbstractBase
         } elseif (strlen($this->params()->fromPost('delete', '')) > 0) {
             $controller = 'MyResearch';
             $action = 'Delete';
+        } else if (strlen($this->params()->fromPost('cancel', '')) > 0) {
+            $controller = 'MyResearch';
+            $action = 'Holds';
         } elseif (strlen($this->params()->fromPost('add', '')) > 0) {
             $action = 'Home';
         } elseif (strlen($this->params()->fromPost('export', '')) > 0) {

@@ -59,6 +59,13 @@ VuFind.register('lightbox', function Lightbox() {
     return document.dispatchEvent(event);
   }
 
+  function getCurrentUrl() {
+    return _currentUrl;
+  }
+  function getOriginalUrl() {
+    return _originalUrl;
+  }
+
   // Public: Present an alert
   function showAlert(message, _type) {
     var type = _type || 'info';
@@ -404,6 +411,8 @@ VuFind.register('lightbox', function Lightbox() {
     alert: showAlert,
     bind: bind,
     flashMessage: flashMessage,
+    getCurrentUrl: getCurrentUrl,
+    getOriginalUrl: getOriginalUrl,
     reload: reload,
     render: render,
     // Reset

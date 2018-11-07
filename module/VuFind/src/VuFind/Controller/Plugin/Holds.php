@@ -128,11 +128,19 @@ class Holds extends AbstractRequestBase
                         ]
                     );
                 } else {
+                    $cancelIDs = $params->fromPost('cancelSelectedIDS');
+                    $replacement = ((count($cancelIDs) > 1) ? (count($cancelIDs) . " requests") : "request") . "?<br>";
+                    foreach($params->fromPost('holdTitles') as $title) {
+                        $replacement .= "<br><span class=\"bold\">Title: </span>" . urldecode($title);
+                    }
+                    $msg = [['msg' => 'confirm_hold_cancel_selected_text',
+                             'html' => true,
+                             'tokens' => ['%%holdData%%' => $replacement]]];
                     return $this->getController()->confirm(
                         'hold_cancel_selected',
                         $this->getController()->url()->fromRoute('myresearch-holds'),
                         $this->getController()->url()->fromRoute('myresearch-holds'),
-                        'confirm_hold_cancel_selected_text',
+                        $msg,
                         [
                             'cancelSelected' => 1,
                             'cancelSelectedIDS' =>
@@ -158,13 +166,18 @@ class Holds extends AbstractRequestBase
             if ($cancelResults == false) {
                 $flashMsg->addMessage('hold_cancel_fail', 'error');
             } else {
-                if ($cancelResults['count'] > 0) {
+                $success = true;
+                foreach( $cancelResults['items'] as $thisCancel ) {
+                    $success &= $thisCancel['success'];
+                }
+                if ($success) {
                     $msg = $this->getController()
-                        ->translate(
-                            'hold_cancel_success_items',
-                            ['%%count%%' => $cancelResults['count']]
-                        );
-                    $flashMsg->addMessage($msg, 'success');
+                        ->translate(($cancelResults['count'] == 1) ? 'hold_cancel_success_single' : 'hold_cancel_success_multiple');
+                    $flashMsg->addMessage(['html' => true, 'msg' => $msg], 'info');
+                } else {
+                    $msg = $this->getController()
+                        ->translate(($cancelResults['count'] == 1) ? 'hold_cancel_fail_single' : 'hold_cancel_fail_multiple');
+                    $flashMsg->addMessage(['html' => true, 'msg' => $msg], 'error');
                 }
                 return $cancelResults;
             }

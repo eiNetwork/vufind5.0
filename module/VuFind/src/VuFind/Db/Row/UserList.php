@@ -216,6 +216,32 @@ class UserList extends RowGateway implements \VuFind\Db\Table\DbTableAwareInterf
     }
 
     /**
+     * Does this list contain a specific item?
+     *
+     * @param $id ID to check for in the list
+     *
+     * @return bool
+     */
+    public function contains($itemId)
+    {
+        $listId = $this->id;
+        $callback = function ($select) use ($listId, $itemId) {
+            $select->columns(
+                [
+                    '*'
+                ]
+            );
+            $select->join(['r' => 'resource'], 'user_resource.resource_id = r.id', []);
+            $select->where->equalTo('list_id', $listId)
+                          ->equalTo('source', explode("|", $itemId)[0])
+                          ->equalTo('record_id', explode("|", $itemId)[1]);
+        };
+        $table = $this->getDbTable('UserResource');
+        $results = $table->select($callback);
+        return $results->count() > 0;
+    }
+
+    /**
      * Destroy the list.
      *
      * @param \VuFind\Db\Row\User|bool $user  Logged-in user (false if none)

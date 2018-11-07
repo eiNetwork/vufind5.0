@@ -261,6 +261,7 @@
       <?
         $holdLink = null;
         $holdClick = null;
+        $targetStr = "";
         if($user && $this->isTitleCheckedOut && $isOverDrive):
           $holdClick = " data-toggle=\"dropdown\" data-target=\"#holdButtonDropdown,#holdButtonDropdownMobile\"";
           $saveClick = " data-toggle=\"dropdown\" data-target=\"#saveButtonDropdown,#saveButtonDropdownMobile\"";
@@ -268,11 +269,19 @@
           if( $isOverDrive ) {
             if( $this->holdArgs ) {
               $hashKey = json_decode(str_replace("'", "\"", $this->holdArgs))->hashKey;
-              $holdLink = $this->recordLink()->getActionUrl($this->driver, (!$this->canHold && $this->canCheckOut) ? "Checkout" : $this->transEsc("hold_button_place_hold")) . (($hashKey != "") ? ("?hashKey=" . $hashKey) : "");
+              $holdLink = $this->recordLink()->getActionUrl($this->driver, (!$this->canHold && $this->canCheckOut) ? "Checkout" : "Hold") . (($hashKey != "") ? ("?hashKey=" . $hashKey) : "");
+              $targetStr = " target=\"loginFrame\"";
             }
             $holdClick = " onClick=\"$(this).html('<i class=\'fa fa-spinner bwSpinner\'></i>&nbsp;Loading...')\"";
           } else {
-            $holdClick = " onClick=\"Lightbox.get('Record'," . ((!$this->canHold && $this->canCheckOut) ? ("'Checkout'," . $this->idArgs) : ($hasVolumes ? ("'SelectItem'," . $this->holdArgs) : ("'Hold'," . $this->holdArgs))) . ")\"";
+            if( !$this->canHold && $this->canCheckOut ) {
+              $holdLink = $this->recordLink()->getActionUrl($this->driver, "Checkout", json_decode($this->idArgs));
+            } else if( $hasVolumes ) {
+              $holdLink = $this->recordLink()->getActionUrl($this->driver, "SelectItem", json_decode($this->holdArgs));
+            } else {
+              $holdLink = $this->recordLink()->getActionUrl($this->driver, "Hold", json_decode(str_replace("'", "\"", $this->holdArgs), true) );
+            }
+            $targetStr = " data-lightbox";
           }
           $saveClick = ($user ? " data-toggle=\"dropdown\" data-target=\"#saveButtonDropdown,#saveButtonDropdownMobile\"" : " onClick=\"Lightbox.get('MyResearch','Login',false,{'clearLightbox':true})\"");
         endif;
@@ -313,7 +322,7 @@
     <div class="EIN-col-m-12 EIN-col-t-4 EIN-col-4" style="padding:5px 0px 10px">
       <div class="EIN-col-m-6 EIN-col-t-12 EIN-col-12">
         <? if($holdLink != null): ?>
-          <a href="<?=$holdLink?>" target="loginFrame">
+          <a href="<?=$holdLink?>"<?=($holdLink?$targetStr:"")?>>
         <? endif; ?>
         <button class="btn-default leftButton"<?=$holdClick?><?=((($this->canHold && (!$holdableCopyHere || $hasVolumes)) || $this->canCheckOut || ($isOverDrive && $this->holdArgs) || $accessOnline)?"":" disabled")?>><?=$holdLabel?></button>
         <? if($holdLink != null): ?>

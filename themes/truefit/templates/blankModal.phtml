@@ -1,0 +1,13 @@
+<!-- We need a template for modals that won't eat up any flash messages they generate.  That's what this is for. -->
+<?
+  // Set up page title:
+  if( !empty($this->title) ):
+    $this->headTitle($this->translate($this->title));
+    echo "<h2>" . $this->transEsc($this->title) . "</h2>";
+  endif;
+
+  // reload the parent (used if this template is loaded into an iframe instead of a modal
+  if( isset($this->reloadParent) && $this->reloadParent ) {
+    echo "<script type='text/javascript'>parent.window.scrollTo(0,0);parent.location.href=parent.location.href;</script>";
+  }
+?>

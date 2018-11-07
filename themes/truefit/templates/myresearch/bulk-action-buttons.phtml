@@ -1,0 +1,231 @@
+<? if (isset($list)): ?>
+  <input type="hidden" name="listID" value="<?=$this->escapeHtmlAttr($list->id)?>" />
+  <input type="hidden" name="listName" value="<?=$this->escapeHtmlAttr($list->title)?>" />
+  <? $bulkID = $list->id; ?>
+<? elseif (isset($hold)): ?>
+  <? $bulkID = $hold; ?>
+  <input type="hidden" name="confirm" value="0" />
+<? elseif (isset($history)): ?>
+  <? $bulkID = $history; ?>
+  <input type="hidden" name="confirm" value="0" />
+  <input type="hidden" name="readingHistoryAction" value="deleteMarked">
+<? elseif (isset($checkout)): ?>
+  <? $bulkID = $checkout; ?>
+  <input type="hidden" name="confirm" value="0" />
+  <input type="hidden" name="checkoutType" value="<?=$this->escapeHtmlAttr($checkout)?>" />
+<? else: ?>
+  <? $bulkID = "UNKNOWN"; ?>
+<? endif; ?>
+<input type="hidden" id="bulkAction<?=$bulkID?>" name="action" value="true" />
+<input type="hidden" id="bulkAction2<?=$bulkID?>" name="action2" value="true" />
+<input type="hidden" name="referrer" value="<?=$bulkID?>" />
+<? $user = $this->auth()->isLoggedIn(); ?>
+<script type="text/javascript">
+  function ToggleAll(target) {
+    target.prop('checked', !(target.prop('checked')));
+    target.parents('.panel-body').find('.checkbox-select-item').prop('checked', target.prop('checked'));
+    target.parents('.panel-body').find('.fa-square-o').parent().addClass(target.prop('checked') ? "checkToggleOff" : "checkToggleOn");
+    target.parents('.panel-body').find('.fa-square-o').parent().removeClass(target.prop('checked') ? "checkToggleOn" : "checkToggleOff");
+    target.parents('.panel-body').find('.fa-check-square').parent().addClass(target.prop('checked') ? "checkToggleOn" : "checkToggleOff");
+    target.parents('.panel-body').find('.fa-check-square').parent().removeClass(target.prop('checked') ? "checkToggleOff" : "checkToggleOn");
+    target.parents('.panel-body').find('.fa-square-o').parent('.checkToggleOn').each( function(index) { RemoveRecordCheckCookie($(this)); } );
+    target.parents('.panel-body').find('.fa-check-square').parent('.checkToggleOn').each( function(index) { AddRecordCheckCookie($(this)); } );
+  }
+
+  function ScanBulkButton(form) {
+    // set the checkbox correctly
+    form.find('.checkbox-select-all').prop('checked', true);
+    form.find('.checkbox-select-item').each( function() {
+      form.find('.checkbox-select-all').prop('checked', form.find('.checkbox-select-all').prop('checked') && this.checked);
+    } );
+
+    var target = form.find('.bulkButton');
+    target.prop('disabled', true);
+    var testSet = (form.siblings('.ajaxListContents').length > 0) ? form.siblings('.ajaxListContents').find('.ajaxItem') : form.siblings('.ajaxItem')
+    testSet.find('.checkbox-select-item').each( function() {
+      if(this.checked) {
+        target.prop('disabled', false);
+      }
+    } );
+
+    var showEmail = true;
+    var showPickup = true;
+    var showFreeze = true;
+    var showUnfreeze = true;
+    testSet.find('.checkbox-select-item').each( function() {
+      if(this.checked && (($(this).parents(".pull-left").siblings(".changeTarget").length == 0) || ($(this).parents(".pull-left").siblings(".changeTarget").attr("value") == "email"))) {
+        showPickup = false;
+      }
+      if(this.checked && (($(this).parents(".pull-left").siblings(".changeTarget").length == 0) || ($(this).parents(".pull-left").siblings(".changeTarget").attr("value") == "pickup"))) {
+        showEmail = false;
+      }
+      if(this.checked && ($(this).parents(".pull-left").siblings(".freezeTarget").length == 0)) {
+        showFreeze = false;
+      }
+      if(this.checked && ($(this).parents(".pull-left").siblings(".unfreezeTarget").length == 0)) {
+        showUnfreeze = false;
+      }
+    } );
+
+    $(".BulkPickupLocation").css({"display":(showPickup ? "list-item" : "none")});
+    $(".BulkEmailAddress").css({"display":(showEmail ? "list-item" : "none")});
+    $(".BulkFreeze").css({"display":(showFreeze ? "list-item" : "none")});
+    $(".BulkUnfreeze").css({"display":(showUnfreeze ? "list-item" : "none")});
+  }
+
+  function HoldSelected(form, id) {
+    form.attr('target','_self');
+    form.find('.temporaryInput').remove();
+    $('#bulkAction' + id).attr('name','bulkHold');
+    var temporaryUncheck = [];
+    form.find('.checkbox-select-item').each(function() {
+      if( $(this).prop('checked') ) {
+        var twin = form.siblings('.ajaxListContents').find('.checkbox-select-item[value="' + $(this).attr("value") + '"]');
+        var title = twin.parents('table').find('.itemTitle').children('a').html();
+        if( twin.parents('table').find('.hasVolumesTag').length ) {
+          temporaryUncheck.push(this);
+          $(this).append('<input type="hidden" class="temporaryInput" name="hasVolumesTitles[]" value="' + $(this).attr('value') + '|' + encodeURI(title) + '">');
+          $(this).prop("checked", false);
+        } else if( twin.parents('table').find('.availableTag').length && twin.parents('table').find('.availableTag').html().includes("It\'s Here!") ) {
+          temporaryUncheck.push(this);
+          var callNoShelf = twin.parents('table').find('.availableCopyText').filter(":last").html().split('<br>');
+          $(this).append('<input type="hidden" class="temporaryInput" name="localCopyTitles[]" value="' + $(this).attr('value') + '|' + encodeURI(title) + '|' + encodeURI(callNoShelf[0]) + '|' + encodeURI(callNoShelf[1]) + '">');
+          $(this).prop("checked", false);
+        } else {
+          $(this).append('<input type="hidden" class="temporaryInput" name="holdTitles[]" value="' + $(this).attr('value') + '|' + encodeURI(title) + '">');
+        }
+      }
+    } );
+
+    bulkActionSubmit(form);
+
+    if( temporaryUncheck.length > 0 ) {
+      for(var i=0; i<temporaryUncheck.length; i++ ) {
+        $(temporaryUncheck[i]).prop("checked", true);
+      }    
+    }
+  }
+
+  function ConfirmSelected(form, id, action) {
+    form.find('#bulkAction' + id).attr('name',action);
+    form.find('#bulkAction2' + id).attr('name',action + 'Selected');
+    form.find('.temporaryInput').remove();
+    form.find('.checkbox-select-item').each(function() {
+      if( $(this).prop('checked') ) {
+        $(this).append('<input type="hidden" class="temporaryInput" name="' + action + 'SelectedIDS[]" value="' + $(this).attr('value') + '">');
+        var twin = form.siblings('.ajaxItem').find('.checkbox-select-item[value="' + $(this).attr("value") + '"]');
+        var title = twin.parents('tr').find('.itemTitle').children('a, .unlinkedTitle').html();
+        $(this).append('<input type="hidden" class="temporaryInput" name="holdTitles[]" value="' + encodeURI(title) + '">');
+      }
+    } );
+  }
+
+  function AddSelected(form, id, listID) {
+    form.find('.temporaryInput').remove();
+    if( listID == "NEW" ) {
+      form.find('#bulkAction' + id).attr('name','createListBulk');
+      form.find('#bulkAction2' + id).attr('name','id');
+      form.find('#bulkAction2' + id).attr('value','NEW');
+      form.find('.checkbox-select-item').each(function() {
+        if( $(this).prop('checked') ) {
+           $(this).append('<input type="hidden" class="temporaryInput" name="recordId[]" value="' + $(this).attr('value') + '">');
+        }
+      } );
+      bulkActionSubmit(form);
+    } else {
+      form.find('#bulkAction' + id).attr('name','addBulk');
+      form.find('#bulkAction2' + id).attr('name','addListID');
+      form.find('#bulkAction2' + id).attr('value',listID);
+      form.find('.bulkButton').html('<i class=\'fa fa-spinner bwSpinner\'></i>&nbsp;Loading...');
+      bulkActionSubmit(form);
+    }
+  }
+
+  setTimeout( ScanBulkButton, 100, $('#bulkAction<?=$bulkID?>').parents('form') );
+</script>
+<div class="checkbox EIN-col-m-12">
+  <span class="EIN-col-m-12">
+    <input type="checkbox" name="selectAll" class="checkbox-select-all" style="display:none"/>
+    <button class="btn-default btn-wide EIN-hide-m" onclick="ToggleAll($(this).siblings('.checkbox-select-all')); ScanBulkButton($(this).parents('form')); return false;"><?=$this->transEsc('select_page')?></button>
+    <div class="EIN-col-m-6 EIN-hide-t EIN-hide">
+      <button class="btn-default leftButton" onclick="ToggleAll($(this).parent().siblings('.checkbox-select-all')); ScanBulkButton($(this).parents('form')); return false;"><?=$this->transEsc('select_page')?></button>
+    </div>
+    <div class="floatR bulkFloat">
+      <? if (isset($hold) && (($hold == "ready") || ($hold == "transit"))): ?>
+        <button class="btn-default btn-wide bulkButton EIN-hide-m" onclick="ConfirmSelected($(this).parents('form'), '<?=$bulkID?>', 'cancel')">Cancel Selected</button>
+        <button class="btn-default bulkButton rightButton EIN-hide-t EIN-hide" onclick="ConfirmSelected($(this).parents('form'), '<?=$bulkID?>', 'cancel')">Cancel Selected</button>
+      <? elseif (isset($checkout)): ?>
+        <button class="btn-default btn-wide bulkButton EIN-hide-m" onclick="ConfirmSelected($(this).parents('form'), '<?=$bulkID?>','renew')">Renew Selected</button>
+        <button class="btn-default bulkButton rightButton EIN-hide-t EIN-hide" onclick="ConfirmSelected($(this).parents('form'), '<?=$bulkID?>','renew')">Renew Selected</button>
+      <? elseif (isset($history)): ?>
+        <button class="btn-default btn-wide bulkButton EIN-hide-m" onclick="ConfirmSelected($(this).parents('form'), '<?=$bulkID?>','history')">Delete Selected</button>
+        <button class="btn-default bulkButton rightButton EIN-hide-t EIN-hide" onclick="ConfirmSelected($(this).parents('form'), '<?=$bulkID?>','history')">Delete Selected</button>
+      <? else: ?>
+        <button class="btn-default btn-wide bulkButton EIN-hide-m" data-toggle="dropdown" data-target="#listBulkDropdown<?=$bulkID?>"><?=$this->transEsc('with_selected')?><i class="fa fa-caret-down"></i></button>
+        <button class="btn-default bulkButton rightButton EIN-hide-t EIN-hide" data-toggle="dropdown" data-target="#listBulkDropdownMobile<?=$bulkID?>"><?=$this->transEsc('with_selected')?><i class="fa fa-caret-down"></i></button>
+      <? endif; ?>
+      <div class="dropdown" id="listBulkDropdown<?=$bulkID?>">
+        <ul role="navigation" class="dropdown-menu standardDropdown manageListDropdown" style="width:100%">
+          <? if (isset($list)): ?>
+            <li><button class="btn-dropdown btn-standardDropdown" onclick="HoldSelected($(this).parents('form'), '<?=$bulkID?>'); return false;"><?=$this->transEsc('hold_button_place_hold')?></button></li>
+            <li><button class="btn-dropdown btn-standardDropdown" onclick="$('#bulkAction<?=$bulkID?>').attr('name','delete');bulkActionSubmit($(this).parents('form'));return false;">Remove...</button></li>
+            <hr class="stretchHR">
+            <? if( $lists = $user->getLists() ): ?>
+              <? foreach( $lists as $thisList ): ?>
+                <? if( $thisList->id != $list->id ): ?>
+                  <li><button class="btn-dropdown btn-standardDropdown" onclick="AddSelected($(this).parents('form'), '<?=$bulkID?>', <?=$thisList->id?>)"><?=$thisList->title?></button></li>
+                <? endif; ?>
+              <? endforeach; ?>
+            <? endif; ?>
+            <li><button class="btn-dropdown btn-standardDropdown" onclick="AddSelected($(this).parents('form'), '<?=$bulkID?>', 'NEW');return false;">New list...</button></li>
+            <hr class="stretchHR">
+            <li><span class="modalNote">Click a list name to add all selected titles.  Click 'Remove...' to remove selected titles from this list.</span></li>
+          <? elseif (isset($hold) && ($hold == "all")): ?>
+            <li class="BulkPickupLocation"><button class="btn-dropdown btn-standardDropdown" onclick="$('#bulkAction<?=$bulkID?>').attr('name','changePickup');">Change Pickup</button></li>
+            <li class="BulkEmailAddress"><button class="btn-dropdown btn-standardDropdown" onclick="$('#bulkAction<?=$bulkID?>').attr('name','changeEmail');">Change Email</button></li>
+            <li class="BulkFreeze"><button class="btn-dropdown btn-standardDropdown" onclick="ConfirmSelected($(this).parents('form'), '<?=$bulkID?>', 'freeze')">Freeze</button></li>
+            <li class="BulkUnfreeze"><button class="btn-dropdown btn-standardDropdown" onclick="ConfirmSelected($(this).parents('form'), '<?=$bulkID?>', 'unfreeze')">Unfreeze</button></li>
+            <li><button class="btn-dropdown btn-standardDropdown" onclick="ConfirmSelected($(this).parents('form'), '<?=$bulkID?>', 'cancel')">Cancel</button></li>
+          <? elseif (isset($hold) && (($hold == "hold") || ($hold == "frozen"))): ?>
+            <li class="BulkPickupLocation"><button class="btn-dropdown btn-standardDropdown" onclick="$('#bulkAction<?=$bulkID?>').attr('name','changePickup');">Change Pickup</button></li>
+            <li class="BulkEmailAddress"><button class="btn-dropdown btn-standardDropdown" onclick="$('#bulkAction<?=$bulkID?>').attr('name','changeEmail');">Change Email</button></li>
+            <li><button class="btn-dropdown btn-standardDropdown" onclick="ConfirmSelected($(this).parents('form'), '<?=$bulkID?>', '<?=(($hold=='frozen')?'unfreeze':'freeze')?>')"><?=(($hold=='frozen')?'Unfreeze':'Freeze')?></button></li>
+            <li><button class="btn-dropdown btn-standardDropdown" onclick="ConfirmSelected($(this).parents('form'), '<?=$bulkID?>', 'cancel')">Cancel</button></li>
+          <? endif; ?>
+        </ul>
+      </div>
+    </div>
+    <div class="EIN-col-m-12 EIN-hide-t EIN-hide">
+      <div class="dropdown" id="listBulkDropdownMobile<?=$bulkID?>">
+        <ul role="navigation" class="dropdown-menu standardDropdown manageListDropdown" style="width:100%">
+          <? if (isset($list)): ?>
+            <li><button class="btn-dropdown btn-standardDropdown" onclick="HoldSelected($(this).parents('form'), '<?=$bulkID?>'); return false;"><?=$this->transEsc('hold_button_place_hold')?></button></li>
+            <li><button class="btn-dropdown btn-standardDropdown" onclick="$('#bulkAction<?=$bulkID?>').attr('name','delete');bulkActionSubmit($(this).parents('form'));return false;">Remove...</button></li>
+            <hr class="stretchHR">
+            <? if( $lists = $user->getLists() ): ?>
+              <? foreach( $lists as $thisList ): ?>
+                <? if( $thisList->id != $list->id ): ?>
+                  <li><button class="btn-dropdown btn-standardDropdown" onclick="AddSelected($(this).parents('form'), '<?=$bulkID?>', <?=$thisList->id?>)"><?=$thisList->title?></button></li>
+                <? endif; ?>
+              <? endforeach; ?>
+            <? endif; ?>
+            <li><button class="btn-dropdown btn-standardDropdown" onclick="AddSelected($(this).parents('form'), '<?=$bulkID?>', 'NEW');return false;">New list...</button></li>
+            <hr class="stretchHR">
+            <li><span class="modalNote">Click a list name to add all selected titles.  Click 'Remove...' to remove selected titles from this list.</span></li>
+          <? elseif (isset($hold) && ($hold == "all")): ?>
+            <li class="BulkPickupLocation"><button class="btn-dropdown btn-standardDropdown" onclick="$('#bulkAction<?=$bulkID?>').attr('name','changePickup');">Change Pickup</button></li>
+            <li class="BulkEmailAddress"><button class="btn-dropdown btn-standardDropdown" onclick="$('#bulkAction<?=$bulkID?>').attr('name','changeEmail');">Change Email</button></li>
+            <li class="BulkFreeze"><button class="btn-dropdown btn-standardDropdown" onclick="ConfirmSelected($(this).parents('form'), '<?=$bulkID?>', 'freeze')">Freeze</button></li>
+            <li class="BulkUnfreeze"><button class="btn-dropdown btn-standardDropdown" onclick="ConfirmSelected($(this).parents('form'), '<?=$bulkID?>', 'unfreeze')">Unfreeze</button></li>
+            <li><button class="btn-dropdown btn-standardDropdown" onclick="ConfirmSelected($(this).parents('form'), '<?=$bulkID?>', 'cancel')">Cancel</button></li>
+          <? elseif (isset($hold) && (($hold == "hold") || ($hold == "frozen"))): ?>
+            <li class="BulkPickupLocation"><button class="btn-dropdown btn-standardDropdown" onclick="$('#bulkAction<?=$bulkID?>').attr('name','changePickup');">Change Pickup</button></li>
+            <li class="BulkEmailAddress"><button class="btn-dropdown btn-standardDropdown" onclick="$('#bulkAction<?=$bulkID?>').attr('name','changeEmail');">Change Email</button></li>
+            <li><button class="btn-dropdown btn-standardDropdown" onclick="ConfirmSelected($(this).parents('form'), '<?=$bulkID?>', '<?=(($hold=='frozen')?'unfreeze':'freeze')?>')"><?=(($hold=='frozen')?'Unfreeze':'Freeze')?></button></li>
+            <li><button class="btn-dropdown btn-standardDropdown" onclick="ConfirmSelected($(this).parents('form'), '<?=$bulkID?>', 'cancel')">Cancel</button></li>
+          <? endif; ?>
+        </ul>
+      </div>
+    </div>
+  </label>
+</div>

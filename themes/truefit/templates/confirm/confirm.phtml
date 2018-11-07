@@ -1,0 +1,50 @@
+<h2><?=$this->transEsc($this->title) ?></h2>
+<div class="EIN-hide-m EIN-hide-t EIN-hide">
+<?=$this->flashmessages(false);?>
+</div>
+<? foreach( $this->messages as $msg ): ?>
+  <? if (true === is_array($msg)): ?>
+    <? if (isset($msg["html"]) && $msg["html"]): ?>
+      <div class="EIN-col-m-12 confirmText"><?=$this->translate($msg["msg"], $msg["tokens"])?></div>
+    <? else: ?>
+      <div class="EIN-col-m-12 confirmText"><?=$this->transEsc($msg["msg"], $msg["tokens"])?></div>
+    <? endif; ?>
+  <? else: ?>
+    <div class="EIN-col-m-12 confirmText"><?=$this->transEsc($msg)?></div>
+  <? endif; ?>
+<? endforeach; ?>
+<div class="modal-footer">
+  <div id="confirmFooter">
+    <form id="confirmForm" action="<?=$this->escapeHtmlAttr($this->confirm)?>" method="<?=isset($this->formMethod) ? $this->formMethod : "post"?>">
+      <input type="hidden" name="suppressFlashMessages" value="true">
+      <input type="hidden" name="confirm" value="true">
+      <? if (isset($this->extras)): ?>
+        <? foreach ($this->extras as $extra=>$value): ?>
+          <? if (is_array($value)): ?>
+            <? foreach ($value as $current): ?>
+              <input type="hidden" name="<?=$this->escapeHtmlAttr($extra) ?>[]" value="<?=$this->escapeHtmlAttr($current) ?>" />
+            <? endforeach; ?>
+          <? else: ?>
+            <input type="hidden" name="<?=$this->escapeHtmlAttr($extra) ?>" value="<?=$this->escapeHtmlAttr($value) ?>" />
+          <? endif; ?>
+        <? endforeach; ?>
+      <? endif;?>
+    </form>
+    <button class="btn-alternate btn-wide" onclick="$('#modalClose').click()"><?=$this->transEsc('confirm_dialog_no')?></button>
+    <button class="btn-default btn-wide" onclick="SubmitConfirmation();"><?=$this->transEsc('confirm_dialog_yes') ?></button>
+  </div>
+  <div id="loadingFooter" style="display:none;padding:9px;color:#3d3d3d">
+    <span><i class="fa fa-spinner"></i></span>
+    <span>&nbsp;Loading...</span>
+  </div
+</div>
+<script type="text/javascript">
+  function SubmitConfirmation() {
+    $('#confirmFooter').css('display','none');
+    $('#loadingFooter').css('display','block');
+    $('#confirmForm').submit( function(html) { location.reload(); } );
+    $('#confirmForm').submit();
+  }
+</script>
+
+

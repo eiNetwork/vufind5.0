@@ -972,6 +972,9 @@ class MyResearchController extends AbstractBase
     protected function getDriverForILSRecord($current)
     {
         $id = $current['id'] ?? '';
+        if( is_numeric($id) && strlen($id) == 7 ) {
+            $id = ".b" . $id . $this->getILS()->getCheckDigit($id);
+        }
         $source = $current['source'] ?? DEFAULT_SEARCH_BACKEND;
         $record = $this->serviceLocator->get('VuFind\Record\Loader')
             ->load($id, $source, true);
@@ -1008,8 +1011,8 @@ class MyResearchController extends AbstractBase
         $view->cancelForm = false;
 
         // Get held item details:
-        $result = $catalog->getMyHolds($patron);
-        $recordList = [];
+        $result = $catalog->getMyHolds($patron, $this->params()->fromPost('reloadHolds'));
+        $recordList = ['ready' => [], 'transit' => [], 'hold' => [], 'frozen' => []];
         $this->holds()->resetValidation();
         foreach ($result as $current) {
             // Add cancel details if appropriate:
@@ -1024,8 +1027,47 @@ class MyResearchController extends AbstractBase
             }
 
             // Build record driver:
-            $recordList[] = $this->getDriverForILSRecord($current);
+            $current = $this->getDriverForILSRecord($current);
+            $holdDetails = $current->getExtraDetail("ils_details");
+            $group = $holdDetails["available"] ? 'ready' : ($holdDetails["in_transit"] ? 'transit' : ($holdDetails["frozen"] ? 'frozen' : 'hold'));
+            $key = $current->GetTitle() . $holdDetails["requestId"];
+//VF5UPGRADE - test for ILL titles            $key = ((isset($current["ILL"]) && $current["ILL"]) ? $current["title"] : $current["driver"]->GetTitle()).$current["hold_id"];
+            $recordList[$group][$key] = $current;
         }
+        $allList = [];
+        $allPhysical = [];
+        $allEcontent = [];
+        $user = $this->getUser();
+        foreach($recordList as $name => $grouping) {
+            // if they're splitting econtent, bubble those to the bottom
+            if( $user['splitEcontent'] == "Y" ) {
+                $physical = [];
+                $econtent = [];
+                foreach( $grouping as $key => $thisItem ) {
+                    if( isset($thisItem["overDriveId"]) ) {
+                        $econtent[$key] = $thisItem;
+                    } else {
+                        $physical[$key] = $thisItem;
+                    }
+                }
+                ksort($physical);
+                ksort($econtent);
+                $allPhysical = array_merge($allPhysical, $physical);
+                $allEcontent = array_merge($allEcontent, $econtent);
+            } else {
+                ksort($grouping);
+                $recordList[$name] = $grouping;
+                $allList = array_merge($allList, $recordList[$name]);
+            }
+        }
+
+        // if they're splitting econtent, bubble those to the bottom
+        if( $user['splitEcontent'] == "Y" ) {
+            $allList = array_merge($allPhysical, $allEcontent);
+        }
+        $recordList['all'] = $allList;
+
+        $view->splitEcontent = ($user['splitEcontent'] == "Y");
 
         // Get List of PickUp Libraries based on patron's home library
         try {
@@ -1035,6 +1077,7 @@ class MyResearchController extends AbstractBase
             // locations, they are not supported and we should ignore them.
         }
         $view->recordList = $recordList;
+        $view->showHoldType = isset($_COOKIE["holdsTab"]) ? $_COOKIE["holdsTab"] : "all";
         return $view;
     }
 
