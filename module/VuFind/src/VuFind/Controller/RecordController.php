@@ -107,6 +107,7 @@ class RecordController extends AbstractRecord
         $canHold = (!empty($holdingTitleHold));
         $canCheckOut = false;
         $hasVolumes = false;
+
         // see whether or not this bib has different volumes
         $overDriveHolds = -1;
         foreach($view->holdings as $entry) {
@@ -125,7 +126,7 @@ class RecordController extends AbstractRecord
             $patron = $this->catalogLogin();
             $holds = $catalog->getMyHolds($patron);
             foreach($holds as $thisHold) {
-                if($thisHold['id'] == $bib) {
+                if($thisHold['id'] == substr($bib, 2, -1)) {
                     $canHold = false;
                     $view->isTitleHeld = true;
                 }

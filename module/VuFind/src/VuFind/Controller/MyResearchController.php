@@ -1795,4 +1795,30 @@ class MyResearchController extends AbstractBase
         }
         return $view;
     }
+
+    /**
+     * Load content in the background.  Can't do this via Ajax because they kill the session.
+     */
+    public function backgroundLoaderAction()
+    {
+        $patron = $this->catalogLogin();
+        // Stop now if the user does not have valid catalog credentials available:
+        if( is_array($patron) ) {
+            // they want us to load holds
+            if ( $this->params()->fromQuery('content') == "holds" ) {
+                // Connect to the ILS:
+                $catalog = $this->getILS();
+                $holds = $catalog->getMyHolds($patron);
+            // they want us to load checkouts
+            } else if ( $this->params()->fromQuery('content') == "checkouts" ) {
+                // Connect to the ILS:
+                $catalog = $this->getILS();
+                $holds = $catalog->getMyTransactions($patron);
+            }
+        }
+        $view = $this->createViewModel();
+        $view->setTemplate('blankModal');
+        $view->suppressFlashMessages = true;
+        return $view;
+    }
 }

@@ -73,16 +73,18 @@ function handleListContentResponse(response) {
   }
 }
 
-/*VF5UPGRADE
 $(document).ready(function() {
   if( window.self === window.top ) {
-    checkPatronHolds();
-    checkPatronCheckouts();
-
     if( $('#redirectMessage').length > 0 ) {
       $('#resetFlashMessages').css({"display":"none"});
       window.location.replace("/MyResearch/" + $('#redirectMessage').html() );
     }
+
+    checkPatronHolds();
+    if( $('#backgroundLoaderHolds').length == 0 ) {
+      checkPatronCheckouts();
+    } else {
+      $('#backgroundLoaderHolds').load( checkPatronCheckouts );
+    }
   }
 });
-*/
