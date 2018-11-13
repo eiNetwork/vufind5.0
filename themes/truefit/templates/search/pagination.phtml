@@ -1,0 +1,15 @@
+<? if ($this->pageCount && count($this->pagesInRange) > 1): ?>
+  <ul class="pagination">
+    <li<?=(($this->previous)?"":" class=\"disabled\"")?>><a href="<?=$this->currentPath() . $this->results->getUrlQuery()->setPage(1)?>"><span class="sr-only">First Page</span><i class="fa fa-angle-double-left"></i></a></li>
+    <li<?=(($this->previous)?"":" class=\"disabled\"")?>><a href="<?=$this->currentPath() . $this->results->getUrlQuery()->setPage($this->previous)?>"><span class="sr-only">Previous Page</span><i class="fa fa-angle-left"></i></a></li>
+    <? foreach ($this->pagesInRange as $page): ?>
+      <? if ($page != $this->current): ?>
+        <li><a href="<?=$this->currentPath() . $this->results->getUrlQuery()->setPage($page)?>"><?=$page?></a></li>
+      <? else: ?>
+        <li class="active"><span><?=$page?></span></li>
+      <? endif; ?>
+    <? endforeach; ?>
+    <li<?=(($this->next)?"":" class=\"disabled\"")?>><a href="<?=$this->currentPath() . $this->results->getUrlQuery()->setPage($this->next)?>"><span class="sr-only">Next Page</span><i class="fa fa-angle-right"></i></a></li>
+    <li<?=(($this->next)?"":" class=\"disabled\"")?>><a href="<?=$this->currentPath() . $this->results->getUrlQuery()->setPage($this->pageCount)?>"><span class="sr-only">Last Page</span><i class="fa fa-angle-double-right"></i></a></li>
+  </ul>
+<? endif; ?>

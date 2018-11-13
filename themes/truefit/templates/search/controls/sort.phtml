@@ -1,0 +1,39 @@
+<? if (!empty($this->sortList)): ?>
+  <? $caption = ""; 
+     foreach ($this->sortList as $sortType => $sortData): 
+       if($sortData['selected']):
+         $caption = $this->transEsc($sortData['desc']);
+       endif;
+     endforeach; ?>
+  <div class="EIN-col-m-4" style="display:inline;float:none;white-space:nowrap">
+    <button class="btn-alternate" id="sortButton<?=$this->id?>" data-toggle="dropdown" data-target="#sortButtonDropdown<?=$this->id?>"><?=$caption?><i class="fa fa-caret-down"></i></button>
+    <div class="dropdown" id="sortButtonDropdown<?=$this->id?>" style="position:absolute">
+      <ul role="navigation" class="dropdown-menu standardDropdown">
+        <? foreach ($this->sortList as $sortType => $sortData): ?>
+          <li><button class="btn-dropdown btn-standardDropdown manageListDropdown" onclick="submitSortForm('<?=$this->escapeHtmlAttr($sortType)?>', '<?=$this->id?>')"><?=$this->transEsc($sortData['desc'])?></button></li>
+        <? endforeach; ?>
+      </ul>
+    </div>
+  </div>
+  <form class="form-inline" action="<?=($this->path ? $this->path : $this->currentPath())?>" method="get" name="sort<?=$this->id?>">
+    <input type="hidden" id="sort_options_1_<?=$this->id?>" name="sort">
+    <? if( !isset($this->list) || !$this->list ): ?>
+      <?=$this->results->getUrlQuery()->asHiddenFields(array('sort' => '/.*/'));?>
+    <? endif; ?>
+    <noscript><input type="submit" class="btn btn-default" value="<?=$this->transEsc("Set")?>" /></noscript>
+  </form>
+  <script type="text/javascript">
+    function submitSortForm(sortType, id) {
+      $('#sort_options_1_' + id).val(sortType);
+      $("form[name='sort" + id + "']").submit();
+    }
+
+    jQuery(document).ready(function() {
+      $('#sortButtonDropdown<?=$this->id?>').attr("style","position:absolute;width:100%");
+      setTimeout(function() {
+        $('#sortButton<?=$this->id?>').css("width", $('#sortButtonDropdown<?=$this->id?>').children().outerWidth());
+        $('#sortButtonDropdown<?=$this->id?>').attr("style","");
+      }, 50);
+    });
+  </script>
+<? endif; ?>

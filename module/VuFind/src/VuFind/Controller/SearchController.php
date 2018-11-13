@@ -501,7 +501,17 @@ class SearchController extends AbstractSolrSearch
         }
 
         // Default case -- standard behavior.
-        return parent::resultsAction();
+        $view = parent::resultsAction();
+
+        // redirect to the record if it's an ISBN search with only one result
+        if( $this->getRequest()->getQuery("type") == "ISN" && $view->results->getResultTotal() == 1) {
+            $details = $this->getRecordRouter()->getTabRouteDetails($view->results->getResults()[0]->getUniqueID());
+            $target = $this->url()->fromRoute($details['route'], $details['params']);
+            return $this->redirect()->toUrl($target);
+        }
+        $view->searchType = ($this->getRequest()->getQuery("type") != null) ? $this->getRequest()->getQuery("type") : "Advanced";
+        $view->formatCategories = $this->getConfig()->FormatCategories;
+        return $view;
     }
 
     /**

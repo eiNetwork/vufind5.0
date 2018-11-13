@@ -1,0 +1,419 @@
+<?php
+  // Set up page title:
+  $lookfor = $this->results->getUrlQuery()->isQuerySuppressed() ? '' : $this->params->getDisplayQuery();
+  if (isset($this->overrideTitle)) {
+      $this->headTitle($this->overrideTitle);
+  } else {
+      $this->headTitle($this->translate('Search Results') . (empty($lookfor) ? '' : " - {$lookfor}"));
+  }
+
+  // Set up search box:
+  $this->layout()->searchbox = $this->context($this)->renderInContext(
+      'search/searchbox.phtml',
+      [
+        'lookfor' => $lookfor,
+        'searchIndex' => $this->params->getSearchHandler(),
+        'searchType' => $this->params->getSearchType(),
+        'searchId' => $this->results->getSearchId(),
+        'searchClassId' => $this->params->getSearchClassId(),
+        'checkboxFilters' => $this->params->getCheckboxFacets(),
+        'filterList' => $this->params->getFilters(),
+        'hasDefaultsApplied' => $this->params->hasDefaultsApplied(),
+        'selectedShards' => $this->params->getSelectedShards(),
+        'ignoreHiddenFiltersInRequest' => isset($this->ignoreHiddenFiltersInRequest) ? $this->ignoreHiddenFiltersInRequest : false,
+        'ignoreHiddenFilterMemory' => isset($this->ignoreHiddenFilterMemory) ? $this->ignoreHiddenFilterMemory : false,
+      ]
+  );
+
+  // Enable cart if appropriate:
+  $this->showBulkOptions = $this->params->getOptions()->supportsCart() && $this->showBulkOptions;
+  // Checkboxes if appropriate:
+  $this->showCartControls = $this->params->getOptions()->supportsCart() && $this->cart()->isActive()
+    && ($this->showBulkOptions || !$this->cart()->isActiveInSearch());
+  // Enable bulk options if appropriate:
+  $this->showCheckboxes = $this->showCartControls || $this->showBulkOptions;
+
+  // Load Javascript only if list view parameter is NOT full:
+  if ($this->params->getOptions()->getListViewOption() != "full") {
+    $this->headScript()->appendFile("record.js");
+    $this->headScript()->appendFile("embedded_record.js");
+  }
+
+  // Load Javascript dependencies into header:
+  $this->headScript()->appendFile("vendor/hunt.min.js");
+  $this->headScript()->appendFile("check_item_statuses.js");
+  $this->headScript()->appendFile("check_save_statuses.js");
+
+  // get results
+  $recordTotal = $this->results->getResultTotal();
+  $facetSet = $this->results->getRecommendations('side')[0]->getFacetSet();
+  $resultCategories = isset($facetSet["format_category"]["list"]) ? $facetSet["format_category"]["list"] : [];
+  $resultFormats = isset($facetSet["format"]["list"]) ? $facetSet["format"]["list"] : [];
+  $usableFormats = array();
+  $usableCategories = [];
+  foreach( $resultFormats as $thisFormat ):
+    $usableFormats[$thisFormat["value"]] = $thisFormat;
+  endforeach;
+
+  // load the empties
+  foreach($this->formatCategories->types as $category): 
+    $formatTypes = explode(",", $category);
+    $categoryName = array_splice($formatTypes, 0, 1)[0];
+    if( !isset($usableFormats["Category: " . $categoryName]) ):
+      $usableFormats["Category: " . $categoryName] = array("count" => 0);
+    endif;
+  endforeach;
+
+  $currentLocation = $this->ils()->getDriver()->getCurrentLocation();
+?>
+<div class="<?=$this->layoutClass('mainbody')?>">
+<!--VF5UPGRADE
+  <?php if (($recordTotal = $this->results->getResultTotal()) > 0): // only display these at very top if we have results ?>
+    <?php foreach ($this->results->getRecommendations('top') as $current): ?>
+      <?=""/*$this->recommend($current)*/?>
+    <?php endforeach; ?>
+  <?php endif; ?>
+  <?=$this->flashmessages()?>
+  <nav class="search-header hidden-print">
+    <div class="search-stats">
+      <?php if ($recordTotal > 0): ?>
+        <?=$this->context()->renderInContext('search/controls/showing.phtml', ['lookfor' => $lookfor, 'recordTotal' => $recordTotal]) ?>
+      <?php else: ?>
+        <h2><?=$this->transEsc('nohit_heading')?></h2>
+      <?php endif; ?>
+    </div>
+
+    <?php if ($recordTotal > 0): ?>
+      <div class="search-controls">
+        <?=$this->render('search/controls/limit.phtml')?>
+        <?=$this->render('search/controls/sort.phtml')?>
+        <?=$this->render('search/controls/view.phtml')?>
+      </div>
+    <?php endif; ?>
+  </nav>
+  <?php /* End Listing Options */ ?>
+
+  <?php if ($recordTotal < 1): ?>
+    <p>
+      <?php if (isset($this->overrideEmptyMessage)): ?>
+        <?=$this->overrideEmptyMessage?>
+      <?php else: ?>
+        <?php $this->layout()->srmessage = $this->translate('nohit_lookfor_html', ['%%lookfor%%' => $this->escapeHtml($lookfor)]); ?>
+        <?=$this->layout()->srmessage ?>
+      <?php endif; ?>
+    </p>
+    <?php if (isset($this->parseError)): ?>
+      <p class="alert alert-danger"><?=$this->transEsc('nohit_parse_error')?></p>
+    <?php endif; ?>
+    <?php foreach (($top = $this->results->getRecommendations('top')) as $current): ?>
+      <?=$this->recommend($current)?>
+    <?php endforeach; ?>
+    <?php foreach ($this->results->getRecommendations('noresults') as $current): ?>
+      <?php if (!in_array($current, $top)): ?>
+        <?=$this->recommend($current)?>
+      <?php endif; ?>
+    <?php endforeach; ?>
+  <?php else: ?>
+    <form id="search-cart-form" method="post" name="bulkActionForm" action="<?=$this->url('cart-searchresultsbulk')?>" data-lightbox data-lightbox-onsubmit="bulkFormHandler">
+      <?=$this->context($this)->renderInContext('search/bulk-action-buttons.phtml', ['idPrefix' => ''])?>
+    </form>
+    <?=$this->render('search/list-' . $this->params->getView() . '.phtml')?>
+    <?=$this->context($this)->renderInContext('search/bulk-action-buttons.phtml', ['idPrefix' => 'bottom_', 'formAttr' => 'search-cart-form'])?>
+    <?=$this->paginationControl($this->results->getPaginator(), 'Sliding', 'search/pagination.phtml', ['results' => $this->results, 'options' => isset($this->paginationOptions) ? $this->paginationOptions : []])?>
+
+    <div class="searchtools hidden-print">
+      <strong><?=$this->transEsc('Search Tools')?>:</strong>
+      <a href="<?=$this->results->getUrlQuery()->setViewParam('rss')?>"><i class="fa fa-bell" aria-hidden="true"></i> <?=$this->transEsc('Get RSS Feed')?></a>
+      &mdash;
+      <a href="<?=$this->url('search-email')?>" class="mailSearch" data-lightbox id="mailSearch<?=$this->escapeHtmlAttr($this->results->getSearchId())?>">
+        <i class="fa fa-envelope" aria-hidden="true"></i> <?=$this->transEsc('Email this Search')?>
+      </a>
+      <?php if ($this->accountCapabilities()->getSavedSearchSetting() === 'enabled'): ?>
+        &mdash;
+        <?php if (is_numeric($this->results->getSearchId())): ?>
+          <?php if ($this->results->isSavedSearch()): ?>
+            <a href="<?=$this->url('myresearch-savesearch')?>?delete=<?=urlencode($this->results->getSearchId())?>"><i class="fa fa-remove" aria-hidden="true"></i> <?=$this->transEsc('save_search_remove')?></a>
+          <?php else: ?>
+            <a href="<?=$this->url('myresearch-savesearch')?>?save=<?=urlencode($this->results->getSearchId())?>"><i class="fa fa-save" aria-hidden="true"></i> <?=$this->transEsc('save_search')?></a>
+          <?php endif; ?>
+        <?php endif; ?>
+      <?php endif; ?>
+    </div>
+  <?php endif; ?>
+</div>
+<?php /* End Main Listing */ ?>
+
+<?php /* Narrow Search Options */ ?>
+<div class="<?=$this->layoutClass('sidebar')?>">
+  <?php foreach ($this->results->getRecommendations('side') as $current): ?>
+    <?=$this->recommend($current)?>
+  <?php endforeach; ?>
+</div>
+<?php /* End Narrow Search Options */ ?>
+-->
+<div class="row">
+  <?=$this->flashmessages()?>
+  <div class="EIN-hide-m EIN-hide-t EIN-col-4 resultsLeftBar" id="facetsDiv">
+    <?php /* Narrow Search Options */ ?>
+    <div class="EIN-hide-m EIN-hide-t EIN-col-12 facetTitle">Filter Results</div>
+    <div class="EIN-col-m-12" style="float:none">
+      <?php foreach ($this->results->getRecommendations('side') as $current): ?>
+        <?=$this->recommend($current)?>
+      <?php endforeach; ?>
+      <?php /* End Narrow Search Options */ ?>
+    </div>
+  </div>
+  <div class="EIN-col-m-12 EIN-col-t-12 EIN-col-8 resultsRightBar">
+    <div class="EIN-col-m-12">
+      <table style="width:100%; text-align:center">
+        <tr>
+<?php
+  // process format categories
+  $anyApplied = isset($this->results->getUrlQuery()->getParamArray()["filter"]) ? $this->results->getUrlQuery()->getParamArray()["filter"] : [];
+  foreach( $anyApplied as $key=>$value):
+    if(strpos($value, "~format:") === false):
+      unset($anyApplied[$key]);
+    endif;
+  endforeach;
+
+  // loop over categories
+  foreach($this->formatCategories->types as $category):
+    $formatTypes = explode(",", $category);
+    $categoryName = array_splice($formatTypes, 0, 1)[0];
+    $imageName = str_replace(" ", "", $categoryName);
+    $thisCategory = $usableFormats["Category: " . $categoryName];
+
+    // see whether any of the sub-types are applied and whether there are any items in the category in the results
+    $thisCategory["someApplied"] = false;
+    $thisCategory["isApplied"] = true;
+    foreach($formatTypes as $key => $type):
+      if( array_key_exists($type, $usableFormats) ):
+        if( !in_array($categoryName, $usableCategories) ):
+          $usableCategories[] = $categoryName;
+        endif;
+        $thisCategory["someApplied"] = $thisCategory["someApplied"] || $usableFormats[$type]["isApplied"];
+        $thisCategory["isApplied"] = $thisCategory["isApplied"] && $usableFormats[$type]["isApplied"];
+      else:
+        unset($formatTypes[$key]);
+      endif;
+    endforeach;
+
+    // generate this format URL
+    $urlHelper = $this->results->getUrlQuery();
+    $formatURL = null;
+    // if all of the sub-types are applied, remove them
+    if( $thisCategory["isApplied"] ):
+      foreach($formatTypes as $thisType):
+        $urlHelper = $urlHelper->removeFacet('format', $thisType,  'OR');
+      endforeach;
+      $formatURL = $this->currentPath() . $urlHelper;
+    // otherwise if any of these subtypes exist in the results, add them
+    elseif( in_array($categoryName, $usableCategories) ):
+      foreach($formatTypes as $thisType):
+        $urlHelper = $urlHelper->addFacet('format', $thisType, 'OR');
+      endforeach;
+      $formatURL = $this->currentPath() . $urlHelper;
+    endif;
+?>
+            <td><div style="position:relative"<?=(($categoryName=="Music")?" class=\"hideOverflow\"":"")?>>
+              <?php if( $formatURL ): ?>
+                <a href="<?=$formatURL?>">
+              <?php endif; ?>
+              <div class="EIN-m-12" style="height:3px"></div>
+              <img class="formatIcon" src="../themes/truefit/images/icons/<?=$imageName . (((!$anyApplied && ($thisCategory["count"] > 0)) || $thisCategory["isApplied"]) ? "" : ($thisCategory["someApplied"] ? "Partial" : "Disabled"))?>.png" alt="<?=$categoryName?>"/><div class="formatIconCount"><span class="badge"><?=number_format($thisCategory["count"])?></span></div>
+              <?php if( $formatURL ): ?>
+                </a>
+              <?php endif; ?>
+              </div></td>
+<?php 
+  endforeach; 
+?>
+        </tr>
+        <tr aria-hidden="true">
+          <?php foreach($this->formatCategories->types as $category): ?>
+            <?php $formatTypes = explode(",", $category);  $categoryName = array_splice($formatTypes, 0, 1)[0]; ?>
+            <td class="formatName"<?=(in_array($categoryName, $usableCategories)?"":" style=\"color:#cdcdcd\"") . ">" . $categoryName?></td>
+          <?php endforeach; ?>
+        </tr>
+      </table>
+      <hr style="margin:5px 0">
+    </div>
+    <?php if ($recordTotal > 0): ?>
+      <div class="EIN-col-m-12">
+        <table style="margin:auto;text-align:center">
+          <tr><td colspan=3><span style="font-weight:700" id="searchTypeLabel"><?=$this->params->getSearchHandler()?></span> search for <span style="font-weight:700"><?=$lookfor?></span></td></tr>
+          <tr>
+            <td style="padding-left:10px" class="EIN-hide"><button class="btn-default" onClick="Lightbox.get('MyResearch', 'Facets')">Filter Results</button></td>
+            <td style="padding-left:10px;text-align:right" id="resultsCount"><span><strong><?=$this->localizedNumber($recordTotal)?></strong> titles sorted by </span></td>
+            <td style="padding-left:5px;text-align:left"><?=$this->render('search/controls/sort.phtml', ['sortList' => $this->params->getSortList(), 'results' => $this->results])?></td>
+          </tr>
+        </table>
+        <script type="text/javascript">
+          jQuery(document).ready(function() {
+            // change the search type label to be the display text, not the search type
+            <?php if( $this->searchType != "Advanced" ): ?>
+              $('#searchTypeLabel').html(document.getElementById('searchTypeBtn_' + $('#searchTypeLabel').html()).childNodes[1].nodeValue);
+              $('#searchBoxTypeLabel').html($('#searchTypeLabel').html());
+              $('.searchTypeInput').attr("value", "<?=$this->searchType?>");
+            <?php else: ?>
+              $('#searchTypeLabel').html("Advanced");
+              $('#searchBoxTypeLabel').html("Advanced");
+            <?php endif; ?>
+
+            setTimeout(function() {
+              while($('#resultsCount').parents("table").width() > $(window).innerWidth()) {
+                var fontSize = parseInt($('#resultsCount').css("font-size"));
+                $('#resultsCount').css("font-size", (fontSize - 1) + "px");
+              }
+            }, 100);
+          });
+        </script>
+        <?php $params = $this->results->getUrlQuery()->getParamArray(); ?>
+        <?php if( isset($params["filter"]) && $params["filter"] != null ): ?>
+          <div style="width:95%;margin:auto; text-align:center">
+            <div class="filterTagDiv">Refined to:</div>
+            <?php foreach( ($params["filter"]) as $key => $value ): ?>
+              <?php $bits = explode("\"",$value,2); $bits[1] = substr($bits[1], 0, -1); ?>
+              <div class="filterTagDiv"><span class="filterTag"><?=(($bits[0] == "~available_at:") ? ("Available " . (($bits[1] != "*") ? "Here" : "Somewhere")) : $bits[1])?>
+                <a href="<?=$this->currentPath() . $this->results->getUrlQuery()->removeFacet(substr($bits[0], (substr($bits[0], 0, 1) == "~") ? 1 : 0, -1), $bits[1], ((substr($bits[0], 0, 1) == "~") ? 'OR' : 'AND'))?>">
+                  <span class="sr-only">Remove</span><i class="fa fa-close"></i>
+                </a>
+              </span></div>
+            <?php endforeach; ?>
+            <div style="margin-top:8px">
+              <a href="<?=($this->currentPath() . $this->results->getUrlQuery()->removeAllFilters())?>"><button class="btn-alternate">Clear Filters</button></a>
+            </div>
+          </div>
+        <?php endif; ?>
+        <hr style="margin:5px 0">
+      </div>
+    <?php endif; ?>
+    <?php /* End Listing Options */ ?>
+
+    <div class="EIN-col-m-12">
+      <?php if ($recordTotal < 1): ?>
+        <p style="padding:8px">
+          <?php if (isset($this->overrideEmptyMessage)): ?>
+            <?=$this->overrideEmptyMessage?>
+          <?php else: ?>
+            <?=$this->transEsc('Your')?> <strong id="searchTypeLabel"><?=$this->searchType?></strong> <?=$this->transEsc('search')?> - <strong><?=$this->escapeHtml($lookfor)?></strong> - <?=$this->transEsc('nohit_suffix')?>
+          <?php endif; ?>
+        </p>
+        <script type="text/javascript">
+          jQuery(document).ready(function() {
+            // change the search type label to be the display text, not the search type
+            <?php if( $this->searchType != "Advanced" ): ?>
+              $('#searchTypeLabel').html(document.getElementById('searchTypeBtn_' + $('#searchTypeLabel').html()).childNodes[1].nodeValue);
+              $('#searchBoxTypeLabel').html($('#searchTypeLabel').html());
+              $('.searchTypeInput').attr("value", "<?=$this->searchType?>");
+            <?php else: ?>
+              $('#searchTypeLabel').html("Advanced");
+              $('#searchBoxTypeLabel').html("Advanced");
+            <?php endif; ?>
+          });
+        </script>
+        <?php if (isset($this->parseError)): ?>
+          <p class="alert alert-danger"><?=$this->transEsc('nohit_parse_error')?></p>
+        <?php endif; ?>
+        <?php foreach (($top = $this->results->getRecommendations('top')) as $current): ?>
+          <?=$this->recommend($current)?>
+        <?php endforeach; ?>
+        <?php foreach ($this->results->getRecommendations('noresults') as $current): ?>
+          <?php if (!in_array($current, $top)): ?>
+            <?=$this->recommend($current)?>
+          <?php endif; ?>
+        <?php endforeach; ?>
+        <?php $params = $this->results->getUrlQuery()->getParamArray(); ?>
+        <?php if( isset($params["filter"]) && $params["filter"] != null ): ?>
+          <p style="padding:8px">You may see more results by removing <?=((count($params["filter"]) > 1) ? "some of the filters" : "the filter")?> below.</p>
+          <div style="width:95%;margin:auto; text-align:center">
+            <div class="filterTagDiv">Refined to:</div>
+            <?php foreach( ($params["filter"]) as $key => $value ): ?>
+              <?php $bits = explode("\"",$value,2); $bits[1] = substr($bits[1], 0, -1); ?>
+              <div class="filterTagDiv"><span class="filterTag"><?=(($bits[0] == "~available_at:") ? ("Available " . (($bits[1] != "*") ? "Here" : "Somewhere")) : $bits[1])?>
+                <a href="<?=$this->currentPath() . $this->results->getUrlQuery()->removeFacet(substr($bits[0], (substr($bits[0], 0, 1) == "~") ? 1 : 0, -1), $bits[1], ((substr($bits[0], 0, 1) == "~") ? 'OR' : 'AND'))?>">
+                  <span class="sr-only">Remove</span><i class="fa fa-close"></i>
+                </a>
+              </span></div>
+            <?php endforeach; ?>
+          </div><br>
+        <?php endif; ?>
+      <?php else: ?>
+        <?=$this->render('search/list-' . $this->params->getView() . '.phtml')?>
+        <?=$this->paginationControl($this->results->getPaginator(), 'Sliding', 'search/pagination.phtml', array('results' => $this->results))?>
+      <?php endif; ?>
+    </div>
+    <?php /* End Main Listing */ ?>
+  </div>
+</div>
+<script type="text/javascript">
+  $('#saveSearchButton').prop('disabled', false);
+  $('#saveSearchButton').parent().removeClass('disabled');
+  $('#saveSearchButton').parent().attr('href', '<?=$this->url('myresearch-savesearch')?>?save=<?=urlencode($this->results->getSearchId())?>');
+  $('.searchTypeCheck').css({"display":"none"});
+  $('.searchTypeCheck.stc<?=$this->searchType?>').css({"display":"inline"});
+  
+  $(document).ready( function() {
+    $(".highlightContainer").each( function() {
+      if( $(this).children("table").outerWidth() > $(this).outerWidth() ) {
+        var margin = 5 + $(this).next().outerHeight() - $(this).children("table").position().top;
+        if( margin > 0 ) {
+          $(this).children("table").css({"margin-top":(margin + "px")});
+        }
+      }
+    } );
+  } );
+</script>
+<div class="dropdown" id="saveButtonDropdown">
+  <ul role="navigation" class="dropdown-menu standardDropdown manageListDropdown">
+    <?php if($user = $this->auth()->isLoggedIn()):  foreach($user->getLists() as $list): ?>
+      <li>
+        <form class="removeFromList" method="post" action="<?=$this->url('userList', array('id' => $list->id))?>">
+          <input type="hidden" name="confirm" value="1">
+          <input type="hidden" name="delete" value="">
+          <input type="hidden" name="source" value="">
+          <input type="hidden" name="list" value="<?=$list->id?>">
+          <button class="btn-dropdown btn-standardDropdown" onClick="$(this).parents('.dropdown').siblings('.rightButton').html('<i class=\'fa fa-spinner bwSpinner\'></i>&nbsp;Loading...')"><span class="sr-only">Checked</span><i class="fa fa-check greenCheck"></i><?=$list->title?></button>
+        </form>
+        <form class="addToList" method="post" action="">
+          <input type="hidden" name="submit" value="1">
+          <input type="hidden" name="id" value="">
+          <input type="hidden" name="source" value="">
+          <input type="hidden" name="list" value="<?=$list->id?>">
+          <button class="btn-dropdown btn-standardDropdown" onClick="$(this).parents('.dropdown').siblings('.rightButton').html('<i class=\'fa fa-spinner bwSpinner\'></i>&nbsp;Loading...')"><?=$list->title?></button>
+        </form>
+      </li>
+    <?php endforeach;  endif; ?>
+    <li><button class="btn-dropdown btn-standardDropdown newListButton" onclick="">New list...</button></li>
+    <hr class="stretchHR">
+    <li><span class="modalNote">Click a non-checked list to add this title.  Click a checked list to remove this title.</span></li>
+  </ul>
+</div>
+<script type="text/javascript">
+  function moveSaveDropdown(button, itemData) {
+    $(button).after($("#saveButtonDropdown"));
+    itemData = JSON.parse(itemData.replace(/'/g, "\""));
+    $("#saveButtonDropdown").find(".removeFromList").each( function() {
+      var myId = parseInt($(this).find("input[name='list']").attr("value"));
+      if( itemData.lists.indexOf(myId) != -1 ) {
+        $(this).find("input[name='delete']").attr("value", itemData.id.split("|")[1]);
+        $(this).find("input[name='source']").attr("value", itemData.id.split("|")[0]);
+        $(this).css({"display":"inherit"});
+      } else {
+        $(this).css({"display":"none"});
+      }
+    });
+    $("#saveButtonDropdown").find(".addToList").each( function() {
+      var myId = parseInt($(this).find("input[name='list']").attr("value"));
+      if( itemData.lists.indexOf(myId) == -1 ) {
+        $(this).attr("action", itemData.saveLink);
+        $(this).find("input[name='id']").attr("value", itemData.id.split("|")[1]);
+        $(this).find("input[name='source']").attr("value", itemData.id.split("|")[0]);
+        $(this).css({"display":"inherit"});
+      } else {
+        $(this).css({"display":"none"});
+      }
+    });
+    $("#saveButtonDropdown").find(".newListButton").attr("onClick", "Lightbox.get('MyResearch','EditList',{'id':'NEW','recordId':'" + itemData.id.split("|")[1] + "'})");
+  }
+</script>
