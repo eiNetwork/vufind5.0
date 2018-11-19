@@ -500,6 +500,16 @@ class SearchController extends AbstractSolrSearch
             return $this->forwardTo('Tag', 'Home');
         }
 
+        // set the retain filters flag
+        if( isset($this->getRequest()->getQuery()->retainFilters) ) {
+            $this->getILS()->setSessionVar("retainFilters", ($this->getRequest()->getQuery()->retainFilters == "true") ? true : false);
+        }
+
+        // suppress the search prompt
+        if( $this->params()->fromQuery('lookfor') == "Search For..." ) {
+            $this->getRequest()->getQuery()->set('lookfor', "");
+        }
+
         // Default case -- standard behavior.
         $view = parent::resultsAction();
 

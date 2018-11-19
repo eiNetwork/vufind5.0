@@ -1,0 +1,249 @@
+<?php
+  // Set up convenience variables:
+  $account = $this->auth()->getManager();
+  $user = $account->isLoggedIn();
+  $record = $this->record($this->driver);
+  $deets = $this->driver->getHighlightDetails();
+  $lookfor = explode(" ", $this->params->getDisplayQuery());
+  foreach( $lookfor as $index => $value ) {
+    if( $value == "OR" || $value == "AND" ) {
+      unset($lookfor[$index]);
+    } else {
+      $lookfor[$index] = strtolower($value);
+    }
+  }
+  $sources = ["title","author","short_title"];
+  foreach( $sources as $thisSource ) {
+    if( isset($deets[$thisSource][0]) ) {
+      $haystack = strtolower($deets[$thisSource][0]);
+      foreach( $lookfor as $index => $value ) {
+        if( strpos($haystack, "{{{{start_hilite}}}}" . $value . "{{{{end_hilite}}}}") !== false ) {
+          unset($lookfor[$index]);
+        } else {
+          $bits = explode("{{{{start_hilite}}}}", $haystack);
+          foreach( $bits as $bitIndex => $thisBit ) {
+            if( $bitIndex == 0 ) {
+              continue;
+            }
+            $highlight = strtolower(explode("{{{{end_hilite}}}}", $thisBit, 2)[0]);
+            $count = similar_text($value, $highlight, $percent);
+            if( $percent > 60 ) {
+              unset($lookfor[$index]);
+              continue 2;
+            }
+          }
+        }
+      }
+    }
+  }
+  $showMatch = count($lookfor) > 0;
+?>
+<div class="EIN-col-m-12">
+  <input type="hidden" value="<?=$this->escapeHtmlAttr($this->driver->getUniqueID())?>" class="hiddenId" />
+  <input type="hidden" value="<?=$this->escapeHtmlAttr($this->driver->getResourceSource())?>" class="hiddenSource" />
+  <input type="hidden" value="true" class="hiddenLoadThisStatus">
+  <div class="EIN-col-m-3">
+    <div class="text-center" style="padding:10px" onMouseEnter="ShowDescriptionToolTip('<?=$this->driver->getUniqueID()?>', $(this).parent());" onMouseLeave="HideDescriptionToolTip();">
+      <?php /* Display thumbnail if appropriate: */ ?>
+      <?php $largeThumb = $record->getThumbnail('large'); ?>
+      <?php if ($largeThumb): ?>
+        <a href="<?=$this->recordLink()->getUrl($this->driver)?>">
+          <img alt="<?=$this->transEsc('Cover Image')?>" class="recordcover" src="<?=$this->escapeHtmlAttr($largeThumb);?>"/>
+        </a>
+      <?php else: ?>
+        <img src="<?=$this->url('cover-unavailable')?>" class="recordcover" alt="<?=$this->transEsc('No Cover Image')?>"/>
+      <?php endif; ?>
+    </div>
+  </div>
+  <div class="EIN-col-m-9" style="padding-right:10px">
+    <div class="highlightContainer EIN-col-m-12 EIN-col-t-8 EIN-col-8">
+      <h1 property="name" class="itemTitle"><a href="<?=$this->recordLink()->getUrl($this->driver)?>">
+        <?=$this->highlight(($this->driver->getShortTitle() == "") 
+             ? trim((isset($deets["title"][0]) ? $deets["title"][0] : $this->driver->getTitle()),"\0\t\n\x0B\r /") 
+             : (trim((isset($deets["title_short"][0]) ? $deets["title_short"][0] : $this->driver->getShortTitle()),"\0\t\n\x0B\r /") . ' ' . 
+                trim((isset($deets["title_sub"][0]) ? $deets["title_sub"][0] : $this->driver->getSubtitle()),"\0\t\n\x0B\r /") . ' ' . 
+                trim($this->driver->getTitleSection(),"\0\t\n\x0B\r /")));
+        ?>
+      </a></h1>
+
+      <?php $authors = $this->driver->getDeduplicatedAuthors(); ?>
+      <?php if (isset($authors['primary']) && !empty($authors['primary'])): ?>
+        <? $primaryAuthor = array_keys($authors['primary'])[0]; ?>
+        <h4 property="author" class="itemAuthor">by <a href="<?=$record->getLink('author', $primaryAuthor)?>" class="authorLink"><?=$this->highlight(isset($deets["author"][0]) ? $deets["author"][0] : $primaryAuthor)?></a></h4>
+      <?php endif; ?>
+
+      <table>
+        <?php $languages = $this->driver->getLanguages(); $showLanguages = false; ?>
+        <?php foreach( $languages as $thisLanguage ): ?>
+            <?php $showLanguages |= ($thisLanguage != "English"); ?>
+        <?php endforeach; ?>
+        <?php if ($showLanguages): ?>
+          <?php $languageCount = 0; $hash = md5($this->driver->getUniqueID()); foreach( $languages as $thisLanguage ): ?>
+            <?php if( $languageCount == 3 ): ?>
+              <tr class="languageAccordionLess<?=$hash?>" style="display:table-row;font-size:14px">
+                <td class="EIN-hide-m itemDetailCategory">&nbsp;</td>
+                <td style="padding-bottom:5px"><a class="moreLink" onclick="ToggleLanguageAccordion('<?=$hash?>',1);">More</a></td>
+              </tr>
+            <?php endif; ?>
+            <tr<?=(($languageCount >= 3) ? (" class=\"languageAccordionMore" . $hash . "\" style=\"display:none\"") : "")?>>
+              <?php if ($languageCount == 0): ?>
+                <td rowspan=<?=((count($languages) <= 3)?count($languages):"3")?> class="EIN-hide-m itemDetailCategory"><?=("Language" . (($this->driver->getFormatCategory()=="Video")?" and/or Subtitles:":":"))?></td>
+              <?php elseif ($languageCount >= 3): ?>
+                <td class="EIN-hide-m itemDetailCategory">&nbsp</td>
+              <?php endif; ?>
+              <td style="padding-bottom:5px">
+                <span class="languageTag"><?=$thisLanguage?></span>
+                <?php $languageCount++; ?>
+              </td>
+            </tr>
+          <?php endforeach; ?>
+          <?php if( $languageCount > 3 ): ?>
+            <tr class="languageAccordionMore<?=$hash?>" style="display:none;font-size:14px">
+              <td class="EIN-hide-m itemDetailCategory">&nbsp;</td>
+              <td><a class="moreLink" onclick="ToggleLanguageAccordion('<?=$hash?>',0);">Less</a></td>
+            </tr>
+            <script type="text/javascript">
+              function ToggleLanguageAccordion(hashCode,showMore) {
+                $('.languageAccordionMore' + hashCode).css({"display":(showMore ? "table-row" : "none")});
+                $('.languageAccordionLess' + hashCode).css({"display":(showMore ? "none" : "table-row")});
+                moveButtons();
+              }
+            </script>
+          <?php endif; ?>
+        <?php endif; ?>
+
+        <?php $formats = $this->driver->getFormats(); if (!empty($formats)): ?>
+          <?php $firstTime = true; foreach( $formats as $thisFormat ): ?>
+            <tr>
+              <td class="EIN-hide-m itemDetailCategory"><?=($firstTime?"Format:":"&nbsp;")?></td>
+              <td style="padding-bottom:5px">
+                <span class="formatTag"><?=$thisFormat?></span>
+
+                <?php if( $firstTime ): ?>
+                  <?php $publications = $this->driver->getPublicationDetails(); if (!empty($publications)): ?>
+                    <?php foreach ($publications as $field): ?>
+                      <?php $pubDate = $field->getDate(); if (!empty($pubDate)): ?>
+                        <span property="publicationDate" class="publishDate"><?=$this->escapeHtml($pubDate)?></span>
+                      <?php break; endif; ?>
+                    <?php endforeach; ?>
+                  <?php endif; ?>
+                  <?php $firstTime = false; ?>
+                <?php endif; ?>
+              </td>
+            </tr>
+          <?php endforeach; ?>
+        <?php endif; ?>
+
+        <tr>
+          <td class="EIN-hide-m itemDetailCategory">Availability:</td>
+          <td style="padding-bottom:5px">
+            <span class="status ajax-availability hidden"><i class="fa fa-spinner"></i>&nbsp<?=$this->transEsc('Loading')?>...</span>
+          </td>
+        </tr>
+        <?php $urls = $this->driver->getURLs(); if( !empty($urls) ): usort($urls, function($a, $b) { return strcmp($a["desc"], $b["desc"]); } ); ?>
+          <tr>
+            <td class="EIN-hide-m itemDetailCategory hidden">Links:</td>
+            <td><span class="accordionParagraph">
+              <?php foreach($urls as $count => $thisURL): ?>
+                <div class="itemURL hidden"><a href="<?=$thisURL["url"]?>" target="_blank"><?=((strpos($thisURL["url"], "http://carnegielbyofpittpa.oneclickdigital.com") !== false) ? 'Download from OneClick' : (isset($thisURL["desc"]) ? $thisURL["desc"] : ""))?></a>
+                  <?php if( $count == 2 && count($urls) > 3 ): ?>
+                    <br><a href="<?=$this->recordLink()->getUrl($this->driver)?>">Plus <?=(count($urls) - 3)?> more ...</a>
+                    </div>
+                    <?php break; ?>
+                  <?php endif; ?>
+                </div>
+              <?php endforeach; ?>
+            </span></td>
+          </tr>
+        <?php endif; ?>
+        <?php if( $showMatch ): ?>
+          <?php if( $snippets = $this->driver->getHighlightedSnippet($lookfor) ): ?>
+            <?php foreach( $snippets as $thisSnippet ): /*VF5UPGRADE* ?>
+              <tr>
+                <td class="EIN-hide-m itemDetailCategory"><?=($thisSnippet["caption"] ? $thisSnippet["caption"] : "Other")?>:</td>
+                <td>... <?=$this->highlight($thisSnippet["snippet"])?> ...</td>
+              </tr>
+            <?php /*VF5UPGRADE*/ endforeach; ?>
+          <?php elseif( $summary = $this->driver->getSummary() ): ?>
+            <?php $cleanSummary = ""; ?>
+            <?php $summary = $summary[0]; ?>
+            <?php foreach( $lookfor as $key ): ?>
+              <?php if( ($colon = strpos($key, ":")) !== false ): ?>
+                <?php $key = substr($key, $colon + 1) ?>
+              <?php endif; ?>
+              <?php if( ($closeParen = strpos($key, ")")) !== false ): ?>
+                <?php $key = substr($key, 0, $closeParen) ?>
+              <?php endif; ?>
+              <?php if( ($cleanSummary == "") && ($key != "") ): ?>
+                <?php if( ($pos = strpos(strtolower($summary), strtolower($key))) !== false ): ?>
+                  <?php $buffer = 30; ?>
+                  <?php $startPos = (($pos - $buffer) <= 0) ? 0 : (strrpos(substr($summary, 0, $pos - $buffer), " ") + 1); ?>
+                  <?php $endPos = (($pos + strlen($key) + $buffer) >= strlen($summary)) ? -1 : strpos(substr($summary, $pos + strlen($key) + $buffer), " "); ?>
+                  <?php $cleanSummary = substr($summary, $startPos, $pos - $startPos) . "{{{{START_HILITE}}}}" . substr($summary, $pos, strlen($key)) . "{{{{END_HILITE}}}}" . substr($summary, $pos + strlen($key), (($endPos >= 0) ? ($endPos + $buffer) : strlen($summary))); ?>
+                  <tr>
+                    <td class="EIN-hide-m itemDetailCategory">Summary:</td>
+                    <td><?=(($startPos > 0) ? "... " : "") . $this->highlight($cleanSummary) . (($endPos >= 0) ? " ..." : "")?></td>
+                  </tr>            
+                <?php endif; ?>
+              <?php endif; ?>
+            <?php endforeach; ?>
+          <?php endif; ?>
+        <?php endif; ?>
+      </table>
+
+      <?php
+        if($user):
+          $myLists = $user->getLists();
+          $hasLists = $user->getLists($this->driver->getResourceSource()."|".$this->driver->getUniqueID());
+          $containingLists = [];
+          foreach($hasLists as $thisList):
+            //VF5UPGRADE$containingLists[] = $thisList->list_id;
+          endforeach;
+
+          $itemData = json_encode(["id" => $this->driver->getResourceSource() . "|" . $this->driver->getUniqueID(), "lists" => $containingLists, "saveLink" => $this->recordLink()->getActionUrl($this->driver, 'Save')]);
+          $itemData = str_replace("\"", "\\'", $itemData);
+
+          $holdClick = "";
+          $saveClick = " data-toggle=\"dropdown\" data-target=\"#saveButtonDropdown\" onclick=\"moveSaveDropdown(this, '" . $itemData . "');\"";
+          $mobileSaveClick = " data-toggle=\"dropdown\" data-target=\"#saveButtonDropdown\" onclick=\"moveSaveDropdown($(this).parent().next().children('span'), '" . $itemData . "');\"";
+        else:
+          $holdClick = " onClick=\"Lightbox.get('MyResearch','Login',false,{'clearLightbox':true})\"";
+          $saveClick = " onClick=\"Lightbox.get('MyResearch','Login',false,{'clearLightbox':true})\"";
+          $mobileSaveClick = " onClick=\"Lightbox.get('MyResearch','Login',false,{'clearLightbox':true})\"";
+        endif;
+      ?>
+    </div>
+    <div class="EIN-hide-m EIN-col-t-4 EIN-col-4" style="padding:5px 0px 10px">
+      <div class="EIN-col-m-6 EIN-col-t-12 EIN-col-12">
+        <a data-lightbox>
+          <button class="btn-default leftButton"<?=$holdClick?> disabled><i class="fa fa-spinner"></i>&nbsp;Loading...</button>
+          <div class="dropdown" id="holdButtonDropdown<?=str_replace(".", "", $this->driver->getUniqueID())?>">
+            <ul role="navigation" class="dropdown-menu standardDropdown manageListDropdown">
+            </ul>
+          </div>
+        </a>
+      </div>
+      <div class="EIN-col-m-12">
+        <a data-lightbox>
+          <button class="btn-default rightButton"<?=$saveClick?>><?=$this->transEsc("list_manage")?><?=($user?"<i class=\"fa fa-caret-down\"></i>":"")?></button>
+        </a>
+      </div>
+    </div>
+  </div>
+  <div class="EIN-col-m-12 EIN-hide-t EIN-hide" style="padding:5px 10px 10px">
+    <div class="EIN-col-m-6">
+      <a data-lightbox>
+        <button class="btn-default leftButton"<?=$holdClick?> disabled><i class="fa fa-spinner"></i>&nbsp;Loading...</button>
+      </a>
+    </div>
+    <div class="EIN-col-m-6">
+      <a data-lightbox>
+        <button class="btn-default rightButton"<?=$mobileSaveClick?>><?=$this->transEsc("list_manage")?><?=($user?"<i class=\"fa fa-caret-down\"></i>":"")?></button>
+      </a>
+    </div>
+    <div class="EIN-col-m-12">
+      <span></span>
+    </div>
+  </div>
+  <div class="EIN-col-m-12"><hr style="margin:5px 0"></div>
+</div>

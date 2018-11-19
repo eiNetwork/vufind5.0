@@ -46,6 +46,86 @@ class SolrMarc extends SolrDefault
     use MarcAdvancedTrait;
 
     /**
+     * Get the publication dates of the record.  See also getDateSpan().
+     *
+     * @return array
+     */
+    public function getPublicationDates()
+    {
+        return isset($this->fields['publishDate']) ?
+            $this->fields['publishDate'] : [];
+    }
+
+    /**
+     * Get human readable publication dates for display purposes (may not be suitable
+     * for computer processing -- use getPublicationDates() for that).
+     *
+     * @return array
+     */
+    public function getHumanReadablePublicationDates()
+    {
+        return $this->getPublicationDates();
+    }
+
+    /**
+     * Return an array of associative URL arrays with one or more of the following
+     * keys:
+     *
+     * <li>
+     *   <ul>desc: URL description text to display (optional)</ul>
+     *   <ul>url: fully-formed URL (required if 'route' is absent)</ul>
+     *   <ul>route: VuFind route to build URL with (required if 'url' is absent)</ul>
+     *   <ul>routeParams: Parameters for route (optional)</ul>
+     *   <ul>queryString: Query params to append after building route (optional)</ul>
+     * </li>
+     *
+     * @return array
+     */
+    public function getURLs()
+    {
+        $retVal = [];
+        // Which fields/subfields should we check for URLs?
+        $fieldsToCheck = [
+            '856' => ['y', 'z', '3'],   // Standard URL
+            '555' => ['a']         // Cumulative index/finding aids
+        ];
+        foreach ($fieldsToCheck as $field => $subfields) {
+            $urls = $this->getMarcRecord()->getFields($field);
+            if ($urls) {
+                foreach ($urls as $url) {
+                    // Is there an address in the current field?
+                    $address = $url->getSubfield('u');
+                    if ($address) {
+                        $address = $address->getData();
+                        // Is there a description?  If not, just use the URL itself.
+                        foreach ($subfields as $current) {
+                            $desc = $url->getSubfield($current);
+                            if ($desc) {
+                                break;
+                            }
+                        }
+                        if ($desc) {
+                            $desc = $desc->getData();
+                        } else {
+                            $desc = $address;
+                        }
+                        $type = "supplemental";
+                        if( (($url->getIndicator(2) == '0') || ($url->getIndicator(2) == '1')) && !($url->getSubfield('3')) ) {
+                            $type = "accessOnline";
+                        }
+                        $retVal[] = ['url' => $address, 'desc' => $desc, 'type' => $type];
+                    }
+                }
+            }
+        }
+        // check Solr if we didn't get the entire MARC record
+        if( !$retVal ) {
+            return parent::getURLs();
+        }
+        return $retVal;
+    }
+
+    /**
      * Get a link for placing a title level hold.
      *
      * @return mixed A url if a hold is possible, boolean false if not

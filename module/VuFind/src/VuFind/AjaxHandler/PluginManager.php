@@ -51,6 +51,7 @@ class PluginManager extends \VuFind\ServiceManager\AbstractPluginManager
         'getFacetData' => 'VuFind\AjaxHandler\GetFacetData',
         'getIlsStatus' => 'VuFind\AjaxHandler\GetIlsStatus',
         'getItemStatuses' => 'VuFind\AjaxHandler\GetItemStatuses',
+        'EINgetItemStatuses' => 'VuFind\AjaxHandler\EINGetItemStatuses',
         'getLibraryPickupLocations' =>
             'VuFind\AjaxHandler\GetLibraryPickupLocations',
         'getRecordCommentsAsHTML' => 'VuFind\AjaxHandler\GetRecordCommentsAsHTML',
@@ -90,6 +91,8 @@ class PluginManager extends \VuFind\ServiceManager\AbstractPluginManager
             'VuFind\AjaxHandler\GetIlsStatusFactory',
         'VuFind\AjaxHandler\GetItemStatuses' =>
             'VuFind\AjaxHandler\GetItemStatusesFactory',
+        'VuFind\AjaxHandler\EINGetItemStatuses' =>
+            'VuFind\AjaxHandler\EINGetItemStatusesFactory',
         'VuFind\AjaxHandler\GetLibraryPickupLocations' =>
             'VuFind\AjaxHandler\AbstractIlsAndUserActionFactory',
         'VuFind\AjaxHandler\GetRecordCommentsAsHTML' =>

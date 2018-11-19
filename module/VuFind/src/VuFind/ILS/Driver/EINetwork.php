@@ -71,7 +71,6 @@ class EINetwork extends SierraRest implements
         $this->itemStatusReverseMappings = array_flip($this->itemStatusMappings);
         $this->itemStatusReverseMappings['AVAILABLE'] = "-";
         $this->itemStatusReverseMappings['CHECKED OUT'] = "-";
-        $this->itemStatusReverseMappings['NONCIRCULATING'] = "Lib Use Only";
     }
 
     /**
@@ -264,7 +263,7 @@ class EINetwork extends SierraRest implements
             if( $cachedInfo && !$cachedInfo["doUpdate"] && isset($cachedInfo["checkinRecords"]) ) {
                 $checkinRecords = $cachedInfo["checkinRecords"];
             } else {
-                $checkinRecords = $this->getCheckinRecords($id);
+                $checkinRecords = []; //VF5UPGRADE$this->getCheckinRecords($id);
             }
 
             foreach( array_keys($checkinRecords) as $key ) {
@@ -615,6 +614,7 @@ class EINetwork extends SierraRest implements
             case '-':
                 $status = 'AVAILABLE';
                 break;
+            case 'o':
             case 'Lib Use Only':
                 $status = 'NONCIRCULATING';
                 break;
@@ -658,6 +658,12 @@ class EINetwork extends SierraRest implements
         // add in the status code
         foreach( $results as $hKey => $thisHolding ) {
             $thisHolding["statusCode"] = $this->itemStatusReverseMappings[$thisHolding["status"]];
+            if( !$thisHolding["availability"] && in_array($thisHolding["statusCode"], ["-","o","p","v","y"]) && !$thisHolding["duedate"] ) {
+                $thisHolding["availability"] = true;
+            }
+            if( !isset($thisHolding["copiesOwned"]) ) {
+                $thisHolding["copiesOwned"] = 1;
+            }
             $results[$hKey] = $thisHolding;
         }
 

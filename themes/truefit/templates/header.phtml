@@ -9,15 +9,12 @@
     $holdsCount = 0; //VF5UPGRADE$this->ils()->getDriver()->getNumberOfMyHolds($profile);
     $checkoutsCount = 0; //VF5UPGRADE$this->ils()->getDriver()->getNumberOfMyTransactions($profile);
   }
-/*VF5UPGRADE
+
   $retainFilters = $this->ils()->getDriver()->getSessionVar("retainFilters");
   if( $retainFilters === null ):
     $this->ils()->getDriver()->setSessionVar("retainFilters", true);
     $retainFilters = true;
   endif;
-*/
-  $retainFilters = true;
-/*VF5UPGRADE*/
 ?>
 <div class="navbar-header row">
   <div class="EIN-col-m-12">
