@@ -144,15 +144,15 @@ class EINetwork extends SierraRest implements
     {
         // see if it's there
         if( ($overDriveId = $this->getOverDriveID($id)) ) {
-            $availability = $this->getProductAvailability($overDriveId);
+            $availability = null; //VF5UPGRADE$this->getProductAvailability($overDriveId);
             return [["id" => $id,
                      "location" => "OverDrive",
                      "isOverDrive" => true,
                      "isOneClick" => false,
-                     "copiesOwned" => $availability->collections[0]->copiesOwned,
-                     "copiesAvailable" => $availability->collections[0]->copiesAvailable,
-                     "numberOfHolds" => $availability->collections[0]->numberOfHolds,
-                     "availability" => ($availability->collections[0]->copiesAvailable > 0)
+                     "copiesOwned" => 0, //VF5UPGRADE$availability->collections[0]->copiesOwned,
+                     "copiesAvailable" => 0, //VF5UPGRADE$availability->collections[0]->copiesAvailable,
+                     "numberOfHolds" => 0, //VF5UPGRADE$availability->collections[0]->numberOfHolds,
+                     "availability" => false //VF5UPGRADE($availability->collections[0]->copiesAvailable > 0)
                    ]];
         }
 
@@ -330,6 +330,125 @@ class EINetwork extends SierraRest implements
 
         $this->sessionCache->patronLogin = $results;
         return $results;
+    }
+
+    /**
+     * Get Patron Profile
+     *
+     * This is responsible for retrieving the profile for a specific patron.
+     *
+     * @param array $patron The patron array
+     *
+     * @throws ILSException
+     * @return array        Array of the patron's profile data on success.
+     */
+    public function getMyProfile($patron, $forceReload=false)
+    {
+        $this->testSession();
+
+        if( !$forceReload && $this->sessionCache->patron ) {
+            return $this->sessionCache->patron;
+        }
+
+        $patron = parent::getMyProfile($patron);
+
+        if( !$this->memcached->get("locationByCode" . $patron['homelibrarycode']) ) {
+            $this->memcached->set("locationByCode" . $patron['homelibrarycode'], $this->getDbTable('Location')->getByCode($patron['homelibrarycode']));
+        }
+        $location = $this->memcached->get("locationByCode" . $patron['homelibrarycode']);
+        $patron['homelibrary'] = ($location != null && $location->validHoldPickupBranch) ? $location->displayName : null;
+        if( !$patron['homelibrary'] ) {
+            $patron['homelibrarycode'] = null;
+        }
+
+        $user = $this->getDbTable('user')->getByUsername($patron['username'], false);
+
+        $patron['preferredlibrarycode'] = $user->preferred_library;
+        if( !$this->memcached->get("locationByCode" . $patron['preferredlibrarycode']) ) {
+            $this->memcached->set("locationByCode" . $patron['preferredlibrarycode'], $this->getDbTable('Location')->getByCode($patron['preferredlibrarycode']));
+        }
+        $location = $this->memcached->get("locationByCode" . $patron['preferredlibrarycode']);
+        $patron['preferredlibrary'] = ($location != null && $location->validHoldPickupBranch) ? $location->displayName : null;
+        if( !$patron['preferredlibrary'] ) {
+            $patron['preferredlibrarycode'] = null;
+        }
+
+        $patron['alternatelibrarycode'] = $user->alternate_library;
+        if( !$this->memcached->get("locationByCode" . $patron['alternatelibrarycode']) ) {
+            $this->memcached->set("locationByCode" . $patron['alternatelibrarycode'], $this->getDbTable('Location')->getByCode($patron['alternatelibrarycode']));
+        }
+        $location = $this->memcached->get("locationByCode" . $patron['alternatelibrarycode'] );
+        $patron['alternatelibrary'] = ($location != null && $location->validHoldPickupBranch) ? $location->displayName : null;
+        if( !$patron['alternatelibrary'] ) {
+            $patron['alternatelibrarycode'] = null;
+        }
+
+        // overdrive info
+/*VF5UPGRADE
+        $lendingOptions = $this->getOverDriveLendingOptions($patron);
+        $patron['OD_eBook'] = $lendingOptions["eBook"];
+        $patron['OD_audiobook'] = $lendingOptions["Audiobook"];
+        $patron['OD_video'] = $lendingOptions["Video"];
+        $patron['OD_renewalInDays'] = $lendingOptions["renewalInDays"];
+*/
+        $patron['splitEcontent'] = $user->splitEcontent;
+
+        $this->sessionCache->patron = $patron;
+
+        return $patron;
+    }
+
+
+    public function updateMyProfile($patron, $updatedInfo){
+        // update the phone, email, and/or notification setting
+        if( isset($updatedInfo['phones']) || isset($updatedInfo['emails']) || isset($updatedInfo['pin']) || isset($updatedInfo['notices']) ) {
+            // flip this setting into the correct fixedField
+            if( isset($updatedInfo['notices']) ) {
+                $updatedInfo["fixedFields"] = ["value" => $updatedInfo['notices']];
+                unset($updatedInfo['notices']);
+            }
+
+            $result = $this->makeRequest(
+                ['v5', 'patrons', $patron['id']],
+                json_encode($updatedInfo),
+                'PUT',
+                $patron
+            );
+            return ["success" => (!isset($result["code"]) && !isset($result["specificCode"]))];
+        }
+
+        // see whether they have given us an updated preferred library
+        if( isset($updatedInfo['preferred_library']) ) {
+            $user = $this->getDbTable('user')->getByUsername($patron['username'], false);
+            $user->changePreferredLibrary($updatedInfo['preferred_library']);
+        }
+
+        // see whether they have given us an updated alternate library
+        if( isset($updatedInfo['alternate_library']) ) {
+            $user = $this->getDbTable('user')->getByUsername($patron['username'], false);
+            $user->changeAlternateLibrary($updatedInfo['alternate_library']);
+        }
+
+        // see whether they have given us a new splitEcontent preference
+        if( isset($updatedInfo['splitEcontent']) ) {
+            $user = $this->getDbTable('user')->getByUsername($patron['username'], false);
+            $user->changeSplitEcontent($updatedInfo['splitEcontent']);
+        }
+/*VF5UPGRADE
+        // see whether they have updated their overdrive lending periods
+        $formats = array("ebook", "audiobook", "video");
+        foreach( $formats as $thisFormat ) {
+            if( isset($updatedInfo[$thisFormat]) ) {
+                $lendInfo = array("cat_username" => $patron['cat_username'],
+                                  "cat_password" => $patron['cat_password'],
+                                  "format" => $thisFormat,
+                                  "days" => $updatedInfo[$thisFormat] );
+                $this->setOverDriveLendingOption($lendInfo);
+            }
+        }
+*/
+        unset($this->sessionCache->patron);
+        $this->getMyProfile($patron);
     }
 
     /**
@@ -578,6 +697,47 @@ class EINetwork extends SierraRest implements
         }
 
         return parent::placeHold($holdDetails);
+    }
+
+    /**
+     * Get announcements
+     *
+     * This is responsible for grabbing system-wide announcements that haven't been dismissed by the user.
+     *
+     * @param string  $ns      The namespace of the desired announcements
+     *
+     * @return array           Associative array of announcements
+     */
+    public function getAnnouncements($ns=null){
+        $announcements = [];
+        if( isset($this->config['Site']['announcement']) ) {
+            foreach($this->config['Site']['announcement'] as $news) {
+                $hash = md5($news);
+                // see if we need to unblock this
+                if( !$this->sessionCache->patronLogin && isset($this->sessionCache->dismissedAnnouncements[$hash]) && ($this->sessionCache->dismissedAnnouncements[$hash] + 300) < time() ) {
+                    unset($this->sessionCache->dismissedAnnouncements[$hash]);
+                }
+                // add it to the array if they haven't dismissed it
+                if( !isset($this->sessionCache->dismissedAnnouncements[$hash]) ) {
+                    $announcements[] = ['html' => true, 'msg' => $news, 'announceHash' => $hash];
+                }
+            }
+        }
+        return $announcements;
+    }
+
+    /**
+     * Dismiss announcement
+     *
+     * This is responsible for dismissing a system-wide announcement until the user changes.
+     *
+     * @param string  $hash    The hash of the desired announcement
+     */
+    public function dismissAnnouncement($hash){
+        if( !isset($this->sessionCache->dismissedAnnouncements) ) {
+            $this->sessionCache->dismissedAnnouncements = [];
+        }
+        $this->sessionCache->dismissedAnnouncements[$hash] = time();
     }
 
     /**

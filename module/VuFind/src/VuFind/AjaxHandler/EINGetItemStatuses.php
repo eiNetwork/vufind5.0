@@ -426,7 +426,7 @@ class EINGetItemStatuses extends GetItemStatuses
         }
 
         // add in the overdrive info if needed
-        if( $overDriveInfo["canCheckOut"] || count($overDriveInfo) > 1 ) {
+        if( /*VF5UPGRADE*/false && (/*VF5UPGRADE*/$overDriveInfo["canCheckOut"] || count($overDriveInfo) > 1/*VF5UPGRADE*/)/*VF5UPGRADE*/ ) {
             $renderer = $this->getViewRenderer();
             if( $overDriveInfo["canCheckOut"] ) {
                 $overDriveInfo["checkoutLink"] = $renderer->recordLink()->getActionUrl($driver, 'Checkout');

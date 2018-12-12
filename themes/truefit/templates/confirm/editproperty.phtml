@@ -1,0 +1,140 @@
+<h2>Edit <?=$this->transEsc($this->property) ?></h2>
+<div class="EIN-hide-m EIN-hide-t EIN-hide">
+  <?=$this->flashmessages(false);?>
+</div>
+<form id="confirmForm" action="<?=$this->url($this->path)?>" method="post">
+  <input type="hidden" name="suppressFlashMessages" value="true">
+  <input type="hidden" name="profileSection" value="<?=$this->referringSection?>">
+  <input type="hidden" name="reloadParent" value="true">
+  <input type="hidden" name="confirm" value="true">
+  <div class="EIN-col-m-12 fieldTitle">Current <?=$this->transEsc($this->property) ?></div>
+  <? if (($this->propertyName) != "pin" && isset($this->currentValue)): ?>
+    <div class="EIN-col-m-12 fieldValue"><?=$this->currentValue?></div>
+  <? else: ?>
+    <input type="text" class="form-control textBox editProperty" id="current_<?=$this->propertyName?>" onfocus="TestFocus(this)" onblur="TestBlur(this, 'Enter Current <?=$this->transEsc($this->property)?>')" value="Enter Current <?=$this->transEsc($this->property)?>" />
+    <i class="fa fa-exclamation-circle formErrorIcon"></i>
+    <span class="formError"></span>
+  <? endif; ?>
+  <div class="EIN-col-m-12" style="height:10px"></div>
+  <div class="EIN-col-m-12 fieldTitle">New <?=$this->transEsc($this->property) ?></div>
+  <div class="EIN-col-m-12">
+    <input type="text" class="form-control textBox editProperty" autocomplete="off" onfocus="TestFocus(this)" onblur="TestBlur(this, 'Enter New <?=$this->transEsc($this->property)?>')" id="new_<?=$this->propertyName?>" name="<?=$this->propertyName?>" value="Enter New <?=$this->transEsc($this->property) ?>" />
+    <i class="fa fa-exclamation-circle formErrorIcon"></i>
+    <span class="formError"></span>
+  </div>
+  <div class="EIN-col-m-12" style="height:10px"></div>
+  <div class="EIN-col-m-12 fieldTitle">Confirm New <?=$this->transEsc($this->property) ?></div>
+  <div class="EIN-col-m-12">
+    <input type="text" class="form-control textBox editProperty" onfocus="TestFocus(this)" onblur="TestBlur(this, 'Confirm New <?=$this->transEsc($this->property)?>')" id="confirm_<?=$this->propertyName?>" value="Confirm New <?=$this->transEsc($this->property)?>" />
+    <i class="fa fa-exclamation-circle formErrorIcon"></i>
+    <span class="formError"></span>
+  </div>
+</form>
+<div class="modal-footer">
+  <div id="confirmFooter">
+    <button class="btn-alternate btn-wide" onclick="$('#modalClose').click()"><?=$this->transEsc('confirm_dialog_cancel')?></button>
+    <button class="btn-default btn-wide" onclick="SubmitConfirmation();"><?=$this->transEsc('confirm_dialog_save') ?></button>
+  </div>
+  <div id="loadingFooter" style="display:none;padding:9px;color:#3d3d3d">
+    <span><i class="fa fa-spinner"></i></span>
+    <span>&nbsp;Loading...</span>
+  </div>
+</div>
+<script type="text/javascript">
+  function TestFocus(element) {
+    if( !($(element).hasClass("userHasFocused")) ) {
+      element.value = "";
+      $(element).addClass("userHasFocused");
+      <? if($this->propertyName == "pin"): ?>
+        $(element).attr("type", "password");
+      <? endif; ?>
+    }
+    $(element).css("border", "1px solid #949494");
+    $(element).next().css("display","none");
+    $(element).next().next().css("display","none");
+    $(element).next().next().html("");
+  }
+
+  function TestBlur(element, caption) {
+    if( element.value == "" ) {
+      element.value = caption;
+      $(element).removeClass("userHasFocused");
+      <? if($this->propertyName == "pin"): ?>
+        $(element).attr("type", "text");
+      <? endif; ?>
+    }
+  }
+
+  function ShowInputError(field, message) {
+    $(field).css("border", "1px solid #ed0000");
+    $(field).next().css("display","block");
+    $(field).next().next().css("display","block");
+    $(field).next().next().html(message);
+    $(field).next().next().attr("tabIndex", -1).focusout( function() { $(field).focus(); } ).focus();
+  }
+
+  function SubmitConfirmation() {
+    // do some testing
+    var shouldSubmit = true;
+    $('#current_<?=$this->propertyName?>').each( function() { 
+      if( !$(this).hasClass('userHasFocused') || ($(this).val() == "") ) {
+        ShowInputError(this, "Please enter your current <?=$this->property?>");
+        shouldSubmit = false;
+      }
+    });
+    if( !shouldSubmit ) {
+      return;
+    }
+
+    $('#new_<?=$this->propertyName?>').each( function() { 
+      if( !$(this).hasClass('userHasFocused') || ($(this).val() == "") ) {
+        ShowInputError(this, "Please enter your new <?=$this->property?>");
+        shouldSubmit = false;
+      }
+    });
+    if( !shouldSubmit ) {
+      return;
+    }
+
+    $('#confirm_<?=$this->propertyName?>').each( function() { 
+      if( !$(this).hasClass('userHasFocused') || ($(this).val() == "") ) {
+        ShowInputError(this, "Please confirm your new <?=$this->property?>");
+        shouldSubmit = false;
+      } else if( $(this).val() != $('#new_<?=$this->propertyName?>').val() ) {
+        ShowInputError(this, "Your new value doesn't match the confirm value");
+        shouldSubmit = false;
+      }
+    });
+    if( !shouldSubmit ) {
+      return;
+    }
+
+    // test for individual properties
+    <? if( $this->propertyName=="phone" ): ?>
+      if( ($('#new_<?=$this->propertyName?>').val().length != 12) || ($('#new_<?=$this->propertyName?>').val().match(/\d{3}-\d{3}-\d{4}/) == null) ) {
+        ShowInputError($('#new_<?=$this->propertyName?>'), "Phone numbers must be in the format XXX-XXX-XXXX");
+        return;
+      }
+    <? elseif( $this->propertyName=="pin" ): ?>
+      if( ($('#new_<?=$this->propertyName?>').val().length != 4) || ($('#new_<?=$this->propertyName?>').val().match(/\d{4}/) == null) ) {
+        ShowInputError($('#new_<?=$this->propertyName?>'), "PINs must be exactly four digits");
+        return;
+      }
+      if( $('#new_<?=$this->propertyName?>').val() == $('#current_<?=$this->propertyName?>').val() ) {
+        ShowInputError($('#new_<?=$this->propertyName?>'), "New PIN is the same as the current PIN");
+        return;
+      }
+      if( CryptoJS.HmacSHA256($('#current_<?=$this->propertyName?>').val(), "eiNetwork") != '<?=$this->currentValue?>' ) {
+        ShowInputError($('#current_<?=$this->propertyName?>'), "Current PIN is not correct");
+        return;
+      }
+    <? endif; ?> 
+
+    if( shouldSubmit ) {
+      $('#confirmFooter').css('display','none');
+      $('#loadingFooter').css('display','block');
+      $('#confirmForm').submit();
+    }
+  }
+</script>
+

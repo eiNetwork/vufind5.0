@@ -1,0 +1,34 @@
+<?php
+  // Set up standard record scripts:
+  $this->headScript()->appendFile("record.js");
+  $this->headScript()->appendFile("check_save_statuses.js");
+  // Activate Syndetics Plus if necessary:
+  if ($this->syndeticsPlus()->isActive()) {
+    $this->headScript()->appendFile($this->syndeticsPlus()->getScript());
+  }
+
+  // Add RDF header link if applicable:
+  if ($this->export()->recordSupportsFormat($this->driver, 'RDF')) {
+    $this->headLink()->appendAlternate($this->recordLink()->getActionUrl($this->driver, 'RDF'), 'application/rdf+xml', 'RDF Representation');
+  }
+
+  // Set up breadcrumbs:
+  $this->layout()->breadcrumbs = '<li>' . $this->searchMemory()->getLastSearchLink($this->transEsc('Search'), '', '</li> ') .
+    '<li class="active">' . $this->recordLink()->getBreadcrumb($this->driver) . '</li> ';
+  $this->layout()->title = $this->driver->getShortTitle();
+?>
+
+<div class="row">
+  <div class="EIN-col-m-12">
+    <div class="record source<?=$this->escapeHtmlAttr($this->driver->getSourceIdentifier())?>">
+      <?php $sidebarList = $this->related()->getList($this->driver); ?>
+      <div class="<?=$this->layoutClass('mainbody')?><?=count($sidebarList) < 1 ? ' solo' : '' ?>">
+        <input type="hidden" value="<?=$this->escapeHtmlAttr($this->driver->getUniqueId())?>" class="hiddenId" />
+        <input type="hidden" value="<?=$this->escapeHtmlAttr($this->driver->getSourceIdentifier()) ?>" class="hiddenSource" />
+        <?=$this->flashmessages()?>
+        <?=$this->record($this->driver)->getCoreMetadata()?>
+      </div>
+    </div>
+  </div>
+</div>
+<?=$this->inlineScript(\Zend\View\Helper\HeadScript::SCRIPT, '$(document).ready(recordDocReady);', 'SET'); ?>

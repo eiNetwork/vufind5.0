@@ -689,7 +689,7 @@ $staticRoutes = [
     'Channels/Home', 'Channels/Record', 'Channels/Search',
     'Collections/ByTitle',
     'Collections/Home', 'Combined/Home', 'Combined/Results', 'Combined/SearchBox',
-    'Confirm/Confirm', 'Cover/Show', 'Cover/Unavailable',
+    'Confirm/Confirm', 'Confirm/EditProperty', 'Cover/Show', 'Cover/Unavailable',
     'EDS/Advanced', 'EDS/Home', 'EDS/Search',
     'EIT/Advanced', 'EIT/Home', 'EIT/Search',
     'Error/PermissionDenied', 'Error/Unavailable',

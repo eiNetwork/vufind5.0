@@ -67,4 +67,32 @@ class ConfirmController extends AbstractBase
         // Assign Data
         return $this->createViewModel($data);
     }
+
+    /**
+     * Determines what elements are displayed on the home page based on whether
+     * the user is logged in.
+     *
+     * @return mixed
+     */
+    public function editPropertyAction()
+    {
+        // Get Data from the route
+        $data = $this->params()->fromRoute('data', $this->params()->fromQuery('data'));
+
+        // Assign Flash Messages
+        if (isset($data['messages'])) {
+            foreach ($data['messages'] as $message) {
+                $flash = (true === is_array($message))
+                    ? [
+                        'msg' => $message['msg'],
+                        'tokens' => $message['tokens']
+                    ]
+                    : $message;
+                $this->flashMessenger()->addMessage($flash, 'info');
+            }
+        }
+
+        // Assign Data
+        return $this->createViewModel($data);
+    }
 }

@@ -421,6 +421,81 @@ class MyResearchController extends AbstractBase
 
         $patron = $this->catalogLogin();
         if (is_array($patron)) {
+            $catalog = $this->getILS();
+            $profile = $catalog->getMyProfile($patron);
+
+            // Process update parameters (if present):
+            $notification = $this->params()->fromPost('notification', false);
+            $splitEcontent = $this->params()->fromPost('splitEcontent', false);
+            $preferredLibrary = $this->params()->fromPost('preferred_library', false);
+            $alternateLibrary = $this->params()->fromPost('alternate_library', false);
+            $phone = $this->params()->fromPost('phone', false);
+            $phone2 = $this->params()->fromPost('phone2', false);
+            $email = $this->params()->fromPost('email', false);
+            $pin = $this->params()->fromPost('pin', false);
+            $OD_eBook = $this->params()->fromPost('OD_eBook', false);
+            $OD_audiobook = $this->params()->fromPost('OD_audiobook', false);
+            $OD_video = $this->params()->fromPost('OD_video', false);
+            if( !empty($notification) || !empty($preferredLibrary) || !empty($alternateLibrary) || !empty($phone) || !empty($phone2) || !empty($pin) || 
+                !empty($email) || !empty($OD_eBook) || !empty($OD_audiobook) || !empty($OD_video) ) {
+                // load this up, but only if they've changed those properties
+                $updatedInfo = [];
+                if( !empty($notification) && (!isset($profile["notificationCode"]) || ($profile["notificationCode"] != $notification)) ) {
+                    $updatedInfo["notices"] = $notification;
+                }
+                if( !empty($splitEcontent) && $profile["splitEcontent"] != $splitEcontent ) {
+                    $updatedInfo["splitEcontent"] = $splitEcontent;
+                }
+                if( !empty($preferredLibrary) && $profile["preferredlibrarycode"] != $preferredLibrary) {
+                    $updatedInfo["preferred_library"] = $preferredLibrary;
+                }
+                if( !empty($alternateLibrary) && $profile["alternatelibrarycode"] != $alternateLibrary) {
+                    $updatedInfo["alternate_library"] = $alternateLibrary;
+                }
+                if( !empty($phone) && (!isset($profile["phone"]) || ($profile["phone"] != $phone)) ) {
+                    $updatedInfo["phones"] = [["number" => $phone, "type" => "t"]];
+                    if( isset($profile["phone2"]) ) {
+                        $updatedInfo["phones"][] = ["number" => $profile["phone2"], "type" => "p"];
+                    }
+                }
+                if( !empty($phone2) && (!isset($profile["phone2"]) || ($profile["phone2"] != $phone2)) ) {
+                    $updatedInfo["phones"] = [["number" => $phone2, "type" => "p"]];
+                    if( isset($profile["phone"]) ) {
+                        $updatedInfo["phones"][] = ["number" => $profile["phone"], "type" => "t"];
+                    }
+                }
+                if( !empty($email) && (!isset($profile["email"]) || ($profile["email"] != $email)) ) {
+                    $updatedInfo["emails"] = [$email];
+                }
+                if( !empty($pin) ) {
+                    $updatedInfo["pin"] = $pin;
+                }
+                if( !empty($OD_eBook) && intval($profile["OD_eBook"]) != $OD_eBook ) {
+                    $updatedInfo["ebook"] = $OD_eBook;
+                }
+                if( !empty($OD_audiobook) && intval($profile["OD_audiobook"]) != $OD_audiobook ) {
+                    $updatedInfo["audiobook"] = $OD_audiobook;
+                }
+                if( !empty($OD_video) && intval($profile["OD_video"]) != $OD_video ) {
+                    $updatedInfo["video"] = $OD_video;
+                }
+                $results = $this->getILS()->updateMyProfile($profile, $updatedInfo);
+
+                // look for error
+                if( isset($results["success"]) && !$results["success"] && isset($updatedInfo["pin"]) ) {
+                    $this->flashMessenger()->addMessage('illegal_pin', 'error');
+                } else {
+                    $post = $this->getRequest()->getPost();
+                    $post->username = $patron["cat_username"];
+                    $post->password = isset($updatedInfo["pin"]) ? $updatedInfo["pin"] : $patron["cat_password"];
+                    $patron["cat_password"] = isset($updatedInfo["pin"]) ? $updatedInfo["pin"] : $patron["cat_password"];
+                    // Login to grab the new info
+                    $catalog->patronLogin($patron["cat_username"], isset($updatedInfo["pin"]) ? $updatedInfo["pin"] : $patron["cat_password"]);
+                    $profile = $catalog->getMyProfile($patron, true);
+                    $this->flashMessenger()->addMessage('profile_update', 'info');
+                }
+            }
+
             // Process home library parameter (if present):
             $homeLibrary = $this->params()->fromPost('home_library', false);
             if (!empty($homeLibrary)) {
@@ -429,10 +504,19 @@ class MyResearchController extends AbstractBase
                 $this->flashMessenger()->addMessage('profile_update', 'success');
             }
 
+            // Begin building view object:
+            if( isset($_COOKIE["lastProfileSection"]) ) {
+                $view->showProfileSection = $_COOKIE["lastProfileSection"];
+            }
+            if( $suppression = $this->params()->fromPost("suppressFlashMessages", false) ) {
+                $view->suppressFlashMessages = $suppression;
+            }
+            if( $reloadParent = $this->params()->fromPost("reloadParent", false) ) {
+                $view->reloadParent = $reloadParent;
+            }
+
             // Obtain user information from ILS:
-            $catalog = $this->getILS();
             $this->addAccountBlocksToFlashMessenger($catalog, $patron);
-            $profile = $catalog->getMyProfile($patron);
             $profile['home_library'] = $user->home_library;
             $view->profile = $profile;
             try {
