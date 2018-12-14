@@ -404,7 +404,13 @@ class EINetwork extends SierraRest implements
         if( isset($updatedInfo['phones']) || isset($updatedInfo['emails']) || isset($updatedInfo['pin']) || isset($updatedInfo['notices']) ) {
             // flip this setting into the correct fixedField
             if( isset($updatedInfo['notices']) ) {
-                $updatedInfo["fixedFields"] = ["value" => $updatedInfo['notices']];
+                if( ($updatedInfo['notices'] == "p") && (!isset($patron["phone"]) || !$patron["phone"]) ) {
+                    return ["success" => false, "error" => "preference_no_phone"];
+                } else if( ($updatedInfo['notices'] == "z") && (!isset($patron["email"]) || !$patron["email"]) ) {
+                    return ["success" => false, "error" => "preference_no_email"];
+                }
+
+                $updatedInfo["fixedFields"] = ["268" => ["label" => "Notice Preference", "value" => $updatedInfo['notices']]];
                 unset($updatedInfo['notices']);
             }
 

@@ -484,6 +484,8 @@ class MyResearchController extends AbstractBase
                 // look for error
                 if( isset($results["success"]) && !$results["success"] && isset($updatedInfo["pin"]) ) {
                     $this->flashMessenger()->addMessage('illegal_pin', 'error');
+                } else if( isset($results["success"]) && !$results["success"] && isset($results["error"]) ) {
+                    $this->flashMessenger()->addMessage($results["error"], 'error');
                 } else {
                     $post = $this->getRequest()->getPost();
                     $post->username = $patron["cat_username"];
