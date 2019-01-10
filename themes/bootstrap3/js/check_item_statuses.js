@@ -136,7 +136,7 @@ function checkItemStatus(el) {
   if ($item.find('.hiddenId').length === 0) {
     return false;
   }
-  var id = $item.find('.hiddenId').val().slice(2,-1);
+  var id = $item.find('.hiddenId').val();
   itemQueueAjax(id + '', $item);
 }
 

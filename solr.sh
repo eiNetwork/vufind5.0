@@ -42,9 +42,15 @@ usage()
 # Set VUFIND50_HOME
 if [ -z "$VUFIND50_HOME" ]
 then
-#  VUFIND50_HOME=$(dirname "$0")
-  VUFIND50_HOME="/usr/local/vufind-5.0"
+  # set VUFIND_HOME to the absolute path of the directory containing this script
+  # https://stackoverflow.com/questions/4774054/reliable-way-for-a-bash-script-to-get-the-full-path-to-itself
+  VUFIND50_HOME="$(cd "$(dirname "$0")" && pwd -P)"
+  if [ -z "$VUFIND50_HOME" ]
+  then
+    exit 1
+  fi
 fi
+
 
 if [ -z "$SOLR_HOME" ]
 then
@@ -81,10 +87,7 @@ then
   SOLR_ADDITIONAL_JVM_OPTIONS=""
 fi
 
-#if [ -z "$JAVA_HOME" ]
-#then
-  JAVA_HOME="/usr/lib/jvm/java-8-oracle"
-#fi
+JAVA_HOME="/usr/lib/jvm/java-8-oracle"
 
 export SOLR_LOGS_DIR=$SOLR_LOGS_DIR
 "$SOLR_BIN/solr" "$1" ${SOLR_ADDITIONAL_START_OPTIONS} -p "$SOLR_PORT" -s "$SOLR_HOME" -m "$SOLR_HEAP" -a "-Ddisable.configEdit=true -Dsolr.log=$SOLR_LOGS_DIR $SOLR_ADDITIONAL_JVM_OPTIONS"
