@@ -59,6 +59,7 @@ class PluginManager extends \VuFind\ServiceManager\AbstractPluginManager
         'similaritemscarousel' => 'VuFind\RecordTab\SimilarItemsCarousel',
         'staffviewarray' => 'VuFind\RecordTab\StaffViewArray',
         'staffviewmarc' => 'VuFind\RecordTab\StaffViewMARC',
+        'staffviewoverdrive' => 'VuFind\RecordTab\StaffViewOverdrive',
         'summaries' => 'VuFind\RecordTab\Summaries',
         'toc' => 'VuFind\RecordTab\TOC',
         'usercomments' => 'VuFind\RecordTab\UserComments',
@@ -90,6 +91,8 @@ class PluginManager extends \VuFind\ServiceManager\AbstractPluginManager
         'VuFind\RecordTab\StaffViewArray' =>
             'Zend\ServiceManager\Factory\InvokableFactory',
         'VuFind\RecordTab\StaffViewMARC' =>
+            'Zend\ServiceManager\Factory\InvokableFactory',
+        'VuFind\RecordTab\StaffViewOverdrive' =>
             'Zend\ServiceManager\Factory\InvokableFactory',
         'VuFind\RecordTab\Summaries' => 'VuFind\RecordTab\Factory::getSummaries',
         'VuFind\RecordTab\TOC' => 'VuFind\RecordTab\Factory::getTOC',
