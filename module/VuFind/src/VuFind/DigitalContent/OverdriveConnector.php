@@ -248,7 +248,7 @@ class OverdriveConnector implements LoggerAwareInterface,
             $availabilityUrl .= "$overDriveId/availability";
             $res = $this->callUrl($availabilityUrl);
 
-            if ($res->errorCode == "NotFound") {
+            if (($res->errorCode ?? null) == "NotFound") {
                 if ($conf->consortiumSupport && !$this->getUser()) {
                     //consortium support is turned on but user is not logged in;
                     //if the title is not found it probably means that it's only
@@ -444,13 +444,18 @@ class OverdriveConnector implements LoggerAwareInterface,
                         );
                     }
                     $result->status = true;
+                    if( $result->data === false ) {
+                        $result->data = (object)[];
+                    }
                     $result->data->expires = $expires;
                     $result->data->formats = $response->formats;
+                    $result->msg = '<i class="fa fa-info"></i>Your title was checked out successfully.  <a href="/MyResearch/CheckedOut">Your Checked Out Items</a>.';
+
                     //add the checkout to the session cache
                     $this->sessionContainer->checkouts[] = $response;
                 } else {
                     //todo: translate
-                    $result->msg = $response->message;
+                    $result->msg = '<i class="fa fa-exclamation-triangle"></i>Sorry, we could not check out this title to you.  ' . $response->message;
                 }
             } else {
                 $result->code = 'od_code_connection_failed';
@@ -467,7 +472,7 @@ class OverdriveConnector implements LoggerAwareInterface,
      *
      * @return \stdClass Object with result
      */
-    public function placeOverDriveHold($overDriveId, $email)
+    public function placeOverDriveHold($overDriveId, $email=null)
     {
         $this->debug("placeOverdriveHold");
         $holdResult = $this->getResultObject();
@@ -483,7 +488,7 @@ class OverdriveConnector implements LoggerAwareInterface,
             $url = $config->circURL . '/v1/patrons/me/holds';
             $params = array(
                 'reserveId' => $overDriveId,
-                'emailAddress' => $email,
+                'emailAddress' => $email ?? $user["email"],
                 'autoCheckout' => $autoCheckout,
                 'ignoreHoldEmail' => $ignoreHoldEmail,
             );
@@ -499,10 +504,14 @@ class OverdriveConnector implements LoggerAwareInterface,
             if (!empty($response)) {
                 if (isset($response->holdListPosition)) {
                     $holdResult->status = true;
+                    if( $holdResult->data === false ) {
+                        $holdResult->data = (object)[];
+                    }
                     $holdResult->data->holdListPosition
                         = $response->holdListPosition;
+                    $holdResult->msg = ['html' => true, 'msg' => 'hold_place_success_html'];
                 } else {
-                    $holdResult->msg = $response->message;
+                    $holdResult->msg = '<i class=\'fa fa-exclamation-triangle\'></i>Sorry, but we could not place a request for you on this title.  ' . $response->message;
                 }
             } else {
                 $holdResult->code = 'od_code_connection_failed';

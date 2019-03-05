@@ -57,6 +57,7 @@ class PluginManager extends \VuFind\ServiceManager\AbstractPluginManager
         'solrdefault' => 'VuFind\RecordDriver\SolrDefault',
         'solrmarc' => 'VuFind\RecordDriver\SolrMarc',
         'solrmarcremote' => 'VuFind\RecordDriver\SolrMarcRemote',
+        'solroverdrive' => 'VuFind\RecordDriver\SolrOverdrive',
         'solrreserves' => 'VuFind\RecordDriver\SolrReserves',
         'solrweb' => 'VuFind\RecordDriver\SolrWeb',
         'summon' => 'VuFind\RecordDriver\Summon',

@@ -16,6 +16,13 @@ class EINetwork extends SierraRest implements
     protected $memcached = null;
 
     /**
+     * Record loader
+     *
+     * @var \VuFind\Record\Loader
+     */
+    protected $recordLoader;
+
+    /**
      * Mappings from item status codes to VuFind strings
      *
      * @var array
@@ -47,6 +54,22 @@ class EINetwork extends SierraRest implements
         'order' => 'ON ORDER'
     ];
     protected $itemStatusReverseMappings;
+
+    /**
+     * Constructor
+     *
+     * @param \VuFind\Date\Converter $dateConverter  Date converter object
+     * @param \VuFind\Record\Loader  $loader         Record Loader object
+     * @param Callable               $sessionFactory Factory function returning
+     * SessionContainer object
+     */
+    public function __construct(\VuFind\Date\Converter $dateConverter, \VuFind\Record\Loader $loader,
+        $sessionFactory
+    ) {
+        $this->dateConverter = $dateConverter;
+        $this->recordLoader = $loader;
+        $this->sessionFactory = $sessionFactory;
+    }
 
     /**
      * Initialize the driver.
@@ -144,16 +167,17 @@ class EINetwork extends SierraRest implements
     {
         // see if it's there
         if( ($overDriveId = $this->getOverDriveID($id)) ) {
-            $availability = null; //VF5UPGRADE$this->getProductAvailability($overDriveId);
+            $driver = $this->recordLoader->load($id);
+            $availability = $driver->getOverdriveAvailability();
             return [["id" => $id,
                      "location" => "OverDrive",
                      "locationID" => null,
                      "isOverDrive" => true,
                      "isOneClick" => false,
-                     "copiesOwned" => 0, //VF5UPGRADE$availability->collections[0]->copiesOwned,
-                     "copiesAvailable" => 0, //VF5UPGRADE$availability->collections[0]->copiesAvailable,
-                     "numberOfHolds" => 0, //VF5UPGRADE$availability->collections[0]->numberOfHolds,
-                     "availability" => false //VF5UPGRADE($availability->collections[0]->copiesAvailable > 0)
+                     "copiesOwned" => $availability->data->copiesOwned,
+                     "copiesAvailable" => $availability->data->copiesAvailable,
+                     "numberOfHolds" => $availability->data->numberOfHolds,
+                     "availability" => ($availability->data->copiesAvailable > 0)
                    ]];
         }
 
@@ -644,6 +668,14 @@ class EINetwork extends SierraRest implements
         }
 
         return $results;
+    }
+
+    public function getNumberOfHoldsOnRecord($id) {
+        if( $this->memcached->get("numberOfHoldsOnID" . $id) !== null ) {
+            $holdQueueLength = $this->getBibRecord($id, "holdCount");
+            $this->memcached->set("numberOfHoldsOnID" . $id, $holdQueueLength["holdCount"] ?? 0, 900);
+        }
+        return $this->memcached->get("numberOfHoldsOnID" . $id);
     }
 
     /**

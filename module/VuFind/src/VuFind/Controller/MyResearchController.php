@@ -274,6 +274,7 @@ class MyResearchController extends AbstractBase
 
         // Make request available to view for form updating:
         $view = $this->createViewModel();
+        $view->inLightbox = $this->inLightbox();
         $view->request = $this->getRequest()->getPost();
         return $view;
     }

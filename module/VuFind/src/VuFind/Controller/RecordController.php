@@ -100,7 +100,7 @@ class RecordController extends AbstractRecord
             $catalog->setMemcachedVar("holdingID" . $bib, $cache, $time);
         }
         $holdings = $this->driver->getRealTimeHoldings();
-        $view->holdings = $holdings["holdings"];
+        $view->holdings = $holdings["holdings"] ?? [];
 
         // see whether the driver can hold
         $holdingTitleHold = $driver->tryMethod('getRealTimeTitleHold');
@@ -135,13 +135,14 @@ class RecordController extends AbstractRecord
 
         // if not, see whether there is a holdable copy available
         if( $canHold ) {
-            $args=array("id" => $bib);
+            $args=array();
             foreach($view->holdings as $holding) {
                 foreach($holding['items'] as $item) {
                     // look for a hold link
                     $marcHoldOK = isset($item['statusCode']) && in_array(trim($item['statusCode']), ['-','t','!','i','p','order']);
                     $overdriveHoldOK = isset($item["isOverDrive"]) && $item["isOverDrive"] && ($item["copiesOwned"] > 0) && ($item["copiesAvailable"] == 0);
                     if(($marcHoldOK || $overdriveHoldOK) && $holdingTitleHold['action'] == "Hold") {
+                        $args["id"] = $bib;
                         foreach(explode('&',$holdingTitleHold['query']) as $piece) {
                             $pieces = explode('=', $piece);
                             $args[$pieces[0]] = $pieces[1];
@@ -166,6 +167,14 @@ class RecordController extends AbstractRecord
                         $libraryOnly = true;
                     }
                 }
+            }
+            if( $canCheckOut ) {
+                $args = array();
+                foreach(explode('&',$holdingTitleHold['query']) as $piece) {
+                    $pieces = explode('=', $piece);
+                    $args[$pieces[0]] = $pieces[1];
+                }
+                $view->holdArgs = str_replace("\"", "'", json_encode($args));
             }
         }
         $view->libraryOnly = $libraryOnly;
@@ -213,7 +222,7 @@ class RecordController extends AbstractRecord
 
         $view->canCheckOut = $canCheckOut;
         $view->canHold = $canHold;
-        $view->numberOfHolds = 0; //VF5UPGRADE($overDriveHolds == -1) ? $catalog->getNumberOfHoldsOnRecord($bib) : $overDriveHolds;
+        $view->numberOfHolds = ($overDriveHolds == -1) ? $catalog->getNumberOfHoldsOnRecord($bib) : $overDriveHolds;
         $view->idArgs = str_replace("\"", "'", json_encode(["id" => $bib]));
 
         // see whether they have this item in any lists

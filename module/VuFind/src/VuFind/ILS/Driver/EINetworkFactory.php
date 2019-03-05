@@ -72,6 +72,6 @@ class EINetworkFactory extends DriverWithDateConverterFactory
             $manager = $container->get('Zend\Session\SessionManager');
             return new \Zend\Session\Container("EINetwork_$namespace", $manager);
         };
-        return parent::__invoke($container, $requestedName, [$sessionFactory]);
+        return parent::__invoke($container, $requestedName, [$container->get('VuFind\Record\Loader'), $sessionFactory]);
     }
 }

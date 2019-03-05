@@ -275,10 +275,9 @@ class OverdriveController extends AbstractBase implements LoggerAwareInterface
             $actionTitleCode = "od_checkout";
             $result = $this->connector->doOverdriveCheckout($od_id);
 
-
         } elseif ($action == "placeHold") {
             $actionTitleCode = "od_hold";
-            $email = $this->params()->fromPost('email');
+            $email = $this->params()->fromQuery('email');
             $result = $this->connector->placeOverDriveHold($od_id, $email);
 
         } elseif ($action == "cancelHold") {
@@ -309,6 +308,9 @@ class OverdriveController extends AbstractBase implements LoggerAwareInterface
         } else {
             $this->logWarning("overdrive action not defined: $action");
         }
+
+        // add message to results
+        $this->flashMessenger()->setNamespace($result->status ? 'info' : 'error')->addMessage($result->msg);
 
         $view = $this->createViewModel(
             compact(

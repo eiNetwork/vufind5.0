@@ -1,0 +1,48 @@
+<? if( $this->inLightbox ): ?>
+  <?
+    // Set up page title:
+    $this->headTitle($this->translate('Log In'));
+
+    // Set up breadcrumbs:
+    $this->layout()->breadcrumbs = '<li><a href="' . $this->url('myresearch-home') . '">' . $this->transEsc('Your Account') . '</a></li> <li class="active">' . $this->transEsc('Login') . '</li>';
+
+    // Convenience variables:
+    $account = $this->auth()->getManager();
+    $hideLogin = !(is_object($account) && $account->loginEnabled());
+    $offlineMode = $this->ils()->getOfflineMode();
+  ?>
+
+  <? if ($offlineMode == "ils-offline"): ?>
+    <div class="alert alert-warning">
+      <h2><?=$this->transEsc('ils_offline_title')?></h2>
+      <p><strong><?=$this->transEsc('ils_offline_status')?></strong></p>
+      <p><?=$this->transEsc('ils_offline_login_message')?></p>
+      <? $supportEmail = $this->escapeHtmlAttr($this->systemEmail()); ?>
+      <p><a href="mailto:<?=$supportEmail?>"><?=$supportEmail?></a></p>
+    </div>
+  <? endif; ?>
+
+  <h2 class="lightbox-header"><?=$this->transEsc('Login')?></h2>
+  <span id="loginFlashMessages">
+    <?=$this->flashmessages(false)?>
+  </span>
+
+  <? if ($hideLogin): ?>
+    <div class="alert alert-danger" id="loginErrorMessage"><?=$this->transEsc('login_disabled')?></div>
+  <? else: ?>
+    <?=$this->auth()->getLogin()?>
+  <? endif; ?>
+
+  <? /* see if we are in an iframe.  if so, we need to forward this on to our parent. skip this step if we're already trying to log in */ ?>
+  <script type="text/javascript">
+    if( parent !== window ) {
+      $(document).ready( function() { if( !parent.VuFind.lightbox.getCurrentUrl() ) { parent.VuFind.lightbox.ajax({'url':'/MyResearch/Login'}); } } );
+    }
+  </script>
+<? else: ?>
+  <div class="EIN-col-m-12 loginWarning">You must be logged in to view this page.</div>
+  <a href="." data-lightbox id="forcedLoginLink"></a>
+  <script type="text/javascript">
+    $(document).ready( function() { $('#forcedLoginLink').attr("href", window.location); $('#forcedLoginLink').click(); } );
+  </script>
+<? endif; ?>

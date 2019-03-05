@@ -89,8 +89,8 @@ class Flashmessages extends \VuFind\View\Helper\Bootstrap3\Flashmessages
                     $html .= '<iframe id="bonusFrame' . $msg['announceHash'] .'" style="display:none"></iframe>';
                 }
             }
-            $this->fm->clearMessages();
-            $this->fm->clearCurrentMessages();
+            //$this->fm->clearMessages();
+            //$this->fm->clearCurrentMessages();
         }
         return $html;
     }

@@ -119,6 +119,11 @@ class SolrMarc extends SolrDefault
             }
         }
         // check Solr if we didn't get the entire MARC record
+        if( !$retVal && isset($this->fields["url"]) ) {
+            foreach( $this->fields["url"] as $thisURL ) {
+                $retVal[] = json_decode($thisURL, true);
+            }
+        }
         if( !$retVal ) {
             return parent::getURLs();
         }

@@ -268,11 +268,11 @@
         else:
           if( $isOverDrive ) {
             if( $this->holdArgs ) {
-              $hashKey = json_decode(str_replace("'", "\"", $this->holdArgs))->hashKey;
-              $holdLink = $this->recordLink()->getActionUrl($this->driver, (!$this->canHold && $this->canCheckOut) ? "Checkout" : "Hold") . (($hashKey != "") ? ("?hashKey=" . $hashKey) : "");
+              $holdArgs = json_decode(str_replace("'", "\"", $this->holdArgs), true);
+              $holdLink = $this->url ('overdrive-hold') . "?od_id=" . $holdArgs["od_id"] . "&rec_id=" . $holdArgs["rec_id"] . "&action=" . ($this->canHold ? "placeHold" : "doCheckout");
               $targetStr = " target=\"loginFrame\"";
+              $holdClick = " onClick=\"$(this).html('<i class=\'fa fa-spinner bwSpinner\'></i>&nbsp;Loading...')\"";
             }
-            $holdClick = " onClick=\"$(this).html('<i class=\'fa fa-spinner bwSpinner\'></i>&nbsp;Loading...')\"";
           } else {
             if( !$this->canHold && $this->canCheckOut ) {
               $holdLink = $this->recordLink()->getActionUrl($this->driver, "Checkout", json_decode($this->idArgs));

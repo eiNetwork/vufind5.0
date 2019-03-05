@@ -156,12 +156,14 @@ class SolrOverdrive extends SolrMarc implements LoggerAwareInterface
             $fulldata = $this->connector->getMetadata(array($od_id));
             $data = $fulldata[strtolower($od_id)];
         } else {
-            $jsonData = $this->fields['fullrecord'];
+            $jsonData = $this->fields['fullrecord'] ?? "{}";
             $data = json_decode($jsonData, false);
         }
 
-        foreach ($data->formats as $format) {
-            $formats[$format->id] = $format;
+        if( isset($data->formats) ) {
+            foreach ($data->formats as $format) {
+                $formats[$format->id] = $format;
+            }
         }
 
         return $formats;
@@ -295,9 +297,9 @@ class SolrOverdrive extends SolrMarc implements LoggerAwareInterface
      */
     public function getOverdriveID()
     {
-        $result = 0;
+        $result = $this->fields["externalId"] ?? 0;
 
-        if ($this->config) {
+        if (!$result && $this->config) {
             if ($this->config->isMarc) {
                 $field = $this->config->idField;
                 $subfield = $this->confif->idSubfield;
@@ -431,7 +433,7 @@ class SolrOverdrive extends SolrMarc implements LoggerAwareInterface
         if ($this->getIsMarc()) {
             return parent::getSubtitle();
         } else {
-            return $this->fields['title_sub'];
+            return $this->fields['title_sub'] ?? "";
         }
     }
 
@@ -460,7 +462,7 @@ class SolrOverdrive extends SolrMarc implements LoggerAwareInterface
         if ($this->getIsMarc()) {
             return parent::getShortTitle();
         } else {
-            return $this->fields['title_short'];
+            return $this->fields['title_short'] ?? $this->fields['title'];
         }
     }
 
@@ -511,9 +513,7 @@ class SolrOverdrive extends SolrMarc implements LoggerAwareInterface
             $fulldata = $this->connector->getMetadata(array($od_id));
             $data = $fulldata[strtolower($od_id)];
         } else {
-            $result = false;
-            $jsonData = $this->fields['fullrecord'];
-            $data = json_decode($jsonData, false);
+            return $this->fields['thumbnail'];
         }
 
         if (isset($data->images)) {
@@ -534,9 +534,9 @@ class SolrOverdrive extends SolrMarc implements LoggerAwareInterface
         if ($this->config->isMarc) {
             return parent::getSummary();
         } else {
-            $desc = $this->fields["description"];
+            $desc = $this->fields["description"] ?? "";
 
-            $newDesc = preg_replace("/&#8217;/i", "", $desc);
+            $newDesc = preg_replace("/&#8217;/i", "", is_array($desc) ? $desc[0] : $desc);
             $newDesc = strip_tags($newDesc);
             return array("Summary" => $newDesc);
         }
@@ -673,5 +673,35 @@ class SolrOverdrive extends SolrMarc implements LoggerAwareInterface
             'anchor' => ''
         ];
         return $urlDetails;
+    }
+
+    /**
+     * Get an array of information about record holdings, obtained in real-time
+     * from the ILS.
+     *
+     * @return array
+     */
+    public function getRealTimeHoldings()
+    {
+        $availability = $this->getOverdriveAvailability();
+        return ["holdings" => [
+                 "OverDrive" => [
+                   "items" => [
+                     [
+                       "id" => $this->getUniqueID(),
+                       "location" => "OverDrive",
+                       "locationID" => "?",
+                       "isOverDrive" => true,
+                       "isOneClick" => false,
+                       "copiesOwned" => $availability->data->copiesOwned,
+                       "copiesAvailable" => $availability->data->copiesAvailable,
+                       "numberOfHolds" => $availability->data->numberOfHolds,
+                       "availability" => ($availability->data->copiesAvailable > 0)
+                     ]
+                   ],
+                   "location" => "OverDrive",
+                   "locationhref" => ""
+                 ]
+               ]];
     }
 }
