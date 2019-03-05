@@ -360,4 +360,48 @@ class SolrDefault extends DefaultRecord
         }
         return false;
     }
+
+    public function getCachedItems()
+    {
+        $json = isset($this->fields['cachedJson']) ? $this->fields['cachedJson'] : "";
+        $json = json_decode($json, true);
+        foreach( $json["holding"] as $key => $thisJson ) {
+            $locCodeRow = $this->getDbTable('ShelvingLocation')->getByCode($thisJson["locationID"]);
+            if( $locCodeRow ) {
+                $json["holding"][$key]["location"] = $locCodeRow->sierraName;
+            }
+        }
+        foreach( $json["orderRecords"] as $key => $thisJson ) {
+            // find this location in the database
+            $row = $this->getDBTable('shelvinglocation')->getBySierraName($thisJson["locationID"]);
+            $row = $row ? $row->toArray() : [];
+            // test to see if it's a branch name instead of shelving location
+            if( count($row) == 0 ) {
+                // find this location in the database
+                $row = $this->getDBTable('location')->getByName($thisJson["location"]);
+                $row = $row ? $row->toArray() : [];
+            }
+            // if we got results, send them back
+            if( count($row) > 0 ) {
+                $json["orderRecords"][$key] = [
+                    "id" => $this->getUniqueID(),
+                    "itemId" => null,
+                    "availability" => false,
+                    "statusCode" => "order",
+                    "location" => $thisJson["location"],
+                    "reserve" => "N",
+                    "callnumber" => null,
+                    "duedate" => null,
+                    "returnDate" => false,
+                    "number" => null,
+                    "barcode" => null,
+                    "locationID" => $row[0]["code"],
+                    "copiesOwned" => $thisJson["copies"]
+                ];
+            } else {
+                unset($json["orderRecords"][$key]);
+            }
+        }
+        return $json;
+    }
 }

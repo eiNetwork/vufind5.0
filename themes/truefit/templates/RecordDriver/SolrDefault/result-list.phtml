@@ -166,7 +166,7 @@
             <?php /*VF5UPGRADE*/ endforeach; ?>
           <?php elseif( $summary = $this->driver->getSummary() ): ?>
             <?php $cleanSummary = ""; ?>
-            <?php $summary = $summary[0]; ?>
+            <?php $summary = $summary[0] ?? $summary["Summary"]; ?>
             <?php foreach( $lookfor as $key ): ?>
               <?php if( ($colon = strpos($key, ":")) !== false ): ?>
                 <?php $key = substr($key, $colon + 1) ?>

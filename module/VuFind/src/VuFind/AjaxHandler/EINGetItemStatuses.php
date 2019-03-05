@@ -131,6 +131,8 @@ class EINGetItemStatuses extends GetItemStatuses
             }
             if( isset($item["isOverDrive"]) && $item["isOverDrive"] ) {
               $isOverDrive = true;
+              $overDriveInfo["numberOfHolds"] = $item["numberOfHolds"];
+              $overDriveInfo["copiesOwned"] = $item["copiesOwned"];
             }
         }
 
@@ -159,20 +161,46 @@ class EINGetItemStatuses extends GetItemStatuses
         }
 
         // if not, see whether there is a holdable copy available
-        if( $canHold ) {
+        if( $isOverDrive && $canHold ) {
             $args=array();
             foreach($record as $item) {
-                // look for a hold link
-                $marcHoldOK = isset($item['statusCode']) && in_array(trim($item['statusCode']), ['-','t','!','i','p','order']);
-                $overdriveHoldOK = isset($item["isOverDrive"]) && $item["isOverDrive"] && ($item["copiesOwned"] > 0) && ($item["copiesAvailable"] == 0);
-                if(($marcHoldOK || $overdriveHoldOK) && (isset($canHold['action']) && ($canHold['action'] == "Hold"))) {
+                // look for a hold/checkout link
+                $overdriveLinkOK = $isOverDrive && ($item["copiesOwned"] > 0);
+                if($overdriveLinkOK && (isset($canHold['action']) && ($canHold['action'] == "Hold"))) {
                     foreach(explode('&',$canHold['query']) as $piece) {
                         $pieces = explode('=', $piece);
                         $args[$pieces[0]] = $pieces[1];
                     }
                     $args["id"] = $canHold["record"];
-                    if( $overdriveHoldOK ) {
-                        $overDriveInfo["canHold"] = true;
+                    foreach(explode('&',$canHold['query']) as $piece) {
+                        $pieces = explode('=', $piece);
+                        $args[$pieces[0]] = $pieces[1];
+                    }
+                    $overDriveInfo["canHold"] = true;
+                    $args["action"] = ($item["copiesAvailable"] == 0) ? "placeHold" : "doCheckout";
+                    $canHold = ($item["copiesAvailable"] == 0);
+                    $overDriveInfo["canCheckOut"] = ($item["copiesAvailable"] > 0);
+                    break;
+                }
+            }
+            $holdArgs = str_replace("\"", "'", json_encode($args));
+            if( count($args) == 0 ) {
+                $holdArgs = "";
+            }
+        } else if( $canHold ) {
+            $args=array();
+            foreach($record as $item) {
+                // look for a hold link
+                $marcHoldOK = isset($item['statusCode']) && in_array(trim($item['statusCode']), ['-','t','!','i','p','order']);
+                if($marcHoldOK && (isset($canHold['action']) && ($canHold['action'] == "Hold"))) {
+                    foreach(explode('&',$canHold['query']) as $piece) {
+                        $pieces = explode('=', $piece);
+                        $args[$pieces[0]] = $pieces[1];
+                    }
+                    $args["id"] = $canHold["record"];
+                    foreach(explode('&',$canHold['query']) as $piece) {
+                        $pieces = explode('=', $piece);
+                        $args[$pieces[0]] = $pieces[1];
                     }
                     break;
                 }
@@ -181,13 +209,6 @@ class EINGetItemStatuses extends GetItemStatuses
             if( count($args) == 0 ) {
                 $canHold = false;
                 $holdArgs = "";
-            }
-        }
-
-        // see if they can check this out
-        if( !$canHold ) {
-            foreach($record as $item) {
-                $overDriveInfo["canCheckOut"] |= isset($item["isOverDrive"]) && $item["isOverDrive"] && ($item["copiesOwned"] > 0) && ($item["copiesAvailable"] > 0);
             }
         }
 
@@ -202,22 +223,22 @@ class EINGetItemStatuses extends GetItemStatuses
                         $overDriveInfo["canReturn"] = isset($thisItem["earlyReturn"]) && $thisItem["earlyReturn"];
                         $overDriveInfo["availableFormats"] = $thisItem["format"];
                         if(isset($thisItem["overdriveRead"]) && $thisItem["overdriveRead"]) {
-                            $overDriveInfo["ODread"] = $catalog->getDownloadLink($thisItem["overDriveId"], "ebook-overdrive", $user);
+                            $overDriveInfo["ODread"] = $this->ils->getDownloadLink($thisItem["overDriveId"], "ebook-overdrive", $user);
                         }
                         if(isset($thisItem["mediaDo"]) && $thisItem["mediaDo"]) {
-                            $overDriveInfo["mediaDo"] = $catalog->getDownloadLink($thisItem["overDriveId"], "ebook-mediado", $user);
+                            $overDriveInfo["mediaDo"] = $this->ils->getDownloadLink($thisItem["overDriveId"], "ebook-mediado", $user);
                         }
                         if(isset($thisItem["overdriveListen"]) && $thisItem["overdriveListen"]) {
-                            $overDriveInfo["ODlisten"] = $catalog->getDownloadLink($thisItem["overDriveId"], "audiobook-overdrive", $user);
+                            $overDriveInfo["ODlisten"] = $this->ils->getDownloadLink($thisItem["overDriveId"], "audiobook-overdrive", $user);
                         }
                         if(isset($thisItem["streamingVideo"]) && $thisItem["streamingVideo"]) {
-                            $overDriveInfo["ODwatch"] = $thisItem["formatSelected"] ? $catalog->getDownloadLink($thisItem["overDriveId"], "video-streaming", $user) : "www.google.com";
+                            $overDriveInfo["ODwatch"] = $thisItem["formatSelected"] ? $this->ils->getDownloadLink($thisItem["overDriveId"], "video-streaming", $user) : "www.google.com";
                         }
                         // get the download links
                         $downloadableFormats = [];
                         foreach($thisItem["formats"] as $possibleFormat) {
                             if($possibleFormat["id"] == "0") {
-                                $downloadableFormats[] = ["id" => $possibleFormat["format"]->formatType, "name" => $catalog->getOverdriveFormatName($possibleFormat["format"]->formatType)];
+                                $downloadableFormats[] = ["id" => $possibleFormat["format"]->formatType, "name" => $this->ils->getOverdriveFormatName($possibleFormat["format"]->formatType)];
                             } else {
                                 $downloadableFormats[] = $possibleFormat;
                             }
@@ -282,15 +303,15 @@ class EINGetItemStatuses extends GetItemStatuses
             $callNumbers[] = isset($info['callnumber']) ? $info['callnumber'] : null;
             $volumeNumbers[] = isset($info['number']) ? $info['number'] : null;
             $locations[] = isset($info['location']) ? $info['location'] : null;
-            if( (!isset($itsHere) || (trim($itsHere['statusCode']) == 'o')) && $currentLocation && $info['availability'] && ($currentLocation['code'] == $info['branchCode']) ) {
+            if( (!isset($itsHere) || (trim($itsHere['statusCode']) == 'o')) && $currentLocation && $info['availability'] && ($currentLocation['code'] == ($info['branchCode'] ?? null)) ) {
                 $itsHere = $info;
             } else if( $this->user && !isset($atPreferred) && $info['availability'] && (($info['branchCode'] == $this->user->preferred_library) || ($info['branchCode'] == $this->user->alternate_library) || ($info['branchCode'] == $this->user->home_library)) ) {
                 $atPreferred = true;
             }
-            if( !isset($holdableCopyHere) && $currentLocation && $info['availability'] && ($currentLocation["code"] == $info['branchCode']) && (trim($info['statusCode']) != 'o') && (trim($info['statusCode']) != 'order')) {
+            if( !isset($holdableCopyHere) && $currentLocation && $info['availability'] && ($currentLocation["code"] == ($info['branchCode'] ?? null)) && (trim($info['statusCode']) != 'o') && (trim($info['statusCode']) != 'order')) {
                 $holdableCopyHere = $info;
             }
-            if( !$canHold && $info["statusCode"] == "o" ) {
+            if( !$canHold && ($info["statusCode"] ?? null) == "o" ) {
                 $libraryOnly = true;
             }
             // Store all available services
@@ -339,7 +360,7 @@ class EINGetItemStatuses extends GetItemStatuses
                                ($available ? 'available' : 
                                 ($isOneClick ? 'oneclick' : 'unavailable')))))];
             $cache = $this->ils->getMemcachedVar("holdingID" . $bib)["CACHED_INFO"];
-            $numberOfHolds = ($cache && !$cache["doUpdate"]) ? $cache["numberOfHolds"] : ((isset($item["isOverDrive"]) && $item["isOverDrive"]) ? $item["numberOfHolds"] : 0);
+            $numberOfHolds = ($cache && !$cache["doUpdate"]) ? $cache["numberOfHolds"] : ($isOverDrive ? $overDriveInfo["numberOfHolds"] : 0);
             $waitlistText = $numberOfHolds ? ("<br><i class=\"fa fa-clock-o\" style=\"padding-right:6px\"></i>" . (($numberOfHolds > 1) ? ($numberOfHolds . " people") : "1 person") . " on waitlist") : "";
             if ($checkinRecords) {
                 $inLibMessage = str_replace("<countText>", (count($record[0]["checkinRecords"]) . " location" . ((count($record[0]["checkinRecords"]) == 1) ? "" : "s")) , $messages['inlibrary']);
@@ -355,7 +376,7 @@ class EINGetItemStatuses extends GetItemStatuses
                     $inLibMessage = [$inLibMessage, str_replace("<countText>", (($ownedItems > 0) ? ($availableItems . " of ") : "") . $ownedItems . " cop" . (($ownedItems == 1) ? "y" : "ies") . $waitlistText, $availability_message)];
                 }
                 $availability_message = $inLibMessage;
-            } else if( isset($item["isOverDrive"]) && $item["isOverDrive"] && $item["copiesOwned"] == 999999 ) {
+            } else if( $isOverDrive && $overDriveInfo["copiesOwned"] == 999999 ) {
                 $availability_message = str_replace("<countText>", "Always Available", $availability_message);
             } else if( $ownedItems == 0 && $orderedItems > 0 ) {
                 $availability_message = str_replace("<countText>", $orderedItems . " cop" . (($orderedItems == 1) ? "y" : "ies") . $waitlistText, $availability_message);
@@ -421,12 +442,13 @@ class EINGetItemStatuses extends GetItemStatuses
         ];
 
         // add the info URL if we need it for overdrive
-        if( isset($item["isOverDrive"]) && $item["isOverDrive"] && ($ownedItems == 0) ) {
-          $overDriveInfo["learnMoreURL"] = $driver->getURLs()[0]["url"];
+        if( $isOverDrive && ($ownedItems == 0) ) {
+          $overDriveInfo["learnMoreURL"] = $driver->getURLs()[0]["url"] ?? null;
         }
 
         // add in the overdrive info if needed
-        if( /*VF5UPGRADE*/false && (/*VF5UPGRADE*/$overDriveInfo["canCheckOut"] || count($overDriveInfo) > 1/*VF5UPGRADE*/)/*VF5UPGRADE*/ ) {
+        if( $isOverDrive && ($overDriveInfo["canCheckOut"] || count($overDriveInfo) > 1) ) {
+/* maybe need this when we get to that context of the button? not sure. if not, just delete it.
             $renderer = $this->getViewRenderer();
             if( $overDriveInfo["canCheckOut"] ) {
                 $overDriveInfo["checkoutLink"] = $renderer->recordLink()->getActionUrl($driver, 'Checkout');
@@ -438,6 +460,7 @@ class EINGetItemStatuses extends GetItemStatuses
                 $overDriveInfo["holdLink"] = $renderer->recordLink()->getActionUrl($driver, 'Hold') . "?hashKey=" . json_decode(str_replace("'", "\"", $holdArgs))->hashKey;
             }
             $overDriveInfo["idArgs"] = str_replace("\"", "'", json_encode(["id" => $bib]));
+*/
             $details = array_merge($details, $overDriveInfo);
         }
 
@@ -459,7 +482,37 @@ class EINGetItemStatuses extends GetItemStatuses
         $results = [];
         try {
             foreach( $ids as $thisID ) {
-                $results[] = $this->ils->getHolding($thisID);
+                $driver = $this->loader->load( $thisID );
+                // see if we have cached holdings already. if not, grab them.
+                if( !($cache = $this->ils->getMemcachedVar("holdingID" . $thisID)) || !isset($cache["CACHED_INFO"]["holding"]) ) {
+                    $cachedItems = $driver->getCachedItems();
+                    $cache = ["CACHED_INFO" => $cachedItems];
+                    $time = strtotime(((date("H") < "06") ? "today" : "tomorrow") . " 6:00") - time();
+                    $this->ils->setMemcachedVar("holdingID" . $thisID, $cache, $time);
+                }
+                $cache = $this->ils->getMemcachedVar("holdingID" . $thisID);
+                // see if there are any status updates we are supposed to be making
+                $changesToMake = false;
+                if( $changes = $this->ils->getMemcachedVar("updatesID" . $thisID) ) {
+                    foreach( $changes as $key => $thisChange ) {
+                        // if they've already been taken care of, ignore them
+                        $changesToMake |= !$thisChange["handled"];
+                    }
+                }
+                if( !isset($cache["CACHED_INFO"]["processedHoldings"]["holdings"]) || $changesToMake ) {
+                    $holdings = $driver->getRealTimeHoldings();
+                    $cache = $this->ils->getMemcachedVar("holdingID" . $thisID);
+
+                    $cache["CACHED_INFO"]["processedHoldings"] = $holdings;
+                    $time = strtotime(((date("H") < "06") ? "today" : "tomorrow") . " 6:00") - time();
+                    $this->ils->setMemcachedVar("holdingID" . $thisID, $cache, $time);
+                }
+                $holdings = $cache["CACHED_INFO"]["processedHoldings"]["holdings"];
+                $items = [];
+                foreach($holdings as $holding) {
+                    $items = array_merge($items, $holding["items"]);
+                }
+                $results[] = $items;
             }
         } catch (ILSException $e) {
             // If the ILS fails, send an error response instead of a fatal

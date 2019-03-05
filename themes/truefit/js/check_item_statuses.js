@@ -89,9 +89,17 @@ function handleItemStatusResponse(response) {
     if( result.isHolding ) {
       leftButton.empty().append('Requested');
     } else if( ("canCheckOut" in result) && result.canCheckOut ) {
-//VF5UPGRADE - needs checked
+      var holdLink = "/Overdrive/Hold";
+      var holdArgs = JSON.parse(result.holdArgs.replace(/'/g,"\""));
+      var qMark = true;
+      for( var prop in holdArgs ) {
+        if( holdArgs.hasOwnProperty(prop) ) {
+          holdLink += (qMark ? "?" : "&") + prop + "=" + holdArgs[prop];
+          qMark = false;
+        }
+      }
       leftButton.prop('disabled', false);
-      leftButton.wrap("<a href=\"" + result.checkoutLink + "\" target=\"loginFrame\"></a>");
+      leftButton.wrap("<a href=\"" + holdLink + "\" target=\"loginFrame\"></a>");
       leftButton.attr('onClick', "$(this).html('<i class=\\\'fa fa-spinner bwSpinner\\\'></i>&nbsp;Loading...')");
       leftButton.empty().append('Check Out');
     } else if( ("isCheckedOut" in result) && result.isCheckedOut ) {
@@ -126,17 +134,11 @@ function handleItemStatusResponse(response) {
       leftButton.empty().append('Checked Out<i class="fa fa-caret-down"></i>');
     } else if( result.itsHere && result.holdableCopyHere && result.volume_number == '' ) {
       leftButton.empty().append('It\'s Here');
-    } else if( ("holdLink" in result) ) {
-//VF5UPGRADE - needs checked
-      leftButton.prop('disabled', false);
-      leftButton.wrap("<a href=\"" + result.holdLink + "\" target=\"loginFrame\"></a>");
-      leftButton.attr('onClick', "$(this).html('<i class=\\\'fa fa-spinner bwSpinner\\\'></i>&nbsp;Loading...')");
-      leftButton.empty().append('Request');
     } else if( result.holdArgs != '' ) {
-//VF5UPGRADE - needs checked
+      var isOverDrive = (result.location == "OverDrive");
       var holdArgs = JSON.parse(result.holdArgs.replace(/'/g,"\""));
       leftButton.prop('disabled', false);
-      var holdLink = "/Record/" + holdArgs.id + "/";
+      var holdLink = isOverDrive ? ("/Overdrive/") : ("/Record/" + holdArgs.id + "/");
       if( result.hasVolumes ) {
         holdLink += "SelectItem";
       } else {
@@ -150,6 +152,10 @@ function handleItemStatusResponse(response) {
         }
       }
       leftButton.parent().attr("href", holdLink);
+      if( isOverDrive ) {
+        leftButton.parent().removeAttr("data-lightbox").attr({"target":"loginFrame","data-lightbox-ignore":true});
+        leftButton.attr('onClick', "$(this).html('<i class=\\\'fa fa-spinner bwSpinner\\\'></i>&nbsp;Loading...')");
+      }
       leftButton.empty().append('Request');
     } else if( result.learnMoreURL != null ) {
 //VF5UPGRADE - needs checked
