@@ -147,6 +147,7 @@ class EINetwork extends SierraRest implements
             $availability = null; //VF5UPGRADE$this->getProductAvailability($overDriveId);
             return [["id" => $id,
                      "location" => "OverDrive",
+                     "locationID" => null,
                      "isOverDrive" => true,
                      "isOneClick" => false,
                      "copiesOwned" => 0, //VF5UPGRADE$availability->collections[0]->copiesOwned,
@@ -164,12 +165,12 @@ class EINetwork extends SierraRest implements
             // if we haven't processed these holdings yet, run through the order records
             if( !isset($cachedInfo["processedHoldings"]) && ($cachedJson = $this->memcached->get("cachedJson" . $id)) !== null ) {
                 if( isset($cachedJson["orderRecords"]) ) {
-                    foreach( $cachedJson["orderRecords"] as $locationCode => $details ) {
+                    foreach( $cachedJson["orderRecords"] as $locationID => $details ) {
                         $results[] = [
                                          "id" => $id,
                                          "item_id" => null,
                                          "availability" => false,
-                                         "status" => "order",
+                                         "statusCode" => "order",
                                          "location" => $details["location"],
                                          "reserve" => "N",
                                          "callnumber" => null,
@@ -177,7 +178,7 @@ class EINetwork extends SierraRest implements
                                          "returnDate" => false,
                                          "number" => null,
                                          "barcode" => null,
-                                         "locationCode" => $locationCode,
+                                         "locationID" => $locationID,
                                          "copiesOwned" => $details["copies"]
                                      ];
                     }
@@ -194,12 +195,12 @@ class EINetwork extends SierraRest implements
                 if( !$thisChange["handled"] ) {
                     foreach( $results as $hKey => $thisHolding ) {
                         if( $thisHolding["item_id"] == $thisChange["inum"] ) {
-                            if( isset($thisChange["status"]) ) {
-                                $thisHolding["status"] = $thisChange["status"];
+                            if( isset($thisChange["statusCode"]) ) {
+                                $thisHolding["statusCode"] = $thisChange["statusCode"];
                             }
                             if( isset($thisChange["duedate"]) ) {
                                 $thisHolding["duedate"] = ($thisChange["duedate"] != "NULL") ? strftime("%m-%d-%y", strtotime($thisChange["duedate"])) : null;
-                                $thisHolding["availability"] = (($thisChange["status"] == "-") && !$thisHolding["duedate"]);
+                                $thisHolding["availability"] = (($thisChange["statusCode"] == "-") && !$thisHolding["duedate"]);
                             }
                             $results[$hKey] = $thisHolding;
                         }
@@ -217,7 +218,7 @@ class EINetwork extends SierraRest implements
         $results2 = [];
         for($i=0; $i<count($results); $i++) {
             // throw out online items
-            if( $results[$i]['location'] == "xronl" ) {
+            if( $results[$i]['locationID'] == "xronl" ) {
                 continue;
             }
 
@@ -229,18 +230,18 @@ class EINetwork extends SierraRest implements
             }
 
             // get shelving details
-            if( !$this->memcached->get("shelvingLocationByCode" . $results[$i]['location']) ) {
-                $this->memcached->set("shelvingLocationByCode" . $results[$i]['location'], $this->getDBTable('shelvinglocation')->getByCode($results[$i]['location']));
+            if( !$this->memcached->get("shelvingLocationByCode" . $results[$i]['locationID']) ) {
+                $this->memcached->set("shelvingLocationByCode" . $results[$i]['locationID'], $this->getDBTable('shelvinglocation')->getByCode($results[$i]['locationID']));
             }
-            $shelfLoc = $this->memcached->get("shelvingLocationByCode" . $results[$i]['location'] );
+            $shelfLoc = $this->memcached->get("shelvingLocationByCode" . $results[$i]['locationID'] );
             $locationId = (isset($shelfLoc) && $shelfLoc) ? $shelfLoc->locationId : null;
             if( $locationId && !$this->memcached->get("locationByID" . $locationId) ) {
                 $this->memcached->set("locationByID" . $locationId, $this->getDBTable('location')->getByLocationId($locationId));
-            } else if( !$locationId && (strlen($results[$i]['location']) == 2) && !$this->memcached->get("locationByCode" . $results[$i]['location']) ) {
-                $this->memcached->set("locationByCode" . $results[$i]['location'], $this->getDBTable('location')->getByCode($results[$i]['location']));
+            } else if( !$locationId && (strlen($results[$i]['locationID']) == 2) && !$this->memcached->get("locationByCode" . $results[$i]['locationID']) ) {
+                $this->memcached->set("locationByCode" . $results[$i]['locationID'], $this->getDBTable('location')->getByCode($results[$i]['locationID']));
             }
-            $location = $locationId ? $this->memcached->get("locationByID" . $locationId ) : ((strlen($results[$i]['location']) == 2) ? $this->memcached->get("locationByCode" . $results[$i]['location']) : null);
-            $results[$i]['branchName'] = $location ? $location->displayName : (($results[$i]['status'] == 'order') ? $results[$i]['location'] : null);
+            $location = $locationId ? $this->memcached->get("locationByID" . $locationId ) : ((strlen($results[$i]['locationID']) == 2) ? $this->memcached->get("locationByCode" . $results[$i]['locationID']) : null);
+            $results[$i]['branchName'] = $location ? $location->displayName : (($results[$i]['statusCode'] == 'order') ? $results[$i]['locationID'] : null);
             $results[$i]['branchCode'] = $location ? $location->code : null;
             $results[$i]['shelvingLocation'] = $shelfLoc ? $shelfLoc->shortName : null;
 
@@ -302,7 +303,7 @@ class EINetwork extends SierraRest implements
                 unset($neededLocations[$code]);
             }
 
-            array_splice($results2, 0, 0, [["id" => $id, "location" => "CHECKIN_RECORDS", "availability" => false, "status" => "?", "items" => [], "copiesOwned" => 0, "checkinRecords" => $results3]]);
+            array_splice($results2, 0, 0, [["id" => $id, "location" => "CHECKIN_RECORDS", "availability" => false, "statusCode" => "?", "status" => "?", "items" => [], "copiesOwned" => 0, "checkinRecords" => $results3]]);
         }
         return $results2;
     }

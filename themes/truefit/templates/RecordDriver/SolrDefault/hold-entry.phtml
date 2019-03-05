@@ -28,7 +28,7 @@
       <? endif; ?>
     </td>
     <td class="EIN-col-m-11" style="padding-right:10px">
-      <div class="EIN-col-m-12<?= ((isset($this->hold["overDriveId"]) && $this->hold["status"] == "i") ? " EIN-col-t-8 EIN-col-8" : "" ) ?>">
+      <div class="EIN-col-m-12<?= ((isset($this->hold["overDriveId"]) && $this->hold["statusCode"] == "i") ? " EIN-col-t-8 EIN-col-8" : "" ) ?>">
         <h1 property="name" class="itemTitle">
           <? if( isset($this->hold["ILL"]) && $this->hold["ILL"] ): ?>
             <?=$this->escapeHtml($this->hold["title"])?>
@@ -136,7 +136,7 @@
                 </td>
               </tr>
             <? endif; ?>
-            <? if( false && $this->hold["status"] != "i" && $this->hold["status"] != "b" && $this->hold["status"] != "j" && isset($this->hold["expire"]) ): ?>
+            <? if( false && $this->hold["statusCode"] != "i" && $this->hold["statusCode"] != "b" && $this->hold["statusCode"] != "j" && isset($this->hold["expire"]) ): ?>
               <tr>
                 <td colspan="2">
                   Not wanted after: <span class="bold"><?=strftime("%b %e, %Y", strtotime($this->hold["expire"]))?></span>
@@ -155,7 +155,7 @@
           <? endif; ?>
         </table>
       </div>
-      <? if( isset($this->hold["overDriveId"]) && $this->hold["status"] == "i" ): ?>
+      <? if( isset($this->hold["overDriveId"]) && $this->hold["statusCode"] == "i" ): ?>
         <div class="EIN-col-m-12 EIN-col-t-4 EIN-col-4" style="padding:5px 0px 10px">
           <div class="singleButtonGap">
             <a href="<?= $this->recordLink()->getActionUrl($this->driver, "Checkout") ?>" target="loginFrame">

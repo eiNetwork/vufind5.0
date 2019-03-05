@@ -16,7 +16,7 @@
       if( isset($item["number"]) && $item["number"]):
         $hasVolumes = true;
       endif;
-      if( isset($item["status"]) && (($item["status"]=="order") || ($item["status"]=="i")) ):
+      if( isset($item["statusCode"]) && (($item["statusCode"]=="order") || ($item["statusCode"]=="i")) ):
         $onOrder = true;
       endif;      
     endforeach;
@@ -139,7 +139,7 @@
         <? if( isset($this->holdings["CHECKIN_RECORDS"]) ): ?>
           <? $serialCheckinRecord = false; ?>
           <? foreach( $this->holdings["CHECKIN_RECORDS"]["items"][0]["checkinRecords"] as $checkinLoc ): ?>
-            <? if( $this->currentLocation && in_array($this->currentLocation["code"], $checkinLoc["branchCode"]) ): ?>
+            <? if( $this->currentLocation && in_array($this->currentLocation["locationID"], $checkinLoc["branchCode"]) ): ?>
               <? $heldHere = $checkinLoc; ?>
             <? endif; ?>
             <? $serialCheckinRecord |= isset($checkinLoc["libHas"]); ?>
@@ -182,7 +182,7 @@
               <? elseif($user && !isset($atPreferred) && $item["availability"] && (($item["branchCode"] == $user->preferred_library) || ($item["branchCode"] == $user->alternate_library) || ($item["branchCode"] == $user->home_library))): ?>
                 <? $atPreferred = true; ?>
               <? endif; ?>
-              <? if( $this->currentLocation && $item["availability"] && ($item["status"] != "o") && ($item["branchCode"] == $this->currentLocation["code"])): ?>
+              <? if( $this->currentLocation && $item["availability"] && ($item["statusCode"] != "o") && ($item["branchCode"] == $this->currentLocation["code"])): ?>
                 <? $hereIDs[] = $item["item_id"]; ?>
               <? elseif($user && $item["availability"] && ($item["statusCode"] != "o") && (($item["branchCode"] == $user->preferred_library) || ($item["branchCode"] == $user->alternate_library) || ($item["branchCode"] == $user->home_library))): ?>
                 <? $preferredIDs[] = $item["item_id"]; ?>
@@ -535,7 +535,7 @@
                     <? $issues = []; ?>
                     <? foreach($this->holdings as $thisHolding): ?>
                       <? foreach($thisHolding['items'] as $item): ?>
-                        <? if( isset($item['locationCode']) && in_array($item['locationCode'], $thisRecord["code"]) ): ?>
+                        <? if( isset($item['locationID']) && in_array($item['locationID'], $thisRecord["code"]) ): ?>
                           <? $issues[] = $item; ?>
                         <? endif; ?>
                       <? endforeach; ?>
