@@ -320,7 +320,8 @@ class OverdriveController extends AbstractBase implements LoggerAwareInterface
             )
         );
 
-        $view->setTemplate('RecordDriver/SolrOverdrive/hold');
+        $view->setTemplate('blankModal');
+        $view->reloadParent = true;
         return $view;
     }
 }
