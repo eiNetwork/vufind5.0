@@ -1,0 +1,141 @@
+<?
+  // Set up page title:
+  $this->headTitle($this->translate('Checked Out'));
+
+  // Set up breadcrumbs:
+  $this->layout()->breadcrumbs = '<li><a href="' . $this->url('myresearch-home') . '">' . $this->transEsc('Your Account') . '</a></li> <li class="active">' . $this->transEsc('Checked Out Items') . '</li>';
+
+  // Convenience variable:
+  $account = $this->auth()->getManager();
+  $user = $this->auth()->isLoggedIn();
+
+  $order = ['all','overdue','due_this_week','other'];
+  $totalCheckouts = 0;
+?>
+
+<?=($this->suppressFlashMessages) ? "" : $this->flashmessages()?>
+
+<div class="EIN-col-m-12 padded">
+  <div class="EIN-hide-m EIN-col-t-3 EIN-col-3 accordionButtonsLeft">
+    <div class="facetTitle">Checked Out</div>
+    <? foreach($order as $checkoutType): ?>
+      <? $totalCheckouts += count($this->checkoutList[$checkoutType]); ?>
+      <div class="panel-heading">
+        <h4 class="panel-title">
+          <? if(count($this->checkoutList[$checkoutType]) > 0): ?>    
+            <a data-toggle="collapse" data-parent="#checkoutAccordion" href="#details_<?=$checkoutType?>" class="collapsed active leftTab" onclick="createCookie('checkoutTab','<?=$checkoutType?>')"><?=$this->transEsc('checkedout_' . $checkoutType)?><span class="badge noHide"><?=count($this->checkoutList[$checkoutType])?></span></a>
+          <? else: ?>
+            <a data-toggle="collapse" class="collapsed disabled leftTab" onclick="return false;"><?=$this->transEsc('checkedout_' . $checkoutType)?><span class="badge noHide"><?=count($this->checkoutList[$checkoutType])?></span></a>
+          <? endif; ?>
+          <div class="openAccordionTab"></div>
+        </h4>
+      </div>
+    <? endforeach; ?>
+    <div class="panel-heading"></div>
+  </div> 
+  <div class="EIN-col-m-12 EIN-col-t-9 EIN-col-9 panel-group" id="checkoutAccordion">
+    <h1 class="pageTitle EIN-hide-t EIN-hide">Checked Out</h1>
+    <? if( $totalCheckouts == 0 ): ?>
+      <div class="EIN-col-m-12" style="height:50px"></div>
+      <div class="center">You don't currently have any items checked out.If you have recently checked out/renewed/returned an item, it may be a few minutes before this page reflects those changes. You can use the button below to check.</div><br>
+      <div class="center">
+        <form action="<?=$this->url('myresearch-checkedout')?>" method="post">
+          <input type="hidden" name="reloadCheckouts" value="true">
+          <button class="btn-default btn-wide">Refresh My Checked Out Items</button>
+        </form>
+      </div>
+      <div class="EIN-col-m-12"><hr style="margin:15px 0px 5px"></div>
+      <div class="EIN-col-m-12" style="height:50px"></div>
+    <? else: ?>
+      <? foreach($order as $checkoutType): ?>
+        <? $showPhysicalHeader = $this->splitEcontent; $showEcontentHeader = $this->splitEcontent; ?>
+        <div class="panel panel-default listAccordion">
+          <div class="panel-heading EIN-hide-t EIN-hide">
+            <h4 class="panel-title">
+              <? if(count($this->checkoutList[$checkoutType]) > 0): ?>    
+                <a data-toggle="collapse" data-parent="#checkoutAccordion" href="#details_<?=$checkoutType?>" class="collapsed active" onclick="createCookie('checkoutTab','<?=$checkoutType?>')"><?=$this->transEsc('checkedout_' . $checkoutType)?><span class="badge noHide"><?=count($this->checkoutList[$checkoutType])?></span><i class="fa fa-caret-down"></i><i class="fa fa-caret-up"></i></a>
+              <? else: ?>
+                <a data-toggle="collapse" class="collapsed disabled"><?=$this->transEsc('checkedout_' . $checkoutType)?><span class="badge noHide"><?=count($this->checkoutList[$checkoutType])?></span><i class="fa fa-caret-down"></i><i class="fa fa-caret-up"></i></a>
+              <? endif; ?>
+            </h4>
+          </div>
+          <? if(count($this->checkoutList[$checkoutType]) > 0): ?>    
+            <div id="details_<?=$checkoutType?>" class="panel-collapse collapse">
+              <div class="panel-body">
+                <form class="form-inline" method="post" name="bulkActionForm" action="<?=$this->url('cart-myresearchbulk')?>" data-lightbox>
+                  <?=$this->context($this)->renderInContext('myresearch/bulk-action-buttons.phtml', array('idPrefix' => '', 'checkout' => $checkoutType, 'account' => $this->account))?>
+                  <div style="display:none">
+                    <? foreach ($this->checkoutList[$checkoutType] as $current): ?>
+                      <? if (isset($current["checkout_id"])): ?>
+                        <?=$this->record($current["driver"])->getHoldCheckbox($current["checkout_id"] . "|" . $current["item_id"], "checkout_" . $checkoutType)?>
+                      <? endif; ?>
+                    <? endforeach; ?>
+                  </div>
+                </form>
+                <div class="EIN-col-m-12"><hr style="margin:5px 0"></div>
+                <? if( $checkoutType == "all" ): ?>
+                  <div class="center" style="margin:0px 20px">If you have recently checked out/renewed/returned an item, it may be a few minutes before this page reflects those changes. You can use the button below to check.</div><br>
+                  <div class="center">
+                    <form action="<?=$this->url('myresearch-checkedout')?>" method="post">
+                      <input type="hidden" name="reloadCheckouts" value="true">
+                      <button class="btn-default btn-wide">Refresh My Checked Out Items</button>
+                    </form>
+                  </div>
+                  <div class="EIN-col-m-12"><hr style="margin:15px 0px 5px"></div>
+                <? endif; ?>
+                <? $physicalCount = 0; $eContentCount = 0; ?>
+                <? foreach ($this->checkoutList[$checkoutType] as $current): ?>
+                  <? if( $showPhysicalHeader && !isset($current["reserveId"]) ): ?>
+                    <? $physicalCount++; ?>
+                  <? endif; ?>
+                  <? if( $showEcontentHeader && isset($current["reserveId"]) ): ?>
+                    <? $eContentCount++; ?>
+                  <? endif; ?>
+                <? endforeach; ?>
+                <? foreach ($this->checkoutList[$checkoutType] as $current): ?>
+                  <? if( $showPhysicalHeader && !isset($current["reserveId"]) ): ?>
+                    <div class="EIN-col-m-12" style="font-weight:700;font-size:24px;text-align:center;color:#3f51b5;background:#ededed;margin:-5px 0 -5px;padding:5px">Physical Items<span class="badge noHide" style="margin-left:5px;font-size:14px;top:-3px;position:relative"><?=$physicalCount?></span></div>
+                    <div class="EIN-col-m-12"><hr style="margin:5px 0"></div>
+                    <? $showPhysicalHeader = false; ?>
+                  <? endif; ?>
+                  <? if( $showEcontentHeader && isset($current["reserveId"]) ): ?>
+                    <div class="EIN-col-m-12" style="font-weight:700;font-size:24px;text-align:center;color:#3f51b5;background:#ededed;margin:-5px 0 -5px;padding:5px">E-content Items<span class="badge noHide" style="margin-left:5px;font-size:14px;top:-3px;position:relative"><?=$eContentCount?></span></div>
+                    <div class="EIN-col-m-12"><hr style="margin:5px 0"></div>
+                    <? $showEcontentHeader = false; ?>
+                  <? endif; ?>
+                  <?=$this->record($current["driver"])->getCheckoutEntry($current, $user, "checkout_" . $checkoutType)?>
+                <? endforeach; ?>
+              </div>
+            </div>
+          <? endif; ?>
+        </div>
+      <? endforeach; ?>
+      <script type="text/javascript">
+        $('.panel-heading a').on('click',function(e){
+          // prevent them from dismissing the last open section if we're in tablet or desktop layout
+          if($(document).width() >= 600) {
+            if($($(this).attr("href")).hasClass('in')){
+              e.stopPropagation();
+            }
+            // You can also add preventDefault to remove the anchor behavior that makes the page jump
+            e.preventDefault();
+          }
+        });
+        jQuery(document).ready(function() {
+          $('body').css({"overflow-y":"hidden"});
+          if($(document).width() >= <?=(isset($this->showCheckoutType) ? 0 : 600)?>) {
+            <? if( isset($this->showCheckoutType) ): ?>
+              $($('#details_<?=$this->showCheckoutType?>').length ? '#details_<?=$this->showCheckoutType?>' : '#details_all').parents('.listAccordion').find('.panel-heading a').click();
+            <? else: ?>
+              $('.panel-heading a.active').first().click();
+            <? endif; ?>
+          }
+          $('body').css({"overflow-y":"auto"});
+          $('#detailsAccordion').css({"min-height":$('.accordionButtonsLeft').height() + "px"});
+          // hide the last hr
+          $(".panel-body").children(".ajaxItem:last-child").children("div").css("display","none");
+        } );
+      </script>
+    <? endif; ?>
+  </div>
+</div>

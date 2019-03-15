@@ -23,6 +23,13 @@ class EINetwork extends SierraRest implements
     protected $recordLoader;
 
     /**
+     * Overdrive Connector
+     *
+     * @var \VuFind\DigitalContent\OverdriveConnector $connector Overdrive Connector
+     */
+    protected $connector;
+
+    /**
      * Mappings from item status codes to VuFind strings
      *
      * @var array
@@ -64,11 +71,12 @@ class EINetwork extends SierraRest implements
      * SessionContainer object
      */
     public function __construct(\VuFind\Date\Converter $dateConverter, \VuFind\Record\Loader $loader,
-        $sessionFactory
+        $sessionFactory, $ODconnector
     ) {
         $this->dateConverter = $dateConverter;
         $this->recordLoader = $loader;
         $this->sessionFactory = $sessionFactory;
+        $this->connector = $ODconnector;
     }
 
     /**
@@ -502,31 +510,53 @@ class EINetwork extends SierraRest implements
             return $this->sessionCache->checkouts;
         // clear out these intermediate cached API results
         } else if( $skipCache ) {
-/*VF5UPGRADE
-            $offset = 0;
-            $hash = md5($this->config['SIERRAAPI']['url'] . "/v5/patrons/" . $patron['id'] . "/checkouts?limit=50&offset=" . $offset);
-            while( $this->memcached->get($hash) ) {
-                $this->memcached->set($hash, null);
-                $offset += 50;
-                $hash = md5($this->config['SIERRAAPI']['url'] . "/v5/patrons/" . $patron['id'] . "/checkouts?limit=50&offset=" . $offset);
-            }
-*/
+            $hierarchy = ['v' . $this->apiVersion, 'patrons', $patron['id'], 'checkouts'];
+            $params = ['limit' => 10000, 'offset' => 0, 'fields' => 'item,dueDate,numberOfRenewals,outDate,recallDate,callNumber,barcode'];
+            $hash = md5(json_encode($hierarchy) . ($params ? ("###" . json_encode($params)) : ""));
+            $this->memcached->set($hash, null);
         }
 
         $sierraTransactions = parent::getMyTransactions($patron);
-/*VF5UPGRADE
-        $overDriveTransactions = $this->getOverDriveCheckedOutItems((object)$patron);
+
+        // get overdrive checkouts
+        $overDriveTransactions = json_decode(json_encode($this->connector->getCheckouts(true)), true)["data"];
         foreach($overDriveTransactions as $item) {
-            $solrInfo = $this->getSolrRecordFromExternalId($item["overDriveId"]);
+            $solrInfo = $this->getSolrRecordFromExternalId($item["reserveId"]);
             if($solrInfo) {
                 foreach($solrInfo as $key => $value) {
                     $item[$key] = $value;
                 }
+                $item['duedate'] = $item['expires'];
                 $item['ILL'] = false;
+                $item['overdriveListen'] = false;
+                $item['overdriveRead'] = false;
+                $item['mediaDo'] = false;
+                $item['streamingVideo'] = false;
+                $item['downloadable'] = false;
+
+                // get the list of available formats
+                $item['availableFormats'] = [];
+                foreach($item["formats"] ?? [] as $thisFormat) {
+                    $item['availableFormats'][] = $thisFormat["formatType"];
+                }
+                foreach($item["actions"]["format"]["fields"] ?? [] as $thisFormat) {
+                    if( $thisFormat["name"] == "formatType" ) {
+                        $item['availableFormats'] = array_merge($item['availableFormats'], $thisFormat["options"]);
+                    }
+                }
+
+                // look for download links
+                $OD_type_mapping = ['ebook-mediado' => 'mediaDo', 'ebook-overdrive' => 'overdriveRead', 'magazine-overdrive' => 'overdriveRead', 'video-streaming' => 'streamingVideo', 'audiobook-overdrive' => 'overdriveListen'];
+                foreach( $OD_type_mapping as $formatType => $linkKey ) {
+                    if( in_array($formatType, $item['availableFormats']) && ($item["formats"] ?? false) ) {
+                        $item[$linkKey] = $this->connector->getDownloadLink($item["reserveId"], $formatType, $this->config["Site"]["url"]);
+                    }
+                }
+
                 $sierraTransactions[] = $item;
             }
         }
-*/
+
         $this->sessionCache->checkouts = $sierraTransactions;
         if( isset($this->sessionCache->staleCheckoutsHash) ) {
             if( md5(json_encode($sierraTransactions)) != $this->sessionCache->staleCheckoutsHash ) {
@@ -900,6 +930,54 @@ class EINetwork extends SierraRest implements
     }
 
     /**
+     * Convenience function to get the Solr Record corresponding to a given externalId
+     *
+     * @param  string $id an externalId value
+     *
+     * @return mixed  A Solr record if the externalId maps to a Solr item, false if not
+     */
+    public function getSolrRecordFromExternalId($id) {
+        if( $this->memcached->get("solrRecordForID" . $id) ) {
+            return $this->memcached->get("solrRecordForID" . $id);
+        }
+        // grab a bit more information from Solr
+        $solrBaseURL = $this->config['Solr']['url'];
+        $curl_url = $solrBaseURL . "/biblio/select?q=*%3A*&fq=externalId%3A%22" . strtolower($id) . "%22&wt=csv&csv.separator=%07&csv.encapsulator=%15";
+        $curl_connection = curl_init($curl_url);
+        curl_setopt($curl_connection, CURLOPT_CONNECTTIMEOUT, 30);
+        curl_setopt($curl_connection, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
+        curl_setopt($curl_connection, CURLOPT_RETURNTRANSFER, true);
+        $sresult = curl_exec($curl_connection);
+        $values = explode("\n", $sresult);
+        // sometimes OverDrive wants to break our system by stashing bonus \n characters in there. this puts them back together.
+        while( count($values) > 3 ) {
+            array_splice($values, 1, 2, $values[1] . "\n" . $values[2]);
+        }
+        // is it a Solr item?
+        if( count($values) > 2 ) {
+            $item = array();
+            $fieldNames = explode(chr(7), $values[0]);
+            // we have to do some hocus pocus here since the values can also include the delimiter if they are multi-valued
+            $fieldValues = explode(chr(7), $values[1]);
+            for($i=0;$i<count($fieldValues);$i++) {
+                while( substr($fieldValues[$i], 0, 1) == chr(21) && substr($fieldValues[$i], -1) != chr(21) ) {
+                    array_splice($fieldValues, $i, 2, $fieldValues[$i] . "\," . $fieldValues[$i+1]);
+                }
+                if( substr($fieldValues[$i], 0, 1) == chr(21) ) {
+                    $fieldValues[$i] = substr($fieldValues[$i], 1, -1);
+                }
+            }
+            for($i=0; $i<count($fieldNames); $i++) {
+                $item[$fieldNames[$i]] = $fieldValues[$i];
+            }
+            $this->memcached->set("solrRecordForID" . $id, $item);
+            return $this->memcached->get("solrRecordForID" . $id);
+        }
+        // not in Solr
+        return false;
+    }
+
+    /**
      * Test Serial
      *
      * This checks the API to see if this bib has a serial type.
@@ -983,5 +1061,33 @@ class EINetwork extends SierraRest implements
         }
         $checkDigit = $checkDigit % 11;
         return ($checkDigit == 10) ? "x" : $checkDigit;
+    }
+
+    /**
+     * Make Request
+     *
+     * Makes a request to the Sierra REST API
+     *
+     * @param array  $hierarchy Array of values to embed in the URL path of
+     * the request
+     * @param array  $params    A keyed array of query data
+     * @param string $method    The http request method to use (Default is GET)
+     * @param array  $patron    Patron information, if available
+     *
+     * @throws ILSException
+     * @return mixed JSON response decoded to an associative array or null on
+     * authentication error
+     */
+    protected function makeRequest($hierarchy, $params = false, $method = 'GET',
+        $patron = false
+    ) {
+        $hash = md5(json_encode($hierarchy) . ($params ? ("###" . json_encode($params)) : ""));
+        if( !$this->memcached->get($hash) ) {
+            $result = parent::makeRequest($hierarchy, $params, $method, $patron);
+
+            $this->memcached->set($hash, json_encode($result), 30);
+        }
+
+        return json_decode($this->memcached->get($hash), true);
     }
 }

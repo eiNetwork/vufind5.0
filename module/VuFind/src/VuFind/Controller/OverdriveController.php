@@ -274,6 +274,7 @@ class OverdriveController extends AbstractBase implements LoggerAwareInterface
         } elseif ($action == "doCheckout") {
             $actionTitleCode = "od_checkout";
             $result = $this->connector->doOverdriveCheckout($od_id);
+            $this->getILS()->clearSessionVar("checkouts");
 
         } elseif ($action == "placeHold") {
             $actionTitleCode = "od_hold";
@@ -287,15 +288,20 @@ class OverdriveController extends AbstractBase implements LoggerAwareInterface
         } elseif ($action == "returnTitle") {
             $actionTitleCode = "od_early_return";
             $result = $this->connector->returnResource($od_id);
+            $this->getILS()->clearSessionVar("checkouts");
 
         } elseif ($action == "getTitle") {
             $actionTitleCode = "od_get_title";
             //need to get server name etc.  maybe this: getServerUrl();
             $this->debug("Here:" . $this->getServerUrl('overdrive-hold'));
             $result = $this->connector->getDownloadLink(
-                $od_id, $format, $this->getServerUrl('overdrive-hold')
+                $od_id, $format, $this->getServerUrl('myresearch-checkedout')
             );
             if ($result->status) {
+                if ( !$this->connector->getCheckout($od_id, false)->isFormatLockedIn ) {
+                    $this->getILS()->clearSessionVar("checkouts");
+                }
+
                 //Redirect to resource
                 $url = $result->data->downloadLink;
                 $this->debug("redirecting to: $url");
@@ -322,6 +328,32 @@ class OverdriveController extends AbstractBase implements LoggerAwareInterface
 
         $view->setTemplate('blankModal');
         $view->reloadParent = true;
+        return $view;
+    }
+
+    /**
+     * Select format Action
+     *
+     * Select format Action shows a dialog with the available formats to allow the patron
+     * to select which one they want to lock in.
+     *
+     * @return \Zend\View\Model\ViewModel
+     */
+    public function selectFormatAction()
+    {
+        $od_id = $this->params()->fromQuery('od_id');
+        $rec_id = $this->params()->fromQuery('rec_id');
+
+        $driver = $this->serviceLocator->get('VuFind\Record\Loader')->load(
+            $rec_id
+        );
+
+        $view = $this->createViewModel();
+        $view->rec_id = $rec_id;
+        $view->od_id = $od_id;
+        $view->parentURL = $this->params()->fromQuery('parentURL');
+        $view->driver = $driver;
+        $view->setTemplate('record/overdriveDownload');
         return $view;
     }
 }

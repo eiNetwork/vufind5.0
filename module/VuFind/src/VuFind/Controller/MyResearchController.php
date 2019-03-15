@@ -1315,68 +1315,116 @@ class MyResearchController extends AbstractBase
         $this->addAccountBlocksToFlashMessenger($catalog, $patron);
 
         // Get the current renewal status and process renewal form, if necessary:
+        $view = $this->createViewModel();
         $renewStatus = $catalog->checkFunction('Renewals', compact('patron'));
         $renewResult = $renewStatus
             ? $this->renewals()->processRenewals(
-                $this->getRequest()->getPost(), $catalog, $patron
+                count($this->getRequest()->getPost()) ? $this->getRequest()->getPost() : $this->getRequest()->getQuery(), $catalog, $patron
             )
             : [];
+        // we processed some renewals
+        if( count($renewResult) > 0 ) {
+            // Get target URL for after deletion:
+            $checkoutType = 'all';
+            setcookie("checkoutTab", $checkoutType, time() + 3600, '/');
+
+            // Process the renews:
+            $view = $this->createViewModel(['results' => $renewResult]);
+            $view->setTemplate('myresearch/renewResults');
+            return $view;
+        }
 
         // By default, assume we will not need to display a renewal form:
         $renewForm = false;
 
         // Get checked out item details:
-        $result = $catalog->getMyTransactions($patron);
+        $result = $catalog->getMyTransactions($patron, $this->params()->fromPost('reloadCheckouts'));
+        $checkoutList = ['overdue' => [], 'due_this_week' => [], 'other' => []];
+        foreach ($result as $current) {
+            $current["dateDiff"] = date_diff(date_create_from_format("m-d-Y", $current["duedate"]), date_create(date("Y-m-d")));
 
-        // Get page size:
-        $config = $this->getConfig();
-        $limit = isset($config->Catalog->checked_out_page_size)
-            ? $config->Catalog->checked_out_page_size : 50;
-
-        // Build paginator if needed:
-        if ($limit > 0 && $limit < count($result)) {
-            $adapter = new \Zend\Paginator\Adapter\ArrayAdapter($result);
-            $paginator = new \Zend\Paginator\Paginator($adapter);
-            $paginator->setItemCountPerPage($limit);
-            $paginator->setCurrentPageNumber($this->params()->fromQuery('page', 1));
-            $pageStart = $paginator->getAbsoluteItemNumber(1) - 1;
-            $pageEnd = $paginator->getAbsoluteItemNumber($limit) - 1;
-        } else {
-            $paginator = false;
-            $pageStart = 0;
-            $pageEnd = count($result);
+            // Build record driver:
+            $current["driver"] = $this->getDriverForILSRecord($current);
+            $checkoutList[(($current["dateDiff"]->invert == 0) && ($current["dateDiff"]->days != 0)) ? 'overdue' : (($current["dateDiff"]->days <= 7) ? 'due_this_week' : 'other')][] = $current;
         }
 
-        $transactions = $hiddenTransactions = [];
-        foreach ($result as $i => $current) {
-            // Add renewal details if appropriate:
-            $current = $this->renewals()->addRenewDetails(
-                $catalog, $current, $renewStatus
-            );
-            if ($renewStatus && !isset($current['renew_link'])
-                && $current['renewable']
-            ) {
-                // Enable renewal form if necessary:
-                $renewForm = true;
-            }
-
-            // Build record driver (only for the current visible page):
-            if ($i >= $pageStart && $i <= $pageEnd) {
-                $transactions[] = $this->getDriverForILSRecord($current);
+        // sort lists by due date, then title
+        $allList = [];
+        $user = $this->getUser();
+        foreach( $checkoutList as $key => $thisList ) {
+            // if they're splitting econtent, bubble those to the bottom
+            if( $user['splitEcontent'] == "Y" ) {
+                usort($checkoutList[$key], function($co1, $co2) {
+                    if(!isset($co1["overDriveId"]) && isset($co2["overDriveId"])) {
+                        return -1;
+                    } else if(isset($co1["overDriveId"]) && !isset($co2["overDriveId"])) {
+                        return 1;
+                    } else if($co1["duedate"] > $co2["duedate"]) {
+                        return 1;
+                    } else if($co1["duedate"] < $co2["duedate"]) {
+                        return -1;
+                    }
+                    $t1 = isset($co1["title"]) ? $co1["title"] : $co1["driver"]->getTitle();
+                    $t2 = isset($co2["title"]) ? $co2["title"] : $co2["driver"]->getTitle();
+                    if($t1 > $t2) {
+                        return 1;
+                    } else if($t1 < $t2) {
+                        return -1;
+                    } else {
+                        return 0;
+                    }
+                } );
+            // otherwise, normal sort
             } else {
-                $hiddenTransactions[] = $current;
+                usort($checkoutList[$key], function($co1, $co2) {
+                    if($co1["duedate"] > $co2["duedate"]) {
+                        return 1;
+                    } else if($co1["duedate"] < $co2["duedate"]) {
+                        return -1;
+                    }
+                    $t1 = isset($co1["title"]) ? $co1["title"] : $co1["driver"]->getTitle();
+                    $t2 = isset($co2["title"]) ? $co2["title"] : $co2["driver"]->getTitle();
+                    if($t1 > $t2) {
+                        return 1;
+                    } else if($t1 < $t2) {
+                        return -1;
+                    } else {
+                        return 0;
+                    }
+                } );
             }
+            $allList = array_merge($allList, $checkoutList[$key]);
         }
 
-        $displayItemBarcode
-            = !empty($config->Catalog->display_checked_out_item_barcode);
+        // if they're splitting econtent, bubble those to the bottom
+        if( $user['splitEcontent'] == "Y" ) {
+            usort($allList, function($co1, $co2) {
+                if(!isset($co1["overDriveId"]) && isset($co2["overDriveId"])) {
+                    return -1;
+                } else if(isset($co1["overDriveId"]) && !isset($co2["overDriveId"])) {
+                    return 1;
+                } else if($co1["duedate"] > $co2["duedate"]) {
+                    return 1;
+                } else if($co1["duedate"] < $co2["duedate"]) {
+                    return -1;
+                }
+                $t1 = isset($co1["title"]) ? $co1["title"] : $co1["driver"]->getTitle();
+                $t2 = isset($co2["title"]) ? $co2["title"] : $co2["driver"]->getTitle();
+                if($t1 > $t2) {
+                    return 1;
+                } else if($t1 < $t2) {
+                    return -1;
+                } else {
+                    return 0;
+                }
+            } );
+        }
+        $checkoutList['all'] = $allList;
 
-        return $this->createViewModel(
-            compact(
-                'transactions', 'renewForm', 'renewResult', 'paginator',
-                'hiddenTransactions', 'displayItemBarcode'
-            )
-        );
+        $view->splitEcontent = ($user['splitEcontent'] == "Y");
+        $view->checkoutList = $checkoutList;
+        $view->showCheckoutType = isset($_COOKIE["checkoutTab"]) ? $_COOKIE["checkoutTab"] : "all";
+        return $view;
     }
 
     /**

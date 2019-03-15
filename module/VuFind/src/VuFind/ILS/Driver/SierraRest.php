@@ -568,7 +568,7 @@ class SierraRest extends AbstractBase implements TranslatorAwareInterface,
             // Fetch item information
             $item = $this->makeRequest(
                 ['v' . $this->apiVersion, 'items', $transaction['item_id']],
-                ['fields' => 'bibIds,varFields'],
+                ['fields' => 'bibIds,varFields,location,callNumber'],
                 'GET',
                 $patron
             );
@@ -586,6 +586,11 @@ class SierraRest extends AbstractBase implements TranslatorAwareInterface,
                 if (!empty($bib['publishYear'])) {
                     $transaction['publication_year'] = $bib['publishYear'];
                 }
+            }
+            $transaction['ILL'] = ($item['location']['code'] == "xzill");
+            if( $transaction['ILL'] ) {
+                $transaction['title'] = $item["callNumber"];
+                $transaction['author'] = "InterLibrary Loan";
             }
             $transactions[] = $transaction;
         }
@@ -631,20 +636,14 @@ class SierraRest extends AbstractBase implements TranslatorAwareInterface,
                 $msg = $this->formatErrorMessage(
                     $result['description'] ?? $result['name']
                 );
-                $finalResult['details'][$itemId] = [
+                $finalResult['details'][$details] = [
+                    'checkout_id' => $checkoutId,
                     'item_id' => $itemId,
                     'success' => false,
                     'sysMessage' => $msg
                 ];
             } else {
-                $newDate = $this->dateConverter->convertToDisplayDate(
-                    'Y-m-d', $result['dueDate']
-                );
-                $finalResult['details'][$itemId] = [
-                    'item_id' => $itemId,
-                    'success' => true,
-                    'new_date' => $newDate
-                ];
+                $finalResult['details'][$details] = true;
             }
         }
         return $finalResult;

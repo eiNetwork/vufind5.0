@@ -448,7 +448,7 @@ class OverdriveConnector implements LoggerAwareInterface,
                         $result->data = (object)[];
                     }
                     $result->data->expires = $expires;
-                    $result->data->formats = $response->formats;
+                    $result->data->formats = $response->formats ?? [];
                     $result->msg = '<i class="fa fa-info"></i>Your title was checked out successfully.  <a href="/MyResearch/CheckedOut">Your Checked Out Items</a>.';
 
                     //add the checkout to the session cache
@@ -581,8 +581,9 @@ class OverdriveConnector implements LoggerAwareInterface,
             //because this is a DELETE Call, we are just looking for a boolean
             if ($response) {
                 $result->status = true;
+                $result->msg = '<i class="fa fa-info"></i>Your item was returned successfully.';
             } else {
-                $result->msg = $response->message;
+                $result->msg = '<i class="fa fa-exclamation-triangle"></i>There was an error returning this item. ' . $response->message;
             }
         }
         return $result;
@@ -644,6 +645,8 @@ class OverdriveConnector implements LoggerAwareInterface,
         if ($downloadLink) {
             $this->debug("dll true");
             $url = str_replace("{errorurl}", $errorURL, $downloadLink);
+            $url = str_replace("{errorpageurl}", $errorURL, $url);
+            $url = str_replace("{streamingauthurl}", $errorURL, $url);
             $url = str_replace("{successurl}", $errorURL, $url);
             $this->debug("getting download link using: $url");
             $response = $this->callPatronUrl(
@@ -654,13 +657,12 @@ class OverdriveConnector implements LoggerAwareInterface,
             if (!empty($response)) {
                 if (isset($response->links)) {
                     $result->status = true;
-                    $result->data->downloadLink
-                        = $response->links->contentlink->href;
+                    $result->data = (object)["downloadLink" => $response->links->contentlink->href];
                 } else {
                     $this->debug("problem getting link:" . $response->message);
                     $result->msg
                         = "Could not get download link for resourceID "
-                        . "[$overDriveId]: " . $response->message;
+                        . "[$overDriveId]: " . $response->message . "<br>" . $url;
                 }
             } else {
                 //todo: translate
@@ -682,7 +684,7 @@ class OverdriveConnector implements LoggerAwareInterface,
      */
     protected function getLinkTemplate($checkout, $format)
     {
-        foreach ($checkout->formats as $f) {
+        foreach (($checkout->formats ?? []) as $f) {
 
             if ($f->formatType == $format) {
 
@@ -749,6 +751,9 @@ class OverdriveConnector implements LoggerAwareInterface,
             if (!empty($response)) {
                 if (isset($response->linkTemplates)) {
                     $result->status = true;
+                    if( $result->data === false ) {
+                        $result->data = (object)[];
+                    }
                     $result->data->linkTemplates = $response->linkTemplates;
                     $this->debug("title locked in:");
                 } else {
@@ -959,7 +964,6 @@ class OverdriveConnector implements LoggerAwareInterface,
         if (!$checkouts || $refresh) {
             if ($config = $this->getConfig()) {
                 $url = $config->circURL . '/v1/patrons/me/checkouts';
-
                 $response = $this->callPatronUrl(
                     $user["cat_username"],
                     $user["cat_password"], $url, false
@@ -967,9 +971,9 @@ class OverdriveConnector implements LoggerAwareInterface,
                 if (!empty($response)) {
                     $result->status = true;
                     $result->message = '';
-                    $result->data = $response->checkouts;
+                    $result->data = $response->checkouts ?? [];
                     //Convert dates to desired format
-                    foreach ($response->checkouts as $key => $checkout) {
+                    foreach ($response->checkouts ?? [] as $key => $checkout) {
                         $coExpires = new \DateTime($checkout->expires);
                         $result->data[$key]->expires = $coExpires->format(
                             $config->displayDateFormat
@@ -978,7 +982,7 @@ class OverdriveConnector implements LoggerAwareInterface,
                             = !$checkout->isFormatLockedIn;
                     }
 
-                    $this->sessionContainer->checkouts = $response->checkouts;
+                    $this->sessionContainer->checkouts = $response->checkouts ?? [];
                 } else {
                     $result->code = 'od_code_connection_failed';
                 }
@@ -1273,7 +1277,7 @@ class OverdriveConnector implements LoggerAwareInterface,
                 $postData = json_encode($jsonData);
                 $client->setRawBody($postData);
             }
-            $this->debug("patronURL data sent: $postData");
+            $this->debug("patronURL data sent: " . ($postData ?? null));
             $this->debug("patronURL method: " . $client->getMethod());
             $this->debug("client: " . $client->getRequest());
             try {

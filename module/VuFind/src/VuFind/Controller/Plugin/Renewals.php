@@ -88,7 +88,7 @@ class Renewals extends AbstractPlugin
             $ids = $request->get('renewAllIDS');
         } elseif (!empty($selected)) {
             $ids = $request->get('selectAll')
-                ? $request->get('selectAllIDS')
+                ? $request->get('idsAll')
                 : $request->get('renewSelectedIDS');
         } else {
             $ids = [];

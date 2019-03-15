@@ -131,12 +131,12 @@ class SolrOverdrive extends SolrMarc implements LoggerAwareInterface
                 }
                 //if we aren't locked in, we can show all formats
             } else {
-
                 foreach ($this->getDigitalFormats() as $format) {
                     $formats[$format->id] = $format->name;
                 }
             }
         }
+        $formats["isFormatLockedIn"] = $checkout->isFormatLockedIn ?? false;
         return $formats;
     }
 
@@ -151,12 +151,13 @@ class SolrOverdrive extends SolrMarc implements LoggerAwareInterface
     public function getDigitalFormats()
     {
         $formats = array();
-        if ($this->config->isMarc) {
+        if ($this->config->isMarc || $this->fields['id']) {
             $od_id = $this->getOverdriveID();
             $fulldata = $this->connector->getMetadata(array($od_id));
             $data = $fulldata[strtolower($od_id)];
         } else {
             $jsonData = $this->fields['fullrecord'] ?? "{}";
+            $jsonData = str_replace("\n", "\\n", $jsonData);
             $data = json_decode($jsonData, false);
         }
 

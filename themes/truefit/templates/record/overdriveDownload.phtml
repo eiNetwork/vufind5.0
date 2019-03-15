@@ -1,0 +1,60 @@
+<h2><?=$this->transEsc("Downloadable Formats")?></h2>
+<div>
+  <div class="EIN-m-12 lightboxText">Select one of the format types below to download.  Please note that only one format may be downloaded for each checkout of a title.  If you have already downloaded a particular format of this title, other formats may be unavailable.</div>
+  <div class="EIN-m-12">
+    <br>
+    <table style="margin-left:auto;margin-right:auto">
+      <? $isPeriodical = false; ?>
+      <? $availableFormats = $this->driver->getAvailableDigitalFormats(); ?>
+      <? foreach($this->driver->getFormats() as $format): ?>
+        <? if( !$isPeriodical && $format == "NOOK Periodical" ): ?>
+          <? $isPeriodical = true; ?>
+        <? endif; ?>
+        <? if( !in_array($format, ["OverDrive Read", "OverDrive Listen"]) ): ?>
+          <? 
+            $downloadId = null;
+            foreach($availableFormats as $key => $download):
+              if(strtolower($format) == strtolower($download)):
+                $downloadId = $key;
+              endif;
+            endforeach;
+          ?>
+          <tr>
+            <td style="padding:5px"><span class="formatTag"><?=$format?></span></td>	
+            <td class="lightboxText" style="padding:5px">
+              <?=($downloadId?("<a href=\"/Overdrive/Hold?action=getTitle&getTitleFormat=" . $downloadId . "&rec_id=" . $this->rec_id . "&od_id=" . $this->od_id . "&parentURL=" . urlencode($this->parentURL) . "\" class=\"odDownloadLink\" id=\"format-" . $downloadId ."\" data-lightbox-ignore target=\"" . (($downloadId=="periodicals-nook")?"_self":((($downloadId=="video-streaming") || ($downloadId=="ebook-kindle")) ? "_blank" : "loginFrame")) . "\">"):"")?>
+                <button class="btn-default"<?=($downloadId?"":" disabled")?>>Download</button>
+              <?=($downloadId?"</a>":"")?>
+            </td>
+            <td class="lightboxText EIN-hide-m" style="padding:5px"><span class="<?=($downloadId?"availableTag":"unavailableTag")?>"><?=($downloadId?("<i class=\"fa fa-check\"></i>".($availableFormats["isFormatLockedIn"]?"Locked In":"Available")):"Unavailable")?></span></td>
+          </tr>
+        <? endif; ?>
+      <? endforeach; ?>
+    </table>
+    <br>
+  </div>
+  <img src="/vufind/themes/truefit/images/icons/overdrive.png" style="float:left;padding-right:20px">
+  <div class="EIN-m-12 lightboxText">
+    <? if( $isPeriodical ): ?>
+      This issue will be sent to your free <a href="https://nook.barnesandnoble.com/my_library/" data-lightbox-ignore target="_blank">NOOK account</a>. If you do not already have one, you will be prompted to create it during the download process. If this is your first time downloading a NOOK periodical, you will need to grant access to your NOOK account to tie it to your catalog account.
+    <? else: ?>
+      This title requires the <a href="https://app.overdrive.com/" data-lightbox-ignore target="_blank">OverDrive&#0169; Media Console&#0153;</a> for use. If you do not already have the OverDrive Media Console, you may download it <a href="https://app.overdrive.com/" data-lightbox-ignore target="_blank">here</a>.
+    <? endif; ?>
+  </div>
+  <br>
+  <div class="EIN-m-12 lightboxText">
+    <? if( $isPeriodical ): ?>
+      After the issue has been added to your <a href="https://nook.barnesandnoble.com/u/nook-mobile-app/379003593" data-lightbox-ignore target="_blank">NOOK account</a>, you can view it using a compatible NOOK tablet or the free NOOK Reading App for Android phone/tablet, Apple iPhone/iPad/iPod touch, or Windows 8+ computer/tablet.
+    <? else: ?>
+      Need help transferring a title to your device or want to know whether or not your device is compatible with a particular format? Click <a href="https://help.overdrive.com/" data-lightbox-ignore target="_blank">here</a> for more information.
+    <? endif; ?>
+  </div>
+</div>
+<div class="modal-footer">
+  <button class="btn-default btn-wide" data-dismiss="modal">Close</button>
+</div>
+<? if( $downloadId == "video-streaming" ): ?>
+  <script type="text/javascript">
+    $( function() { $('#format-video-streaming')[0].click(); setTimeout( function() { $('#modalClose')[0].click(); }, 10); } );
+  </script>
+<? endif; ?>

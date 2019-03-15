@@ -215,6 +215,9 @@ class CartController extends AbstractBase
             $action = 'Home';
         } elseif (strlen($this->params()->fromPost('export', '')) > 0) {
             $action = 'Export';
+        } else if (strlen($this->params()->fromPost('renew', '')) > 0) {
+            $controller = 'MyResearch';
+            $action = 'CheckedOut';
         } else {
             $action = $this->followup()->retrieveAndClear('cartAction', null);
             if (empty($action)) {
