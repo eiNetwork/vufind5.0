@@ -2,7 +2,7 @@
 <div class="EIN-hide-m EIN-hide-t EIN-hide">
   <?=$this->flashmessages(false);?>
 </div>
-<form id="confirmForm" action="<?=$this->url($this->path)?>" method="post">
+<form id="confirmForm" action="<?=$this->url($this->path)?>" method="post" data-lightbox-ignore>
   <input type="hidden" name="suppressFlashMessages" value="true">
   <input type="hidden" name="profileSection" value="<?=$this->referringSection?>">
   <input type="hidden" name="reloadParent" value="true">
