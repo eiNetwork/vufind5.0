@@ -408,6 +408,69 @@ class OverdriveConnector implements LoggerAwareInterface,
 
 
     /**
+     * Get Lending Options
+     *
+     * Gets the lending options for the Overdrive patron.
+     *
+     * @return object|bool An object containing the limits for the patrpon for each material type.
+     */
+    public function getLendingOptions(){
+        if( !($user = $this->getUser()) ) {
+            return false;
+        }
+
+        // overdrive info
+        $lendingOptions = array("renewalInDays" => array());
+
+        $patronURL = $this->getConfig()->circURL . '/v1/patrons/me';
+        $profileData = $this->callPatronUrl($user['cat_username'], $user['cat_password'], $patronURL);
+        if( !$profileData ) {
+            return false;
+        }
+
+        foreach( $profileData->lendingPeriods as $period ) {
+            $lendingOptions[$period->formatType] = $period->lendingPeriod . " " . $period->units;
+        }
+
+        foreach( $profileData->actions as $action ) {
+            $type = null;
+            $options = null;
+            foreach( $action->editLendingPeriod->fields as $field ) {
+                if( $field->name == "formatClass" ) {
+                    $type = $field->value;
+                } else if( $field->name == "lendingPeriodDays" ) {
+                    $options = $field->options;
+                }
+            }
+            if( $type != null && $options != null ) {
+                $lendingOptions['renewalInDays'][$type] = $options;
+            }
+        }
+
+        return $lendingOptions;
+    }
+
+    /**
+     * Set Lending Options
+     *
+     * Sets the lending options for the Overdrive patron.
+     *
+     * @param object An object containing the limits for the patrpon for each material type.
+     */
+    public function setLendingOption($lendingInfo){
+        if( !($user = $this->getUser()) ) {
+            return;
+        }
+
+        // lending info
+        $lendingOptions = array("formatClass" => $lendingInfo["format"],
+                                "lendingPeriodDays" => $lendingInfo["days"]);
+
+        $url = $this->getConfig()->circURL . '/v1/patrons/me';
+        $this->callPatronUrl($user['cat_username'], $user['cat_password'], $url, $lendingOptions, 'PUT');
+    }
+
+    /**
      * Overdrive Checkout
      * Processes a request to checkout a title from Overdrive
      *

@@ -417,13 +417,11 @@ class EINetwork extends SierraRest implements
         }
 
         // overdrive info
-/*VF5UPGRADE
-        $lendingOptions = $this->getOverDriveLendingOptions($patron);
+        $lendingOptions = $this->connector->getLendingOptions();
         $patron['OD_eBook'] = $lendingOptions["eBook"];
         $patron['OD_audiobook'] = $lendingOptions["Audiobook"];
         $patron['OD_video'] = $lendingOptions["Video"];
         $patron['OD_renewalInDays'] = $lendingOptions["renewalInDays"];
-*/
         $patron['splitEcontent'] = $user->splitEcontent;
 
         $this->sessionCache->patron = $patron;
@@ -473,19 +471,17 @@ class EINetwork extends SierraRest implements
             $user = $this->getDbTable('user')->getByUsername($patron['username'], false);
             $user->changeSplitEcontent($updatedInfo['splitEcontent']);
         }
-/*VF5UPGRADE
+
         // see whether they have updated their overdrive lending periods
         $formats = array("ebook", "audiobook", "video");
         foreach( $formats as $thisFormat ) {
             if( isset($updatedInfo[$thisFormat]) ) {
-                $lendInfo = array("cat_username" => $patron['cat_username'],
-                                  "cat_password" => $patron['cat_password'],
-                                  "format" => $thisFormat,
+                $lendInfo = array("format" => $thisFormat,
                                   "days" => $updatedInfo[$thisFormat] );
-                $this->setOverDriveLendingOption($lendInfo);
+                $this->connector->setLendingOption($lendInfo);
             }
         }
-*/
+
         unset($this->sessionCache->patron);
         $this->getMyProfile($patron);
     }

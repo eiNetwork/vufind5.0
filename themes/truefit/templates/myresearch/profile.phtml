@@ -244,7 +244,7 @@
       </div>
       <div id="profile_overdrive" class="panel-collapse collapse">
         <div class="panel-body">
-          <? if( false /*VF5UPGRADE($this->profile['OD_eBook'] != "") && ($this->profile['OD_audiobook'] != "") && ($this->profile['OD_video'] != "")*/ ): ?>
+          <? if( ($this->profile['OD_eBook'] != "") && ($this->profile['OD_audiobook'] != "") && ($this->profile['OD_video'] != "") ): ?>
             <div class="EIN-col-m-12" style="height:5px"></div>
             <form class="form-inline" method="post" action="<?=$this->url('myresearch-profile')?>" target="loginFrame">
               <input type="hidden" name="profileSection" value="overdrive" />
