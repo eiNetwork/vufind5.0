@@ -514,6 +514,11 @@ class EINetwork extends SierraRest implements
 
         $sierraTransactions = parent::getMyTransactions($patron);
 
+        // fill in this value
+        foreach( $sierraTransactions as $key => $thisCheckout ) {
+            $sierraTransactions[$key]["fullID"] = ".b" . $thisCheckout["id"] . $this->getCheckDigit($thisCheckout["id"]);
+        }
+
         // get overdrive checkouts
         $overDriveTransactions = json_decode(json_encode($this->connector->getCheckouts(true)), true)["data"];
         foreach($overDriveTransactions as $item) {
@@ -522,6 +527,7 @@ class EINetwork extends SierraRest implements
                 foreach($solrInfo as $key => $value) {
                     $item[$key] = $value;
                 }
+                $item['fullID'] = $item['id'];
                 $item['duedate'] = $item['expires'];
                 $item['ILL'] = false;
                 $item['overdriveListen'] = false;

@@ -103,35 +103,38 @@ function handleItemStatusResponse(response) {
       leftButton.attr('onClick', "$(this).html('<i class=\\\'fa fa-spinner bwSpinner\\\'></i>&nbsp;Loading...')");
       leftButton.empty().append('Check Out');
     } else if( ("isCheckedOut" in result) && result.isCheckedOut ) {
-//VF5UPGRADE - needs checked
-      leftButton.prop('disabled', false);
-      leftButton.attr('data-toggle', 'dropdown');
-      leftButton.attr('data-target', '#holdButtonDropdown' + result.fullID.replace(".","") + ',#holdButtonDropdownMobile' + result.fullID.replace(".",""));
-      if( ("mediaDo" in result) && result.mediaDo.result ) {
-        leftButtonMenu.children(".standardDropdown").append("<li><a href=\"" + result.mediaDo.downloadUrl + "\" target=\"_blank\"><button class=\"btn-dropdown btn-standardDropdown\">Read Now</button></a></li>");
-      }
-      if( ("ODread" in result) && result.ODread.result ) {
-        leftButtonMenu.children(".standardDropdown").append("<li><a href=\"" + result.ODread.downloadUrl + "\" target=\"_blank\"><button class=\"btn-dropdown btn-standardDropdown\">Read Now</button></a></li>");
-      }
-      if( ("ODlisten" in result) && result.ODlisten.result ) {
-        leftButtonMenu.children(".standardDropdown").append("<li><a href=\"" + result.ODlisten.downloadUrl + "\" target=\"_blank\"><button class=\"btn-dropdown btn-standardDropdown\">Listen Now</button></a></li>");
-      }
-      if( ("ODwatch" in result) && result.ODwatch.result ) {
-        leftButtonMenu.children(".standardDropdown").append("<li><a href=\"" + result.ODwatch.downloadUrl + "\" target=\"_blank\"><button class=\"btn-dropdown btn-standardDropdown\">Watch Now</button></a></li>");
-      }
-      if( ("downloadFormats" in result) && result.downloadFormats.length > 0 ) {
-        var streamingVideo = false;
-        var nookPeriodical = false;
-        for(var k=0; k<result.downloadFormats.length; k++ ) {
-          streamingVideo |= (result.downloadFormats[k].id == "video-streaming");
-          nookPeriodical |= (result.downloadFormats[k].id == "periodicals-nook");
+      if( ("isOverDrive" in result) && result.isOverDrive ) {
+        leftButton.prop('disabled', false);
+        leftButton.attr('data-toggle', 'dropdown');
+        leftButton.attr('data-target', '#holdButtonDropdown' + result.fullID.replace(".","") + ',#holdButtonDropdownMobile' + result.fullID.replace(".",""));
+        if( ("mediaDo" in result) && result.mediaDo ) {
+          leftButtonMenu.children(".standardDropdown").append("<li><a href=\"" + result.mediaDo + "\" target=\"_blank\"><button class=\"btn-dropdown btn-standardDropdown\">Read Now</button></a></li>");
         }
-        leftButtonMenu.children(".standardDropdown").append("<li><button class=\"btn-dropdown btn-standardDropdown\" onClick=\"Lightbox.get('Record','OverdriveDownload'," + result.idArgs.replace("}",",'parentURL':'" + location.pathname + location.search + "'}") + ")\">" + (streamingVideo ? "Watch Now" : "Download") + "</button></li>");
+        if( ("overdriveRead" in result) && result.overdriveRead ) {
+          leftButtonMenu.children(".standardDropdown").append("<li><a href=\"" + result.overdriveRead + "\" target=\"_blank\"><button class=\"btn-dropdown btn-standardDropdown\">Read Now</button></a></li>");
+        }
+        if( ("overdriveListen" in result) && result.overdriveListen ) {
+          leftButtonMenu.children(".standardDropdown").append("<li><a href=\"" + result.overdriveListen + "\" target=\"_blank\"><button class=\"btn-dropdown btn-standardDropdown\">Listen Now</button></a></li>");
+        }
+        if( ("streamingVideo" in result) && result.streamingVideo ) {
+          leftButtonMenu.children(".standardDropdown").append("<li><a href=\"" + result.streamingVideo + "\" target=\"_blank\"><button class=\"btn-dropdown btn-standardDropdown\">Watch Now</button></a></li>");
+        }
+        if( ("downloadFormats" in result) && result.downloadFormats.length > 0 ) {
+          var streamingVideo = false;
+          var nookPeriodical = false;
+          for(var k=0; k<result.downloadFormats.length; k++ ) {
+            streamingVideo |= (result.downloadFormats[k].id == "video-streaming");
+            nookPeriodical |= (result.downloadFormats[k].id == "periodicals-nook");
+          }
+          leftButtonMenu.children(".standardDropdown").append("<li><a href=\"" + result.downloadFormats[0].URL + location.pathname + "\" data-lightbox><button class=\"btn-dropdown btn-standardDropdown\">" + (streamingVideo ? "Watch Now" : "Download") + "</button></a></li>");
+        }
+        if( ("canReturn" in result) && result.canReturn ) {
+          leftButtonMenu.children(".standardDropdown").append("<li><a href=\"" + result.canReturn + "\" target=\"loginFrame\"><button class=\"btn-dropdown btn-standardDropdown\" onClick=\"$(this).parents('.dropdown').siblings('.leftButton').html('<i class=\\'fa fa-spinner bwSpinner\\'></i>&nbsp;Loading...')\">Return</button></a></li>");
+        }
+        leftButton.empty().append('Checked Out<i class="fa fa-caret-down"></i>');
+      } else {
+        leftButton.empty().append('Checked Out');
       }
-      if( ("canReturn" in result) && result.canReturn ) {
-        leftButtonMenu.children(".standardDropdown").append("<li><a href=\"" + result.returnLink + "\" target=\"loginFrame\"><button class=\"btn-dropdown btn-standardDropdown\" onClick=\"$(this).parents('.dropdown').siblings('.leftButton').html('<i class=\\'fa fa-spinner bwSpinner\\'></i>&nbsp;Loading...')\">Return</button></a></li>");
-      }
-      leftButton.empty().append('Checked Out<i class="fa fa-caret-down"></i>');
     } else if( result.itsHere && result.holdableCopyHere && result.volume_number == '' ) {
       leftButton.empty().append('It\'s Here');
     } else if( result.holdArgs != '' ) {
@@ -219,6 +222,7 @@ function handleItemStatusResponse(response) {
         : result.location
       );
     }
+    VuFind.lightbox.bind(item);
     if( result.hasVolumes ) {
       item.find(".ajax-availability").append('<input type="hidden" class="hasVolumesTag" value="true">');
     }

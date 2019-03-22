@@ -139,7 +139,7 @@
         <? if( isset($this->holdings["CHECKIN_RECORDS"]) ): ?>
           <? $serialCheckinRecord = false; ?>
           <? foreach( $this->holdings["CHECKIN_RECORDS"]["items"][0]["checkinRecords"] as $checkinLoc ): ?>
-            <? if( $this->currentLocation && in_array($this->currentLocation["locationID"], $checkinLoc["branchCode"]) ): ?>
+            <? if( $this->currentLocation && in_array($this->currentLocation["code"], $checkinLoc["branchCode"]) ): ?>
               <? $heldHere = $checkinLoc; ?>
             <? endif; ?>
             <? $serialCheckinRecord |= isset($checkinLoc["libHas"]); ?>
@@ -330,24 +330,24 @@
         <? endif; ?>
         <div class="dropdown EIN-hide-m" id="holdButtonDropdown">
           <ul role="navigation" class="dropdown-menu standardDropdown manageListDropdown">
-            <? if( $this->ODread && $this->ODread["result"] ): ?>
+            <? if( $this->overdriveRead ): ?>
               <li>
-                <a href="<?=$this->ODread["downloadUrl"]?>" target="_blank"><button class="btn-dropdown btn-standardDropdown">Read Now</button></a>
+                <a href="<?=$this->overdriveRead?>" target="_blank"><button class="btn-dropdown btn-standardDropdown">Read Now</button></a>
               </li>
             <? endif; ?>
-            <? if( $this->mediaDo && $this->mediaDo["result"] ): ?>
+            <? if( $this->mediaDo ): ?>
               <li>
-                <a href="<?=$this->mediaDo["downloadUrl"]?>" target="_blank"><button class="btn-dropdown btn-standardDropdown">Read Now</button></a>
+                <a href="<?=$this->mediaDo?>" target="_blank"><button class="btn-dropdown btn-standardDropdown">Read Now</button></a>
               </li>
             <? endif; ?>
-            <? if( $this->ODlisten && $this->ODlisten["result"] ): ?>
+            <? if( $this->overdriveListen ): ?>
               <li>
-                <a href="<?=$this->ODlisten["downloadUrl"]?>" target="_blank"><button class="btn-dropdown btn-standardDropdown">Listen Now</button></a>
+                <a href="<?=$this->overdriveListen?>" target="_blank"><button class="btn-dropdown btn-standardDropdown">Listen Now</button></a>
               </li>
             <? endif; ?>
-            <? if( $this->ODwatch && $this->ODwatch["result"] ): ?>
+            <? if( $this->streamingVideo ): ?>
               <li>
-                <a href="<?=$this->ODwatch["downloadUrl"]?>" target="_blank"><button class="btn-dropdown btn-standardDropdown">Watch Now</button></a>
+                <a href="<?=$this->streamingVideo?>" target="_blank"><button class="btn-dropdown btn-standardDropdown">Watch Now</button></a>
               </li>
             <? endif; ?>
             <? if( $this->downloadFormats && count($this->downloadFormats) > 0 ): ?>
@@ -355,17 +355,17 @@
                 $streamingVideo = false;
                 $nookPeriodical = false;
                 foreach($this->downloadFormats as $thisFormat): 
-                  $streamingVideo |= (strval($thisFormat["id"]) == "video-streaming");
-                  $nookPeriodical |= (strval($thisFormat["id"]) == "periodicals-nook");
+                  $streamingVideo |= ($thisFormat == "video-streaming");
+                  $nookPeriodical |= ($thisFormat == "periodicals-nook");
                 endforeach;
               ?>
               <li>
-                <button class="btn-dropdown btn-standardDropdown" onClick="Lightbox.get('Record','OverdriveDownload',<?=str_replace("}", (",'parentURL':'" . $this->CurrentPath() . "'}"), $this->idArgs)?>)"><?=($streamingVideo?"Watch Now":"Download")?></button>
+                <a href="/Overdrive/SelectFormat?<?="rec_id=".$this->driver->getUniqueID()."&od_id=".$this->driver->getOverDriveID()."&parentURL=".$this->currentPath()?>" data-lightbox><button class="btn-dropdown btn-standardDropdown"><?=($streamingVideo?"Watch Now":"Download")?></button></a>
               </li>
             <? endif; ?>
             <? if( $this->canReturn ): ?>
               <li>
-                <a href="<?=$this->recordLink()->getActionUrl($this->driver, 'Return')?>" target="loginFrame">
+                <a href="/Overdrive/Hold?<?="od_id=".$this->driver->getOverDriveID()."&rec_id=".$this->driver->getUniqueID()."&action=returnTitle" ?>" target="loginFrame">
                   <button class="btn-dropdown btn-standardDropdown" onClick="$('.leftButton').html('<i class=\'fa fa-spinner bwSpinner\'></i>&nbsp;Loading...')">Return</button>
                 </a>
               </li>
@@ -412,19 +412,24 @@
       <div class="EIN-col-m-12 EIN-hide-t EIN-hide">
         <div class="dropdown" id="holdButtonDropdownMobile">
           <ul role="navigation" class="dropdown-menu standardDropdown manageListDropdown">
-            <? if( $this->ODread && $this->ODread["result"] ): ?>
+            <? if( $this->overdriveRead ): ?>
               <li>
-                <a href="<?=$this->ODread["downloadUrl"]?>" target="_blank"><button class="btn-dropdown btn-standardDropdown">Read Now</button></a>
+                <a href="<?=$this->overdriveRead?>" target="_blank"><button class="btn-dropdown btn-standardDropdown">Read Now</button></a>
               </li>
             <? endif; ?>
-            <? if( $this->ODlisten && $this->ODlisten["result"] ): ?>
+            <? if( $this->mediaDo ): ?>
               <li>
-                <a href="<?=$this->ODlisten["downloadUrl"]?>" target="_blank"><button class="btn-dropdown btn-standardDropdown">Listen Now</button></a>
+                <a href="<?=$this->mediaDo?>" target="_blank"><button class="btn-dropdown btn-standardDropdown">Read Now</button></a>
               </li>
             <? endif; ?>
-            <? if( $this->ODwatch && $this->ODwatch["result"] ): ?>
+            <? if( $this->overdriveListen ): ?>
               <li>
-                <a href="<?=$this->ODwatch["downloadUrl"]?>" target="_blank"><button class="btn-dropdown btn-standardDropdown">Watch Now</button></a>
+                <a href="<?=$this->overdriveListen?>" target="_blank"><button class="btn-dropdown btn-standardDropdown">Listen Now</button></a>
+              </li>
+            <? endif; ?>
+            <? if( $this->streamingVideo ): ?>
+              <li>
+                <a href="<?=$this->streamingVideo?>" target="_blank"><button class="btn-dropdown btn-standardDropdown">Watch Now</button></a>
               </li>
             <? endif; ?>
             <? if( $this->downloadFormats && count($this->downloadFormats) > 0 ): ?>
@@ -432,17 +437,17 @@
                 $streamingVideo = false;
                 $nookPeriodical = false;
                 foreach($this->downloadFormats as $thisFormat): 
-                  $streamingVideo |= (strval($thisFormat["id"]) == "video-streaming");
-                  $nookPeriodical |= (strval($thisFormat["id"]) == "periodicals-nook");
+                  $streamingVideo |= ($thisFormat == "video-streaming");
+                  $nookPeriodical |= ($thisFormat == "periodicals-nook");
                 endforeach;
               ?>
               <li>
-                <button class="btn-dropdown btn-standardDropdown" onClick="Lightbox.get('Record','OverdriveDownload',<?=str_replace("}", (",'parentURL':'" . $this->CurrentPath() . "'}"), $this->idArgs)?>)"><?=($streamingVideo?"Watch Now":"Download")?></button>
+                <a href="/Overdrive/SelectFormat?<?="rec_id=".$this->driver->getUniqueID()."&od_id=".$this->driver->getOverDriveID()."&parentURL=".$this->currentPath()?>" data-lightbox><button class="btn-dropdown btn-standardDropdown"><?=($streamingVideo?"Watch Now":"Download")?></button></a>
               </li>
             <? endif; ?>
             <? if( $this->canReturn ): ?>
               <li>
-                <a href="<?=$this->recordLink()->getActionUrl($this->driver, 'Return')?>" target="loginFrame">
+                <a href="/Overdrive/Hold?<?="od_id=".$this->driver->getOverDriveID()."&rec_id=".$this->driver->getUniqueID()."&action=returnTitle" ?>" target="loginFrame">
                   <button class="btn-dropdown btn-standardDropdown" onClick="$('.leftButton').html('<i class=\'fa fa-spinner bwSpinner\'></i>&nbsp;Loading...')">Return</button>
                 </a>
               </li>

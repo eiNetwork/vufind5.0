@@ -119,6 +119,7 @@ class EINGetItemStatuses extends GetItemStatuses
         $isHolding = false;
         $isOverDrive = false;
         $isOneClick = false;
+        $isCheckedOut = false;
         $accessOnline = $driver->hasOnlineAccess();
         $overDriveInfo = ["canCheckOut" => false];
         $holdArgs = "";
@@ -217,34 +218,38 @@ class EINGetItemStatuses extends GetItemStatuses
             foreach($checkedOutItems as $thisItem) {
                 if($thisItem['id'] == $bib) {
                     $overDriveInfo["canCheckOut"] = false;
+                    // if this bib has volumes, they still still place holds on other volumes even if they have one checked out
                     $canHold = $hasVolumes;
-                    if( isset($thisItem["overDriveId"]) ) {
-                        $overDriveInfo["isCheckedOut"] = true;
-                        $overDriveInfo["canReturn"] = isset($thisItem["earlyReturn"]) && $thisItem["earlyReturn"];
+                    $isCheckedOut = true;
+                    if( isset($thisItem["reserveId"]) ) {
+                        $overDriveInfo["canReturn"] = ($thisItem["actions"]["earlyReturn"] ?? false) ? ("/Overdrive/Hold?od_id=".$driver->getOverDriveID()."&rec_id=".$driver->getUniqueID()."&action=returnTitle") : false;
                         $overDriveInfo["availableFormats"] = $thisItem["format"];
-                        if(isset($thisItem["overdriveRead"]) && $thisItem["overdriveRead"]) {
-                            $overDriveInfo["ODread"] = $this->ils->getDownloadLink($thisItem["overDriveId"], "ebook-overdrive", $user);
-                        }
-                        if(isset($thisItem["mediaDo"]) && $thisItem["mediaDo"]) {
-                            $overDriveInfo["mediaDo"] = $this->ils->getDownloadLink($thisItem["overDriveId"], "ebook-mediado", $user);
-                        }
-                        if(isset($thisItem["overdriveListen"]) && $thisItem["overdriveListen"]) {
-                            $overDriveInfo["ODlisten"] = $this->ils->getDownloadLink($thisItem["overDriveId"], "audiobook-overdrive", $user);
-                        }
-                        if(isset($thisItem["streamingVideo"]) && $thisItem["streamingVideo"]) {
-                            $overDriveInfo["ODwatch"] = $thisItem["formatSelected"] ? $this->ils->getDownloadLink($thisItem["overDriveId"], "video-streaming", $user) : "www.google.com";
-                        }
-                        // get the download links
-                        $downloadableFormats = [];
-                        foreach($thisItem["formats"] as $possibleFormat) {
-                            if($possibleFormat["id"] == "0") {
-                                $downloadableFormats[] = ["id" => $possibleFormat["format"]->formatType, "name" => $this->ils->getOverdriveFormatName($possibleFormat["format"]->formatType)];
-                            } else {
-                                $downloadableFormats[] = $possibleFormat;
+
+                        // get instant links
+                        $OD_type_mapping = ['ebook-mediado' => 'mediaDo', 'ebook-overdrive' => 'overdriveRead', 'magazine-overdrive' => 'overdriveRead', 'video-streaming' => 'streamingVideo', 'audiobook-overdrive' => 'overdriveListen'];
+                        foreach( $OD_type_mapping as $formatType => $linkKey ) {
+                            if( in_array($formatType, $thisItem["availableFormats"]) ) {
+                                $overDriveInfo[$linkKey] = $thisItem[$linkKey]->data->downloadLink;
                             }
                         }
+
+                        // get the download links
+                        $downloadableFormats = [];
+                        $notDownloadableFormats = ['ebook-mediado','magazine-overdrive','ebook-overdrive','video-streaming','audiobook-overdrive'];
+                        foreach($thisItem["availableFormats"] as $possibleFormat) {
+                            if( !in_array($possibleFormat, $notDownloadableFormats) ) {
+                                $downloadableFormats[] = ["id" => $possibleFormat, "URL" => "/Overdrive/SelectFormat?rec_id=".$thisItem['id']."&od_id=".$thisItem['reserveId']."&parentURL="];
+                            }
+                        }
+                        // add the video-streaming option if it's not locked in yet
+                        foreach($thisItem["actions"]["format"]["fields"] ?? [] as $thisFormat) {
+                            if( $thisFormat["name"] == "formatType" && !$thisItem["isFormatLockedIn"] ) {
+                                $downloadableFormats[] = ["id" => $thisFormat["options"][0], "URL" => "/Overdrive/SelectFormat?rec_id=".$thisItem['id']."&od_id=".$thisItem['reserveId']."&parentURL="];
+                            }
+                        }
+
                         $overDriveInfo["downloadFormats"] = $downloadableFormats;
-                        $overDriveInfo["formatLocked"] = $thisItem["formatSelected"];
+                        $overDriveInfo["formatLocked"] = $thisItem["isFormatLockedIn"];
                     }
                 }
             }
@@ -303,16 +308,18 @@ class EINGetItemStatuses extends GetItemStatuses
             $callNumbers[] = isset($info['callnumber']) ? $info['callnumber'] : null;
             $volumeNumbers[] = isset($info['number']) ? $info['number'] : null;
             $locations[] = isset($info['location']) ? $info['location'] : null;
-            if( (!isset($itsHere) || (trim($itsHere['statusCode']) == 'o')) && $currentLocation && $info['availability'] && ($currentLocation['code'] == ($info['branchCode'] ?? null)) ) {
-                $itsHere = $info;
-            } else if( $this->user && !isset($atPreferred) && $info['availability'] && (($info['branchCode'] == $this->user->preferred_library) || ($info['branchCode'] == $this->user->alternate_library) || ($info['branchCode'] == $this->user->home_library)) ) {
-                $atPreferred = true;
-            }
-            if( !isset($holdableCopyHere) && $currentLocation && $info['availability'] && ($currentLocation["code"] == ($info['branchCode'] ?? null)) && (trim($info['statusCode']) != 'o') && (trim($info['statusCode']) != 'order')) {
-                $holdableCopyHere = $info;
-            }
-            if( !$canHold && ($info["statusCode"] ?? null) == "o" ) {
-                $libraryOnly = true;
+            if( !$isOverDrive ) {
+                if( (!isset($itsHere) || (trim($itsHere['statusCode']) == 'o')) && $currentLocation && $info['availability'] && ($currentLocation['code'] == ($info['branchCode'] ?? null)) ) {
+                    $itsHere = $info;
+                } else if( $this->user && !isset($atPreferred) && $info['availability'] && (($info['branchCode'] == $this->user->preferred_library) || ($info['branchCode'] == $this->user->alternate_library) || ($info['branchCode'] == $this->user->home_library)) ) {
+                    $atPreferred = true;
+                }
+                if( !isset($holdableCopyHere) && $currentLocation && $info['availability'] && ($currentLocation["code"] == ($info['branchCode'] ?? null)) && (trim($info['statusCode']) != 'o') && (trim($info['statusCode']) != 'order')) {
+                    $holdableCopyHere = $info;
+                }
+                if( !$canHold && ($info["statusCode"] ?? null) == "o" ) {
+                    $libraryOnly = true;
+                }
             }
             // Store all available services
             if (isset($info['services'])) {
@@ -430,6 +437,8 @@ class EINGetItemStatuses extends GetItemStatuses
             'callnumber' => htmlentities($callNumber, ENT_COMPAT, 'UTF-8'),
             'hasVolumes' => $hasVolumes,
             'volume_number' => htmlentities($volumeNumber, ENT_COMPAT, 'UTF-8'),
+            'isOverDrive' => $isOverDrive,
+            'isCheckedOut' => $isCheckedOut,
             'isHolding' => $isHolding,
             'checkinRecords' => $checkinRecords,
             'itsHere' => isset($itsHere),

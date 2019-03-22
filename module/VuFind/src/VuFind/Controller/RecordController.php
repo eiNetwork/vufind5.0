@@ -184,37 +184,40 @@ class RecordController extends AbstractRecord
             $patron = (isset($patron) ? $patron : $this->catalogLogin());
             $checkedOutItems = $catalog->getMyTransactions($patron);
             foreach($checkedOutItems as $thisItem) {
-                if($thisItem['id'] == $bib) {
+                if($thisItem['fullID'] == $bib) {
                     $canCheckOut = false;
                     // if this bib has volumes, they still still place holds on other volumes even if they have one checked out
                     $canHold = $hasVolumes;
                     $view->isTitleCheckedOut = true;
-                    if( isset($thisItem["overDriveId"]) ) {
-                        $view->canReturn = isset($thisItem["earlyReturn"]) && $thisItem["earlyReturn"];
+                    if( isset($thisItem["reserveId"]) ) {
+                        $view->canReturn = $thisItem["actions"]["earlyReturn"] ?? false;
                         $view->availableFormats = $thisItem["format"];
-                        if(isset($thisItem["overdriveRead"]) && $thisItem["overdriveRead"]) {
-                            $view->ODread = $catalog->getDownloadLink($thisItem["overDriveId"], "ebook-overdrive", $user);
+
+                        // look for instant options
+                        $OD_type_mapping = ['ebook-mediado' => 'mediaDo', 'ebook-overdrive' => 'overdriveRead', 'magazine-overdrive' => 'overdriveRead', 'video-streaming' => 'streamingVideo', 'audiobook-overdrive' => 'overdriveListen'];
+                        foreach( $OD_type_mapping as $formatType => $linkKey ) {
+                            if( in_array($formatType, $thisItem["availableFormats"]) && ($thisItem[$linkKey]->data->downloadLink ?? false) ) {
+                                $view->setVariable($linkKey, $thisItem[$linkKey]->data->downloadLink);
+                            }
                         }
-                        if(isset($thisItem["mediaDo"]) && $thisItem["mediaDo"]) {
-                            $view->mediaDo = $catalog->getDownloadLink($thisItem["overDriveId"], "ebook-mediado", $user);
-                        }
-                        if(isset($thisItem["overdriveListen"]) && $thisItem["overdriveListen"]) {
-                            $view->ODlisten = $catalog->getDownloadLink($thisItem["overDriveId"], "audiobook-overdrive", $user);
-                        }
-                        if(isset($thisItem["streamingVideo"]) && $thisItem["streamingVideo"]) {
-                            $view->ODwatch = $thisItem["formatSelected"] ? $catalog->getDownloadLink($thisItem["overDriveId"], "video-streaming", $user) : "www.google.com";
-                        }
+
                         // get the download links
                         $downloadableFormats = [];
-                        foreach($thisItem["formats"] as $possibleFormat) {
-                            if($possibleFormat["id"] == "0") {
-                                $downloadableFormats[] = ["id" => $possibleFormat["format"]->formatType, "name" => $catalog->getOverdriveFormatName($possibleFormat["format"]->formatType)];
-                            } else {
+                        $notDownloadableFormats = ['ebook-mediado','magazine-overdrive','ebook-overdrive','video-streaming','audiobook-overdrive'];
+                        foreach($thisItem["availableFormats"] as $possibleFormat) {
+                            if( !in_array($possibleFormat, $notDownloadableFormats) ) {
                                 $downloadableFormats[] = $possibleFormat;
                             }
                         }
+                        // add the video-streaming option if it's not locked in yet
+                        foreach($thisItem["actions"]["format"]["fields"] ?? [] as $thisFormat) {
+                            if( $thisFormat["name"] == "formatType" && !$thisItem["isFormatLockedIn"] ) {
+                                $downloadableFormats[] = $thisFormat["options"][0];
+                            }
+                        }
+
                         $view->downloadFormats = $downloadableFormats;
-                        $view->formatLocked = $thisItem["formatSelected"];
+                        $view->formatLocked = $thisItem["isFormatLockedIn"];
                     }
                 }
             }
