@@ -1,0 +1,77 @@
+<?=$this->flashmessages(false)?>
+<h2>Select Item</h2>
+<div class="hold-form">
+  <table class="pickupLocationTable">
+    <? if( count($this->availableHoldings) > 0): ?>
+      <tr><td colspan="3" class="modalSubheading center">Requestable</td></tr>
+      <tr>
+        <td class="modalSubheading">Location</td>
+        <td class="modalSubheading">Volume</td>
+        <td class="modalSubheading">Status</td>
+      </tr>
+      <? foreach ($this->availableHoldings as $item): ?>
+        <? $holdURL = $this->recordLink()->getActionUrl($this->driver, 'Hold') . "?" . $item["link"]["query"]; ?>
+        <tr>
+          <td>
+            <a href="<?=$holdURL?>" data-lightbox tabindex=-1>
+              <button class="btn-dropdown btn-standardDropdown btn-pickupLocation" onmouseover="HighlightRow(this, true);" onmouseout="HighlightRow(this, false);" onfocus="HighlightRow(this, true);" onfocusout="HighlightRow(this, false);" tabindex=-1><?=$item["sierraLocation"]?></button>
+            </a>
+          </td>
+          <td>
+            <a href="<?=$holdURL?>" data-lightbox tabindex=-1>
+              <button class="btn-dropdown btn-standardDropdown btn-pickupLocation" onmouseover="HighlightRow(this, true);" onmouseout="HighlightRow(this, false);" onfocus="HighlightRow(this, true);" onfocusout="HighlightRow(this, false);"><?=$item["number"]?></button>
+            </a>
+          </td>
+          <td>
+            <a href="<?=$holdURL?>" data-lightbox tabindex=-1>
+              <button class="btn-dropdown btn-standardDropdown btn-pickupLocation" onmouseover="HighlightRow(this, true);" onmouseout="HighlightRow(this, false);" onfocus="HighlightRow(this, true);" onfocusout="HighlightRow(this, false);" tabindex=-1><?=$item["status"]?></button>
+            </a>
+          </td>
+        </tr>
+      <? endforeach; ?>
+    <? endif; ?>
+    <? if( (count($this->availableHoldings) > 0) && (count($this->unavailableHoldings) > 0) ): ?>
+      <tr><td colspan="3"><div class="modal-break"></div></td></tr>
+    <? endif; ?>
+    <? if( count($this->unavailableHoldings) > 0): ?>
+      <tr><td colspan="3" class="modalSubheading center">Not Requestable</td></tr>
+      <tr>
+        <td class="modalSubheading">Location</td>
+        <td class="modalSubheading">Volume</td>
+        <td class="modalSubheading">Status</td>
+      </tr>
+      <? foreach ($this->unavailableHoldings as $item): ?>
+        <tr>
+          <td><span class="btn-pickupLocation"><?=$item["sierraLocation"]?></span></td>
+          <td><span class="btn-pickupLocation"><?=$item["number"]?></span></td>
+          <td><span class="btn-pickupLocation"><?=(($item["status"]=="AVAILABLE") ? "IT'S HERE" : $item["status"])?></span></td>
+        </tr>
+      <? endforeach; ?>
+    <? endif; ?>
+  </table>
+</div>
+<div class="modal-footer">
+  <div id="holdFooter">
+    <button class="btn-alternate btn-wide" onclick="$('#modalClose').click()">Cancel</button>
+  </div>
+  <div id="loadingFooter" style="display:none;padding:9px;color:#3d3d3d">
+    <span><i class="fa fa-spinner"></i></span>
+    <span>&nbsp;Loading...</span>
+  </div>
+
+  <script type="text/javascript">
+    function HighlightRow(item, highlight) {
+      if(highlight) {
+        $(item).parents('tr').addClass("hovered");
+        $(item).parents('tr').find('button').addClass("hovered");
+      } else {
+        $(item).parents('tr').removeClass("hovered");
+        $(item).parents('tr').find('button').removeClass("hovered");
+      }
+    }
+
+    function SelectItem(chosenID) {
+      Lightbox.get('Record', 'Hold', {'id':'<?=$this->id?>','hashKey':'<?=$this->hashKey?>'}, {'gatheredDetails':{'itemId':chosenID}});
+    }
+  </script>
+</div>

@@ -277,7 +277,7 @@
             if( !$this->canHold && $this->canCheckOut ) {
               $holdLink = $this->recordLink()->getActionUrl($this->driver, "Checkout", json_decode($this->idArgs));
             } else if( $hasVolumes ) {
-              $holdLink = $this->recordLink()->getActionUrl($this->driver, "SelectItem", json_decode($this->holdArgs));
+              $holdLink = $this->recordLink()->getActionUrl($this->driver, "SelectItem", json_decode(str_replace("'", "\"", $this->holdArgs), true));
             } else {
               $holdLink = $this->recordLink()->getActionUrl($this->driver, "Hold", json_decode(str_replace("'", "\"", $this->holdArgs), true) );
             }

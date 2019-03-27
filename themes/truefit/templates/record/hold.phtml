@@ -97,8 +97,8 @@
         <input type="hidden" name="gatheredDetails[comment]" value="" />
         <input type="hidden" name="gatheredDetails[requiredBy]" value="<?=(isset($this->gatheredDetails['requiredBy']) && !empty($this->gatheredDetails['requiredBy'])) ? $this->escapeHtmlAttr($this->gatheredDetails['requiredBy']) : $this->escapeHtmlAttr($this->defaultRequiredDate)?>"/>
         <input type="hidden" name="gatheredDetails[pickUpLocation]" value="<?=$selectedID?>">
-        <? if(isset($this->gatheredDetails['itemId']) && !empty($this->gatheredDetails['itemId'])): ?>
-          <input type="hidden" name="gatheredDetails[itemID]" value="<?=$this->gatheredDetails['itemId']?>">
+        <? if(isset($this->gatheredDetails['item_id']) && !empty($this->gatheredDetails['item_id'])): ?>
+          <input type="hidden" name="gatheredDetails[item_id]" value="<?=$this->gatheredDetails['item_id']?>">
         <? endif; ?>
         <input type="hidden" name="placeHold" value="1">
         <? if( $this->changePickup || $this->bulkHold ): ?>

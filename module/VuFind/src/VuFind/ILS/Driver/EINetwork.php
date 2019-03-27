@@ -276,6 +276,7 @@ class EINetwork extends SierraRest implements
             $results[$i]['branchName'] = $location ? $location->displayName : (($results[$i]['statusCode'] == 'order') ? $results[$i]['locationID'] : null);
             $results[$i]['branchCode'] = $location ? $location->code : null;
             $results[$i]['shelvingLocation'] = $shelfLoc ? $shelfLoc->shortName : null;
+            $results[$i]['sierraLocation'] = $shelfLoc ? $shelfLoc->sierraName : null;
 
             for($j=0; $j<count($results2) && (($results[$i]['branchName'] > $results2[$j]['branchName']) || (($results[$i]['branchName'] == $results2[$j]['branchName']) && ($results[$i]['number'] > $results2[$j]['number']))); $j++) {}
             array_splice($results2, $j, 0, [$results[$i]]);
@@ -286,8 +287,8 @@ class EINetwork extends SierraRest implements
             // get all of the locations we need to speak for
             $neededLocations = [];
             foreach( $results2 as $thisItem ) {
-                if( !isset($neededLocations[$thisItem["location"]]) ) {
-                    $neededLocations[$thisItem["location"]] = $thisItem["location"];
+                if( !isset($neededLocations[$thisItem["locationID"]]) ) {
+                    $neededLocations[$thisItem["locationID"]] = $thisItem["locationID"];
                 }
             }
 
@@ -296,7 +297,7 @@ class EINetwork extends SierraRest implements
             if( $cachedInfo && !$cachedInfo["doUpdate"] && isset($cachedInfo["checkinRecords"]) ) {
                 $checkinRecords = $cachedInfo["checkinRecords"];
             } else {
-                $checkinRecords = []; //VF5UPGRADE$this->getCheckinRecords($id);
+                $checkinRecords = $this->recordLoader->load($id)->getCachedItems()["checkinRecords"] ?? [];
             }
 
             foreach( array_keys($checkinRecords) as $key ) {
@@ -311,7 +312,8 @@ class EINetwork extends SierraRest implements
                     $checkinRecords[$key]["branchCode"][] = $row["branchCode"];
                     unset($neededLocations[$row["code"]]);
                 }
-                $results3[] = $checkinRecords[$key];
+                for( $j=0; $j<count($results3) && ($results3[$j]['location'] < $checkinRecords[$key]["location"]); $j++) {}
+                array_splice($results3, $j, 0, [$checkinRecords[$key]]);
             }
 
             // add details for locations with no checkin records but held items

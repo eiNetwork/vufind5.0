@@ -174,6 +174,12 @@ class MyResearchController extends AbstractBase
             }
             return $this->forwardTo('MyResearch', 'Login');
         }
+
+        // if they gave us some extra info, stash it in the followup
+        if( $this->params()->fromPost('lightboxFollowup') ) {
+            $this->flashMessenger()->addMessage("<span id='lightboxFollowup'>" . $this->params()->fromPost('lightboxFollowup') . "</span>", "info");
+        }
+
         // Logged in?  Forward user to followup action
         // or default action (if no followup provided):
         if ($url = $this->getFollowupUrl()) {

@@ -77,9 +77,8 @@
         <li><button class="btn-dropdown btn-whiteDropdown EIN-hide" onclick="Lightbox.get('MyResearch','comingsoon'); return false;" style="display:none">Locations</button></li>
         <li><a href="<?=$this->url('myresearch-logout')?>"><button class="btn-dropdown btn-whiteDropdown"><i class="fa fa-sign-out"></i>Log Out</button></a></li>
 <? else: ?>
-        <li><button class="btn-dropdown btn-whiteDropdown" onclick="Lightbox.get('Help','Home')">Help</button></li>
-        <li><button class="btn-dropdown btn-whiteDropdown" onclick="Lightbox.get('MyResearch','comingsoon'); return false;" style="display:none">Locations</button></li>
-        <li><button class="btn-dropdown btn-whiteDropdown" onClick="Lightbox.get('MyResearch', 'Login')">Log In or Register</button></li>
+        <li><a href="/Help/Home" data-lightbox><button class="btn-dropdown btn-whiteDropdown">Help</button></a></li>
+        <li><a href="/MyResearch/Login" data-lightbox><button class="btn-dropdown btn-whiteDropdown">Log In or Register</button></a></li>
 <? endif; ?>
       </ul>
     </div>

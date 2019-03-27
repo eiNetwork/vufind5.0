@@ -275,4 +275,47 @@ class RecordController extends AbstractRecord
 
         return $view;
     }
+
+    /**
+     * Select Item action - Make patron choose a specific item (used for multi-volume bibs)
+     *
+     * @return mixed
+     */
+    public function selectItemAction() {
+        // Retrieve user object and force login if necessary:
+        if (!is_array($patron = $this->catalogLogin())) {
+            $patron->followup = "['Record','SelectItem',{'id':'" . $this->params()->fromQuery('id') . "','hashKey':'" . $this->params()->fromQuery('hashKey') . "'}]";
+            return $patron;
+        }
+
+        // grab the holdings, then split them into holdable and not holdable
+        $driver = $this->loadRecord();
+        $holdings = $driver->getRealTimeHoldings()["holdings"];
+        $availableHoldings = [];
+        $unavailableHoldings = [];
+        $currentLocation = $this->getILS()->getCurrentLocation();
+        $locationMappings = [];
+        $canHold = (!empty($driver->tryMethod('getRealTimeTitleHold')));
+        foreach($holdings as $thisBib) {
+            foreach($thisBib["items"] as $item) {
+                if($item["location"] == "CHECKIN_RECORDS") {
+                    continue;
+                } else if( $canHold && ($currentLocation["code"] != $item["branchCode"] || !$item["availability"]) && (($item["statusCode"] == '-') || ($item["statusCode"] == 't') || ($item["statusCode"] == '!')) ) {
+                    for($j=0; $j<count($availableHoldings) && (($availableHoldings[$j]["sierraLocation"] < $item["sierraLocation"]) || (($availableHoldings[$j]["sierraLocation"] == $item["sierraLocation"]) && ($availableHoldings[$j]["number"] < $item["number"]))); $j++ ) {}
+                    array_splice($availableHoldings, $j, 0, [$item]);
+                } else {
+                    for($j=0; $j<count($unavailableHoldings) && (($unavailableHoldings[$j]["sierraLocation"] < $item["sierraLocation"]) || (($unavailableHoldings[$j]["sierraLocation"] == $item["sierraLocation"]) && ($unavailableHoldings[$j]["number"] < $item["number"]))); $j++ ) {}
+                    array_splice($unavailableHoldings, $j, 0, [$item]);
+                }
+            }
+        }
+
+        $view = $this->createViewModel();
+        $view->id = $driver->getUniqueID();
+        $view->hashKey = $this->params()->fromQuery('hashKey');
+        $view->availableHoldings = $availableHoldings;
+        $view->unavailableHoldings = $unavailableHoldings;
+        $view->setTemplate('record/selectItem');
+        return $view;
+    }
 }

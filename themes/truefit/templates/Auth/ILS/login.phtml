@@ -183,11 +183,7 @@
       var nextLocation = null;
       // success, but need to reuse the lightbox
       if( lightboxFollowup != null ) {
-        var lightboxArgs = jQuery.parseJSON(lightboxFollowup.innerHTML.replace(/'/g,"\""));
-        Lightbox.get(lightboxArgs[0], lightboxArgs[1],
-                     (lightboxArgs.length > 2) ? lightboxArgs[2] : undefined,
-                     (lightboxArgs.length > 3) ? lightboxArgs[3] : undefined,
-                     (lightboxArgs.length > 4) ? lightboxArgs[4] : undefined);
+        window.top.VuFind.lightbox.reload();
       // success, but they have messages, so send them to the message center
       } else if( $(frame.contentDocument).find('.notificationsCount').length > 0 ) {
         nextLocation = "/MyResearch/Notifications";

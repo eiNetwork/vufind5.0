@@ -49,6 +49,7 @@ trait HoldsTrait
 
         // Stop now if the user does not have valid catalog credentials available:
         if (!is_array($patron = $this->catalogLogin())) {
+            $patron->followup = "['Record','Hold',{'id':'" . $driver->getUniqueID() . "','hashKey':'" . $this->params()->fromQuery('hashKey') . "'}]";
             return $patron;
         }
 
@@ -159,6 +160,9 @@ trait HoldsTrait
                         $this->flashMessenger()
                             ->addMessage($results['sysMessage'], 'error');
                     }
+                    $view = $this->createViewModel(['skip' => true, 'title' => 'Hold Item', 'reloadParent' => true]);
+                    $view->setTemplate('blankModal');
+                    return $view;
                 }
             }
         }
