@@ -370,6 +370,9 @@ class SolrDefault extends DefaultRecord
             if( $locCodeRow ) {
                 $json["holding"][$key]["location"] = $locCodeRow->sierraName;
             }
+            if( !isset($json["holding"][$key]["item_id"]) ) {
+                $json["holding"][$key]["item_id"] = $json["holding"][$key]["itemId"] ?? null;
+            }
         }
         foreach( $json["orderRecords"] as $key => $thisJson ) {
             // find this location in the database
@@ -385,9 +388,10 @@ class SolrDefault extends DefaultRecord
             if( count($row) > 0 ) {
                 $json["orderRecords"][$key] = [
                     "id" => $this->getUniqueID(),
-                    "itemId" => null,
+                    "item_id" => null,
                     "availability" => false,
                     "statusCode" => "order",
+                    "status" => "ON ORDER",
                     "location" => $thisJson["location"],
                     "reserve" => "N",
                     "callnumber" => null,

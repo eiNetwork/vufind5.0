@@ -135,7 +135,7 @@ function handleItemStatusResponse(response) {
       } else {
         leftButton.empty().append('Checked Out');
       }
-    } else if( result.itsHere && result.holdableCopyHere && result.volume_number == '' ) {
+    } else if( result.itsHere && result.holdableCopyHere && !result.hasVolumes ) {
       leftButton.empty().append('It\'s Here');
     } else if( result.holdArgs != '' ) {
       var isOverDrive = (result.location == "OverDrive");

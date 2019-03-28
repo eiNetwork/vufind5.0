@@ -1,4 +1,6 @@
 <?
+  $this->headTitle($this->translate('Holdings') . ': ' . $this->driver->getBreadcrumb());
+
   // Set up convenience variables:
   $account = $this->auth()->getManager();
   $user = $account->isLoggedIn();

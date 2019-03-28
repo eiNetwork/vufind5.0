@@ -216,7 +216,7 @@ class EINGetItemStatuses extends GetItemStatuses
         // make sure they don't already have it checked out
         if( $this->user && ($overDriveInfo["canCheckOut"] || $canHold) ) {
             foreach($checkedOutItems as $thisItem) {
-                if($thisItem['id'] == $bib) {
+                if($thisItem['fullID'] == $bib) {
                     $overDriveInfo["canCheckOut"] = false;
                     // if this bib has volumes, they still still place holds on other volumes even if they have one checked out
                     $canHold = $hasVolumes;

@@ -203,6 +203,7 @@ class EINetwork extends SierraRest implements
                                          "item_id" => null,
                                          "availability" => false,
                                          "statusCode" => "order",
+                                         "status" => $this->itemStatusMappings["order"],
                                          "location" => $details["location"],
                                          "reserve" => "N",
                                          "callnumber" => null,
@@ -214,6 +215,14 @@ class EINetwork extends SierraRest implements
                                          "copiesOwned" => $details["copies"]
                                      ];
                     }
+                }
+            }
+
+            // if they don't have a status string yet, we need to add that in
+            foreach( $results as $key => $thisResult ) {
+                if( !isset($thisResult["status"]) ) {
+                    $thisResult["status"] = ($thisResult["statusCode"] == "-") ? ($thisResult["duedate"] ? "CHECKED OUT" : "AVAILABLE") : $this->itemStatusMappings[$thisResult["statusCode"]];
+                    $results[$key] = $thisResult;
                 }
             }
         } else {
@@ -486,6 +495,37 @@ class EINetwork extends SierraRest implements
 
         unset($this->sessionCache->patron);
         $this->getMyProfile($patron);
+    }
+
+    /**
+     * Get Number of My Transactions
+     *
+     * This is responsible for returning the raw count of a patron's checked out items.
+     *
+     * @param string $patron The patron's id
+     *
+     * @throws ILSException
+     * @return int           Count of checked out items.
+     */
+    public function getNumberOfMyTransactions($patron){
+        if( isset($this->sessionCache->checkouts) ) {
+            return count($this->sessionCache->checkouts);
+        }
+
+        // get count of sierra checkouts
+        $result = $this->makeRequest(
+            ['v5', 'patrons', $patron['id'], 'checkouts'],
+            ['limit' => 1, 'offset' => 0],
+            'GET',
+            $patron
+        );
+        $numberOfSierraTransactions = $result["total"];
+
+        // get count of overdrive checkouts
+        $numberOfOverDriveTransactions = count($this->connector->getCheckouts(true)->data);
+
+        // return the sum
+        return $numberOfSierraTransactions + $numberOfOverDriveTransactions;
     }
 
     /**

@@ -7,7 +7,7 @@
     $profile = $this->ils()->getDriver()->getMyProfile($patron);
     $notifications = []; //VF5UPGRADE$this->ils()->getDriver()->getNotifications($profile);
     $holdsCount = 0; //VF5UPGRADE$this->ils()->getDriver()->getNumberOfMyHolds($profile);
-    $checkoutsCount = 0; //VF5UPGRADE$this->ils()->getDriver()->getNumberOfMyTransactions($profile);
+    $checkoutsCount = $this->ils()->getDriver()->getNumberOfMyTransactions($profile);
   }
 
   $retainFilters = $this->ils()->getDriver()->getSessionVar("retainFilters");
