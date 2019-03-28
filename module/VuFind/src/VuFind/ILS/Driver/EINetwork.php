@@ -769,7 +769,24 @@ class EINetwork extends SierraRest implements
             $holdDetails["item_id"] = substr($holdDetails["item_id"], 2, -1);
         }
 
-        return parent::placeHold($holdDetails);
+        // invalidate the cached data
+        $this->sessionCache->staleHoldsHash = md5(json_encode($this->sessionCache->holds));
+
+        // item level holds via the API don't work yet
+        // BJP - neither do local copy overriding the hold
+        if( true || isset($holdDetails["item_id"]) ) {
+            $holdsInfo = $this->placeItemLevelHold($holdDetails);
+        } else {
+            $holdInfo = parent::placeHold($holdDetails);
+        }
+
+/*VF5UPGRADE
+        // if they successfully placed the hold, check to see whether this item is in their book cart. If so, remove it.
+        if( $holdsInfo['success'] ) {
+            $this->removeFromBookCart([isset($details['bibId']) ? $details['bibId'] : $details['id']]);
+        }
+*/
+        return $holdsInfo;
     }
 
     /**
@@ -1093,5 +1110,173 @@ class EINetwork extends SierraRest implements
         }
 
         return json_decode($this->memcached->get($hash), true);
+    }
+
+
+
+
+
+    /**
+     * Screen Scraping functionality
+     *
+     * The functions after this point leverage the screen scraping functionality from our previous iteration of the catalog.
+     * These actions should eventually be available via the Sierra API (and as such be implemented in the Sierra2 driver), 
+     * but our current version of the API does not have them available at this point.
+     *
+     */
+
+
+
+
+
+    /**
+     * Place Item Hold
+     *
+     * This is responsible for both placing item level holds.
+     *
+     * @param   string  $recordId   The id of the bib record
+     * @param   string  $itemId     The id of the item to hold
+     * @param   string  $patronId   The id of the patron
+     * @param   string  $comment    Any comment regarding the hold or recall
+     * @param   string  $type       Whether to place a hold or recall
+     * @param   string  $type       The date when the hold should be cancelled if any
+     * @return  mixed               True if successful, false if unsuccessful
+     *                              If an error occures, return a PEAR_Error
+     * @access  public
+     */
+    private function placeItemLevelHold($details)
+    {
+        //Login to the patron's account
+        $cookieJar = tempnam ("/tmp", "CURLCOOKIE");
+        $success = false;
+
+        $curl_url = $this->config['Catalog']['classic_url'] . "/patroninfo";
+
+        $curl_connection = curl_init($curl_url);
+        curl_setopt($curl_connection, CURLOPT_CONNECTTIMEOUT, 30);
+        curl_setopt($curl_connection, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
+        curl_setopt($curl_connection, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl_connection, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($curl_connection, CURLOPT_FOLLOWLOCATION, 1);
+        curl_setopt($curl_connection, CURLOPT_UNRESTRICTED_AUTH, true);
+        curl_setopt($curl_connection, CURLOPT_COOKIEJAR, $cookieJar );
+        curl_setopt($curl_connection, CURLOPT_COOKIESESSION, false);
+        curl_setopt($curl_connection, CURLOPT_POST, true);
+        $post_string = 'code=' . $details["patron"]["cat_username"] . '&pin=' . $details["patron"]["cat_password"]  . '&submit=submit';
+        curl_setopt($curl_connection, CURLOPT_POSTFIELDS, $post_string);
+        $sresult = curl_exec($curl_connection);
+
+        list($Month, $Day, $Year)=explode("-", $details["requiredBy"]);
+
+        // now try to request the item
+        $header=array();
+        $header[0] = "Accept: text/xml,application/xml,application/xhtml+xml,";
+        $header[0] .= "text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5";
+        $header[] = "Cache-Control: max-age=0";
+        $header[] = "Connection: keep-alive";
+        $header[] = "Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.7";
+        $header[] = "Accept-Language: en-us,en;q=0.5";
+
+        curl_setopt($curl_connection, CURLOPT_CONNECTTIMEOUT, 30);
+        curl_setopt($curl_connection, CURLOPT_HTTPHEADER, $header);
+        curl_setopt($curl_connection, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
+        curl_setopt($curl_connection, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl_connection, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($curl_connection, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($curl_connection, CURLOPT_UNRESTRICTED_AUTH, true);
+        curl_setopt($curl_connection, CURLOPT_COOKIEJAR, $cookieJar);
+        curl_setopt($curl_connection, CURLOPT_COOKIESESSION, true);
+        curl_setopt($curl_connection, CURLOPT_FORBID_REUSE, false);
+        curl_setopt($curl_connection, CURLOPT_HEADER, false);
+        curl_setopt($curl_connection, CURLOPT_POST, true);
+
+        $curl_url = $this->config['Catalog']['classic_url'] . "/search/.b" . $details["id"] . "/.b" . $details["id"] ."/1,1,1,B/request~b" . $details["id"];
+        curl_setopt($curl_connection, CURLOPT_URL, $curl_url);
+
+        $post_data['needby_Month']= $Month;
+        $post_data['needby_Day']= $Day;
+        $post_data['needby_Year']=$Year;
+        $post_data['submit.x']="35";
+        $post_data['submit.y']="21";
+        $post_data['submit']="submit";
+        $post_data['locx00']= str_pad($details["pickUpLocation"], 5/*5-strlen($details["pickUpLocation"])*/, '+');
+        // BJP - we're temporarily running ALL holds through screen scraping. when that goes away, you can remove the if wrapper around the contents of this since 
+        //       all holds coming through here will be item-level
+        if( isset($details["item_id"]) ) {
+            $post_data['radio']= "i" . $details["item_id"];
+        }
+        $post_data['submit']="REQUEST SELECTED ITEM";
+        $post_data['x']="48";
+        $post_data['y']="15";
+
+        foreach ($post_data as $key => $value) {
+            $post_items[] = $key . '=' . $value;
+        }
+        $post_string = implode ('&', $post_items);
+        curl_setopt($curl_connection, CURLOPT_POSTFIELDS, $post_string);
+        $sresult = curl_exec($curl_connection);
+
+        $sresult = preg_replace("/<!--([^(-->)]*)-->/","",$sresult);
+        curl_close($curl_connection);
+
+        //Parse the response to get the status message
+        $hold_result = $this->_getHoldResult($sresult);
+
+        return $hold_result;
+    }
+
+    protected function _getHoldResult($holdResultPage){
+        $hold_result = array();
+        //Get rid of header and footer information and just get the main content
+        $matches = array();
+
+        $itemMatches = preg_match('/Choose one item from the list below/', $holdResultPage);
+
+        if ($itemMatches == 0){
+            //not prompting to select a specific item for a volume hold
+            //hold responses start after the form is closed
+            $responseStart = strpos($holdResultPage,'</form>');
+            if ($responseStart === false) {
+                $hold_result['success'] = false;
+                $hold_result['status'] = '<i class=\'fa fa-exclamation-triangle\'></i>Did not receive a response from the circulation system.  Please try again in a few minutes.';
+                $reason = '';
+            } else {
+                //get the part of the response page that contains the response to placing the hold
+                $responseText = substr($holdResultPage,$responseStart);
+
+                //Hold was successful
+                if (strpos($responseText,'was successful') > 1 && strpos($responseText,'You will be notified when the status of this item says Ready For Pickup') > 0) {
+                    $hold_result['success'] = true;
+                    $hold_result['status'] = '<i class=\'fa fa-info\'></i>Your request was placed successfully';
+                    $reason = '';
+                    //Check for reasons why a hold is not successful
+                } else {
+                    if (strpos($responseText,'Request denied - already requested or checked out to you') > 1) {
+                        $hold_result['success'] = false;
+                        $hold_result['status'] = '<i class=\'fa fa-exclamation-triangle\'></i>Already requested or checked out';
+                    } elseif  (strpos($responseText,'No requestable items are available') > 1) {
+                        $hold_result['success'] = false;
+                        $hold_result['status'] = '<i class=\'fa fa-exclamation-triangle\'></i>There are no requestable items available';
+                    } elseif  (strpos($responseText,'No items requestable, request denied') > 1) {
+                        $hold_result['success'] = false;
+                        $hold_result['status'] = '<i class=\'fa fa-exclamation-triangle\'></i>There are no requestable items available';
+                    } elseif  (strpos($responseText,'Sorry, request cannot be accepted. Local copy is available.') > 1) {
+                        $hold_result['success'] = false;
+                        $hold_result['status'] = '<i class=\'fa fa-exclamation-triangle\'></i>There is a copy available on the shelf at this location';
+                    } elseif  (strpos($responseText,'There is a problem with your library record.  Please see a librarian') > 1) {
+                        $hold_result['success'] = false;
+                        $hold_result['status'] = '<i class=\'fa fa-exclamation-triangle\'></i>Your patron record is blocked or expired';
+                    // generic error message
+                    } else {
+                        $hold_result['success'] = false;
+                        $hold_result['status'] = '<i class=\'fa fa-exclamation-triangle\'></i>There was an error placing your request';
+                    }
+                }
+            }
+        }else{
+            $hold_result['success'] = false;
+            $hold_result['status'] = '<i class=\'fa fa-exclamation-triangle\'></i>There was an error placing your request';
+        }
+        return $hold_result;
     }
 }
