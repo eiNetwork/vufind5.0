@@ -1967,4 +1967,14 @@ class MyResearchController extends AbstractBase
         $view->suppressFlashMessages = true;
         return $view;
     }
+
+    /**
+     * Action for moving the facets information to a modal
+     *
+     * @return mixed
+     */
+    public function facetsAction()
+    {
+        return $this->createViewModel();
+    }
 }

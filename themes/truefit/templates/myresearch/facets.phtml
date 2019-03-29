@@ -1,0 +1,31 @@
+<h2 class="lead lightbox-header" style="display:none"><?=$this->transEsc('Filter Results')?></h2>
+<div id="facetsModalDiv">
+</div>
+<div class="modal-footer">
+  <button class="btn-alternate btn-wide" onclick="$('#modalClose').click()">Cancel</button>
+  <a href="" id="facetSubmitLink"><button class="btn-default btn-wide">Apply</button></a>
+</div>
+<script type="text/javascript">  
+$(document).ready( function() { 
+  var facetsContent = "";
+  $("#modal").on("shown.bs.modal", function openFunc() { 
+    facetsContent = $('#facetsDiv').html();
+    if( facetsContent != "" ) {
+      $('#facetsDiv').html("");
+      $('#facetsModalDiv').html(facetsContent);
+      setTimeout(sizeModal, 100 );
+    }
+    // remove this function from the open stack
+    $("#modal").off("shown.bs.modal", openFunc);
+  } );
+
+  $("#modal").on("hidden.bs.modal", function closeFunc() {
+    if( facetsContent != "" ) {
+      $('#facetsDiv').html(facetsContent);
+      facetsContent = "";
+    }
+    // remove this function from the close stack
+    $("#modal").off("hidden.bs.modal", closeFunc);
+  } );
+} );
+</script>
