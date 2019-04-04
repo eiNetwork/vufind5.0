@@ -6,7 +6,7 @@
     $patron = $this->ils()->getDriver()->patronLogin(null,null);
     $profile = $this->ils()->getDriver()->getMyProfile($patron);
     $notifications = []; //VF5UPGRADE$this->ils()->getDriver()->getNotifications($profile);
-    $holdsCount = 0; //VF5UPGRADE$this->ils()->getDriver()->getNumberOfMyHolds($profile);
+    $holdsCount = $this->ils()->getDriver()->getNumberOfMyHolds($profile);
     $checkoutsCount = $this->ils()->getDriver()->getNumberOfMyTransactions($profile);
   }
 

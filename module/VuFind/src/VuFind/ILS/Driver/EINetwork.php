@@ -612,6 +612,37 @@ class EINetwork extends SierraRest implements
     }
 
     /**
+     * Get Number of My Holds
+     *
+     * This is responsible for returning the raw count of a patron's holds.
+     *
+     * @param string $patron The patron's id
+     *
+     * @throws ILSException
+     * @return int           Count of holds.
+     */
+    public function getNumberOfMyHolds($patron){
+        if( isset($this->sessionCache->holds) ) {
+            return count($this->sessionCache->holds);
+        }
+
+        // get count of sierra holds
+        $result = $this->makeRequest(
+            ['v5', 'patrons', $patron['id'], 'holds'],
+            ['limit' => 1, 'offset' => 0],
+            'GET',
+            $patron
+        );
+        $numberOfSierraHolds = $result["total"];
+
+        // get count of overdrive holds
+        $numberOfOverDriveHolds = count($this->connector->getHolds(true)->data);
+
+        // return the sum
+        return $numberOfSierraHolds + $numberOfOverDriveHolds;
+    }
+
+    /**
      * Get Patron Holds
      *
      * This is responsible for retrieving all holds by a specific patron.
@@ -631,30 +662,46 @@ class EINetwork extends SierraRest implements
             return $this->sessionCache->holds;
         // clear out these intermediate cached API results
         } else if( $skipCache ) {
-/*VF5UPGRADE
-            $offset = 0;
-            $hash = md5($this->config['SIERRAAPI']['url'] . "/v5/patrons/" . $patron['id'] . "/holds?limit=50&offset=" . $offset);
-            while( $this->memcached->get($hash) ) {
-                $this->memcached->set($hash, null);
-                $offset += 50;
-                $hash = md5($this->config['SIERRAAPI']['url'] . "/v5/patrons/" . $patron['id'] . "/holds?limit=50&offset=" . $offset);
+            $fields = 'id,record,frozen,placed,location,pickupLocation,status'
+                . ',recordType,priority,priorityQueueLength';
+            if ($this->apiVersion >= 5) {
+                $fields .= ',pickupByDate';
             }
-*/
+            $hierarchy = ['v' . $this->apiVersion, 'patrons', $patron['id'], 'holds'];
+            $params = ['limit' => 10000, 'offset' => 0, 'fields' => $fields];
+            $hash = md5(json_encode($hierarchy) . ($params ? ("###" . json_encode($params)) : ""));
+            $this->memcached->set($hash, null);
         }
 
         $sierraHolds = parent::getMyHolds($patron);
-/*VF5UPGRADE
-        $overDriveHolds = $this->getOverDriveHolds((object)$patron);
+
+        // fill in these values
+        foreach( $sierraHolds as $key => $thisHold ) {
+            $sierraHolds[$key]["locationID"] = $sierraHolds[$key]["location"];
+            if( !$this->memcached->get("locationByCode" . $sierraHolds[$key]["locationID"]) ) {
+                $this->memcached->set("locationByCode" . $sierraHolds[$key]["locationID"], $this->getDbTable('Location')->getByCode($sierraHolds[$key]["locationID"]));
+            }
+            $location = $this->memcached->get("locationByCode" . $sierraHolds[$key]["locationID"] );
+            $sierraHolds[$key]["location"] = $location->holdingBranchLabel;
+        }
+
+        $overDriveHolds = json_decode(json_encode($this->connector->getHolds(true)), true)["data"];
         foreach($overDriveHolds as $hold) {
-            $solrInfo = $this->getSolrRecordFromExternalId($hold["overDriveId"]);
+            $solrInfo = $this->getSolrRecordFromExternalId($hold["reserveId"]);
             if($solrInfo) {
                 foreach($solrInfo as $key => $value) {
                     $hold[$key] = $value;
                 }
+                $hold['available'] = isset($hold["actions"]["checkout"]);
+                $hold['in_transit'] = false;
+                $hold['requestId'] = "OverDrive" . $hold["reserveId"];
+                $hold['statusCode'] = isset($hold["actions"]["checkout"]) ? "i" : "-";
+                $hold['frozen'] = isset($hold["holdSuspension"]);
+
                 $sierraHolds[] = $hold;
             }
         }
-*/
+
         $this->sessionCache->holds = $sierraHolds;
         if( isset($this->sessionCache->staleHoldsHash) ) {
             if( md5(json_encode($sierraHolds)) != $this->sessionCache->staleHoldsHash ) {

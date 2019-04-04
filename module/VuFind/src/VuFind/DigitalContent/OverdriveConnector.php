@@ -1099,12 +1099,15 @@ class OverdriveConnector implements LoggerAwareInterface,
                             && $hold->holdListPosition == 1
                         ) {
                             $result->data[$key]->holdReadyForCheckout = true;
+
                             //format the expires date.
-                            $holdExpires = new \DateTime($hold->holdExpires);
-                            $result->data[$key]->holdExpires
-                                = $holdExpires->format(
-                                (string)$config->displayDateFormat
-                            );
+                            if( $hold->holdExpires ?? false ) {
+                                $holdExpires = new \DateTime($hold->holdExpires);
+                                $result->data[$key]->holdExpires
+                                    = $holdExpires->format(
+                                    (string)$config->displayDateFormat
+                                );
+                            }
                         }
                         $holdPlacedDate = new \DateTime($hold->holdPlacedDate);
                         $result->data[$key]->holdPlacedDate

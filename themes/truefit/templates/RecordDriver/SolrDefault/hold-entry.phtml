@@ -18,7 +18,7 @@
       <input type="hidden" value="<?=$this->escapeHtmlAttr($id)?>" class="hiddenId" />
       <input type="hidden" value="<?=$this->escapeHtmlAttr($source)?>" class="hiddenSource" />
       <? if( $showChangeTarget ): ?>
-        <input type="hidden" value="<?=(isset($this->hold["overDriveId"]) ? "email" : "pickup")?>" class="changeTarget" />
+        <input type="hidden" value="<?=(isset($this->hold["reserveId"]) ? "email" : "pickup")?>" class="changeTarget" />
       <? endif; ?>
       <? if( $showFreeze ): ?>
         <input type="hidden" value="true" class="freezeTarget" />
@@ -28,12 +28,12 @@
       <? endif; ?>
     </td>
     <td class="EIN-col-m-11" style="padding-right:10px">
-      <div class="EIN-col-m-12<?= ((isset($this->hold["overDriveId"]) && $this->hold["statusCode"] == "i") ? " EIN-col-t-8 EIN-col-8" : "" ) ?>">
+      <div class="EIN-col-m-12<?= ((isset($this->hold["reserveId"]) && $this->hold["statusCode"] == "i") ? " EIN-col-t-8 EIN-col-8" : "" ) ?>">
         <h1 property="name" class="itemTitle">
           <? if( isset($this->hold["ILL"]) && $this->hold["ILL"] ): ?>
             <?=$this->escapeHtml($this->hold["title"])?>
           <? else: ?>
-            <a href="<?=$this->recordLink()->getUrl($this->driver)?>"><?=$this->escapeHtml((($this->driver->getShortTitle() == "") ? trim($this->driver->getTitle(),"\0\t\n\x0B\r /") : (trim($this->driver->getShortTitle(),"\0\t\n\x0B\r /") . ' ' . trim($this->driver->getSubtitle(),"\0\t\n\x0B\r /") . ' ' . trim($this->driver->getTitleSection(),"\0\t\n\x0B\r /"))) . (isset($this->hold["volumeInfo"]) ? (" (" . $this->hold["volumeInfo"] . ")") : ""))?>
+            <a href="<?=$this->recordLink()->getUrl($this->driver)?>"><?=$this->escapeHtml((($this->driver->getShortTitle() == "") ? trim($this->driver->getTitle(),"\0\t\n\x0B\r /") : (trim($this->driver->getShortTitle(),"\0\t\n\x0B\r /") . ' ' . trim($this->driver->getSubtitle(),"\0\t\n\x0B\r /") . ' ' . trim($this->driver->getTitleSection(),"\0\t\n\x0B\r /"))) . ((isset($this->hold["volume"]) && $this->hold["volume"]) ? (" (" . $this->hold["volume"] . ")") : ""))?>
           <? endif ?>
           <? if( isset($this->hold["item_id"]) ): ?>
             <span class="hidden volumeInfo"><?=substr($this->hold["item_id"], 2, -1)?></span>
@@ -46,8 +46,8 @@
         <? $authors = $this->driver->getDeduplicatedAuthors(); ?>
         <? if( isset($this->hold["ILL"]) && $this->hold["ILL"] ): ?>
           <h4 property="author" class="itemAuthor"><?=$this->escapeHtml($this->hold["author"])?></h4>
-        <? elseif (isset($authors['main']) && !empty($authors['main'])): ?>
-          <h4 property="author" class="itemAuthor">by <a href="<?=$record->getLink('author', $authors['main'])?>" class="authorLink"><?=$this->escapeHtml($authors['main'])?></a></h4>
+        <? elseif (isset($authors['primary']) && !empty($authors['primary'])): ?>
+          <h4 property="author" class="itemAuthor">by <a href="<?=$record->getLink('author', array_keys($authors['primary'])[0])?>" class="authorLink"><?=$this->escapeHtml(array_keys($authors['primary'])[0])?></a></h4>
         <? endif; ?>
 
         <table>
@@ -120,7 +120,7 @@
               </td>
             </tr>
           <? endif; ?>
-          <? if( !isset($this->hold["overDriveId"]) ): ?>
+          <? if( !isset($this->hold["reserveId"]) ): ?>
             <tr>
               <td colspan="2">
                 <? if( $holdType != "hold_all" ): ?>
@@ -149,13 +149,13 @@
                 <? if( $holdType != "hold_all" ): ?>
                   <div class="EIN-col-m-12" style="height:10px"></div>
                 <? endif; ?>
-                Notify me at: <span class="bold"><?=$this->hold["notifyEmail"]?></span>
+                Notify me at: <span class="bold"><?=$this->hold["emailAddress"]?></span>
               </td>
             </tr>
           <? endif; ?>
         </table>
       </div>
-      <? if( isset($this->hold["overDriveId"]) && $this->hold["statusCode"] == "i" ): ?>
+      <? if( isset($this->hold["reserveId"]) && $this->hold["statusCode"] == "i" ): ?>
         <div class="EIN-col-m-12 EIN-col-t-4 EIN-col-4" style="padding:5px 0px 10px">
           <div class="singleButtonGap">
             <a href="<?= $this->recordLink()->getActionUrl($this->driver, "Checkout") ?>" target="loginFrame">

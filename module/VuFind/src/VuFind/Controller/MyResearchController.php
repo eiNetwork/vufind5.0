@@ -1142,7 +1142,7 @@ class MyResearchController extends AbstractBase
                 $physical = [];
                 $econtent = [];
                 foreach( $grouping as $key => $thisItem ) {
-                    if( isset($thisItem["overDriveId"]) ) {
+                    if( $thisItem->getExtraDetail("ils_details")["reserveId"] ?? false ) {
                         $econtent[$key] = $thisItem;
                     } else {
                         $physical[$key] = $thisItem;

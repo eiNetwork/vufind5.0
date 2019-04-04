@@ -114,6 +114,7 @@ class EINGetItemStatuses extends GetItemStatuses
         // grab the driver
         $bib = $record[0]['id'];
         $fullID = is_numeric($bib) ? (".b" . $bib . $this->ils->getCheckDigit($bib)) : $bib;
+        $shortID = (is_numeric($bib) || (substr($bib, 0, 2) != ".b")) ? $bib : substr($bib, 2, -1);
         $driver = $this->loader->load( $fullID );
         $canHold = $driver->tryMethod('getRealTimeTitleHold');
         $isHolding = false;
@@ -140,7 +141,7 @@ class EINGetItemStatuses extends GetItemStatuses
         // see if they already have a hold on it
         if($canHold && $this->user && !$hasVolumes) {
             foreach($holds as $thisHold) {
-                if($thisHold['id'] == $bib) {
+                if($thisHold['id'] == $shortID) {
                     $canHold = false;
                     $isHolding = true;
                 }
