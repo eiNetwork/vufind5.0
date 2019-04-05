@@ -877,6 +877,62 @@ class EINetwork extends SierraRest implements
     }
 
     /**
+     * Update Holds
+     *
+     * Attempts to update the pickup location for an array of holds and returns
+     * an array with result details or throws an exception on failure of support
+     * classes
+     *
+     * @param array $holds The holds to update and the location to change them to
+     *
+     * @throws ILSException
+     * @return mixed An array of data on the request including
+     * whether or not it was successful and a system message (if available)
+     */
+    public function updateHolds($holds)
+    {
+        // invalidate the cached data
+        $this->sessionCache->staleHoldsHash = md5(json_encode($this->sessionCache->holds));
+
+        // pull out overdrive holds, since we're updating their email
+        $success = true;
+        $overDriveHolds = [];
+        for($i=0; $i<count($holds["details"]); $i++ )
+        {
+            if( substr($holds["details"][$i], 0, 9) == "OverDrive" ) {
+                $overDriveHolds[] = substr(array_splice($holds["details"], $i, 1)[0], 9);
+                $i--;
+            }
+        }
+
+        // grab a copy of this because the OverDrive functionality can wipe it
+        $cachedHolds = $this->sessionCache->holds;
+
+        // compare the sierra holds to my list of holds (workaround for item-level stuff)
+        if( count($holds["details"]) > 0 ) {
+            foreach( $holds["details"] as $key => $thisUpdateId ) {
+                foreach( $cachedHolds as $thisHold ) {
+                    if( false && $thisHold["requestId"] == $thisUpdateId && $thisHold["item_id"] != $thisUpdateId ) {
+                        $success &= $this->updateHoldDetailed($holds["patron"], "requestId", "patronId", "update", "title", $thisHold["item_id"], $holds["newLocation"]);
+                        unset($holds["details"][$key]);
+                    }
+                }
+            }
+        }
+
+        // process the sierra holds
+        $success = true;
+        foreach( $holds["details"] ?? [] as $thisHold ) {
+            $result = $this->makeRequest(
+                ['v5', 'patrons', 'holds', $thisHold], json_encode(['pickupLocation' => $holds["newLocation"]]), 'PUT', $holds["patron"]
+            );
+            $success &= empty($result['code']);
+        }
+
+        return ["success" => $success];
+    }
+
+    /**
      * Get announcements
      *
      * This is responsible for grabbing system-wide announcements that haven't been dismissed by the user.

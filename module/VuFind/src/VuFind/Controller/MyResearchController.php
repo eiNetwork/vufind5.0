@@ -1094,10 +1094,32 @@ class MyResearchController extends AbstractBase
 
         // Connect to the ILS:
         $catalog = $this->getILS();
+        $view = $this->createViewModel();
+
+        // see if we are trying to change the pickup location
+        if( $this->params()->fromPost('changePickup') ) {
+            if( $this->params()->fromPost('placeHold') ) {
+                $view->updateResults = $this->holds()->updateHolds($catalog, $patron);
+                $view->setTemplate('blankModal');
+                $view->suppressFlashMessages = true;
+                $view->reloadParent = true;
+                return $view;
+            } else {
+                $view->setTemplate('record/hold');
+                $view->referrer = $this->params()->fromPost('referrer');
+                $view->changePickup = true;
+                $view->skip = true;
+                $view->pickup = $catalog->getPickUpLocations($patron);
+                $view->homeLibrary = $this->getUser()->home_library;
+                $view->preferredLibrary = $this->getUser()->preferred_library;
+                $view->alternateLibrary = $this->getUser()->alternate_library;
+                $view->ids = $this->params()->fromPost('ids');
+                return $view;
+            }
+        }
 
         // Process cancel requests if necessary:
         $cancelStatus = $catalog->checkFunction('cancelHolds', compact('patron'));
-        $view = $this->createViewModel();
         $view->cancelResults = $cancelStatus
             ? $this->holds()->cancelHolds($catalog, $patron) : [];
         // If we need to confirm

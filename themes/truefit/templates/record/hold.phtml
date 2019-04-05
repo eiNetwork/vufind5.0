@@ -107,7 +107,7 @@
           <? foreach( $this->ids as $id ): ?>
             <input type="hidden" name="<?=($this->changePickup ? "updateIDs[]" : "holdIDs[]")?>" value="<?=$id?>">
           <? endforeach; ?>
-          <? foreach( $this->titles as $title ): ?>
+          <? foreach( $this->titles ?? [] as $title ): ?>
             <input type="hidden" name="holdTitles[]" value="<?=$title?>">
           <? endforeach; ?>
         <? endif; ?>
@@ -156,8 +156,12 @@
       } else {
         $('#holdFooter').css('display', 'none');
         $('#loadingFooter').css('display', 'block');
-
-        $('form[name="placeHold"]').attr("action", VuFind.lightbox.getCurrentUrl());
+        var currUrl = VuFind.lightbox.getCurrentUrl();
+        if( currUrl ) {
+          $('form[name="placeHold"]').attr("action", currUrl);
+        } else {
+          $('form[name="placeHold"]').attr("action", VuFind.lightbox.getOriginalUrl());
+        }
         $('form[name="placeHold"]').get(0).submit();
       }
       return false;
