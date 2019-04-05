@@ -1127,6 +1127,24 @@ class MyResearchController extends AbstractBase
             return $view->cancelResults;
         }
 
+        // Process freeze requests if necessary:
+        $freezeStatus = $catalog->checkFunction('freezeHolds', compact('patron'));
+        $view->cancelResults = $freezeStatus
+            ? $this->holds()->freezeHolds($catalog, $patron) : [];
+        // If we need to confirm
+        if (!is_array($view->cancelResults)) {
+            return $view->cancelResults;
+        }
+
+        // Process unfreeze requests if necessary:
+        $unfreezeStatus = $catalog->checkFunction('freezeHolds', compact('patron'));
+        $view->cancelResults = $unfreezeStatus
+            ? $this->holds()->unfreezeHolds($catalog, $patron) : [];
+        // If we need to confirm
+        if (!is_array($view->cancelResults)) {
+            return $view->cancelResults;
+        }
+
         // By default, assume we will not need to display a cancel form:
         $view->cancelForm = false;
 

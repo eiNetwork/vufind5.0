@@ -791,6 +791,45 @@ class EINetwork extends SierraRest implements
         return $results;
     }
 
+    /**
+     * Freeze Holds
+     *
+     * This is responsible for (un)freezing a patron's holds.
+     *
+     * @param array  $holds  The holds to freeze
+     *
+     * @throws ILSException
+     * @return mixed          Associative array of patron info on successful login,
+     * null on unsuccessful login.
+     */
+    public function freezeHolds($holds, $doFreeze){
+        // invalidate the cached data
+        $this->sessionCache->staleHoldsHash = md5(json_encode($this->sessionCache->holds));
+
+        $success = true;
+        $overDriveHolds = [];
+        for($i=0; $i<count($holds["details"]); $i++ )
+        {
+            if( substr($holds["details"][$i], 0, 9) == "OverDrive" ) {
+                $overDriveHolds[] = substr(array_splice($holds["details"], $i, 1)[0], 9);
+                $i--;
+            }
+        }
+
+        // grab a copy of this because the OverDrive functionality can wipe it
+        $cachedHolds = $this->sessionCache->holds;
+
+        // process the sierra holds
+        foreach( $holds["details"] ?? [] as $thisHold ) {
+            $result = $this->makeRequest(
+                ['v5', 'patrons', 'holds', $thisHold], json_encode(['freeze' => $doFreeze]), 'PUT', $holds["patron"]
+            );
+            $success &= empty($result['code']);
+        }
+
+        return ["success" => $success];
+    }
+
     public function getNumberOfHoldsOnRecord($id) {
         if( $this->memcached->get("numberOfHoldsOnID" . $id) !== null ) {
             $holdQueueLength = $this->getBibRecord($id, "holdCount");

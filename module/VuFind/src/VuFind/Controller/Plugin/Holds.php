@@ -188,6 +188,198 @@ class Holds extends AbstractRequestBase
     }
 
     /**
+     * Process freeze requests.
+     *
+     * @param \VuFind\ILS\Connection $catalog ILS connection object
+     * @param array                  $patron  Current logged in patron
+     *
+     * @return array                          The result of the freeze, an
+     * associative array keyed by item ID (empty if no freezes performed)
+     */
+    public function freezeHolds($catalog, $patron)
+    {
+        // Retrieve the flashMessenger helper:
+        $flashMsg = $this->getController()->flashMessenger();
+        $params = $this->getController()->params();
+
+        // Pick IDs to freeze based on which button was pressed:
+        $all = $params->fromPost('freezeAll');
+        $selected = $params->fromPost('freezeSelected');
+        if (!empty($all)) {
+            $details = $params->fromPost('freezeAllIDS');
+        } else if (!empty($selected)) {
+            $details = $params->fromPost('freezeSelectedIDS');
+        } else {
+            // No button pushed -- no action needed
+            return [];
+        }
+
+        if (!empty($details)) {
+            // Confirm?
+            if ($params->fromPost('confirm') === "0") {
+                if ($params->fromPost('freezeAll') !== null) {
+                    return $this->getController()->confirm(
+                        'hold_cancel_all',
+                        $this->getController()->url()->fromRoute('myresearch-holds'),
+                        $this->getController()->url()->fromRoute('myresearch-holds'),
+                        'confirm_hold_freeze_all_text',
+                        [
+                            'freezeAll' => 1,
+                            'freezeAllIDS' => $params->fromPost('freezeAllIDS')
+                        ]
+                    );
+                } else {
+                    $freezeIDs = $params->fromPost('freezeSelectedIDS');
+                    $replacement = ((count($freezeIDs) > 1) ? (count($freezeIDs) . " requests") : "request") . "?<br>";
+                    foreach($params->fromPost('holdTitles') as $title) {
+                        $replacement .= "<br><span class=\"bold\">Title: </span>" . urldecode($title);
+                    }
+                    $msg = [['msg' => 'confirm_hold_freeze_selected_text',
+                             'html' => true,
+                             'tokens' => ['%%holdData%%' => $replacement]]];
+                    return $this->getController()->confirm(
+                        'hold_freeze_selected',
+                        $this->getController()->url()->fromRoute('myresearch-holds'),
+                        $this->getController()->url()->fromRoute('myresearch-holds'),
+                        $msg,
+                        [
+                            'freezeSelected' => 1,
+                            'freezeSelectedIDS' => $freezeIDs
+                        ]
+                    );
+                }
+            }
+
+            foreach ($details as $info) {
+                // If the user input contains a value not found in the session
+                // whitelist, something has been tampered with -- abort the process.
+                if (!in_array($info, $this->getSession()->validIds)) {
+                    $flashMsg->addMessage('error_inconsistent_parameters', 'error');
+                    return [];
+                }
+            }
+
+            // Add Patron Data to Submitted Data
+            $freezeResults = $catalog->freezeHolds(
+                ['details' => $details, 'patron' => $patron], true
+            );
+            if ($freezeResults == false) {
+                $flashMsg->addMessage('hold_freeze_fail', 'error');
+            } else {
+                if ($freezeResults['success']) {
+                    $msg = $this->getController()
+                        ->translate((count($details) == 1) ? 'hold_freeze_success_single' : 'hold_freeze_success_multiple');
+                    $flashMsg->addMessage($msg, 'info');
+                } else {
+                    $msg = $this->getController()
+                        ->translate((count($details) == 1) ? 'hold_freeze_fail_single' : 'hold_freeze_fail_multiple');
+                    $flashMsg->addMessage($msg, 'error');
+                }
+                return $freezeResults;
+            }
+        } else {
+             $flashMsg->addMessage('hold_empty_selection', 'error');
+        }
+        return [];
+    }
+
+    /**
+     * Process unfreeze requests.
+     *
+     * @param \VuFind\ILS\Connection $catalog ILS connection object
+     * @param array                  $patron  Current logged in patron
+     *
+     * @return array                          The result of the unfreeze, an
+     * associative array keyed by item ID (empty if no unfreezes performed)
+     */
+    public function unfreezeHolds($catalog, $patron)
+    {
+        // Retrieve the flashMessenger helper:
+        $flashMsg = $this->getController()->flashMessenger();
+        $params = $this->getController()->params();
+
+        // Pick IDs to unfreeze based on which button was pressed:
+        $all = $params->fromPost('unfreezeAll');
+        $selected = $params->fromPost('unfreezeSelected');
+        if (!empty($all)) {
+            $details = $params->fromPost('unfreezeAllIDS');
+        } else if (!empty($selected)) {
+            $details = $params->fromPost('unfreezeSelectedIDS');
+        } else {
+            // No button pushed -- no action needed
+            return [];
+        }
+
+        if (!empty($details)) {
+            // Confirm?
+            if ($params->fromPost('confirm') === "0") {
+                if ($params->fromPost('unfreezeAll') !== null) {
+                    return $this->getController()->confirm(
+                        'hold_cancel_all',
+                        $this->getController()->url()->fromRoute('myresearch-holds'),
+                        $this->getController()->url()->fromRoute('myresearch-holds'),
+                        'confirm_hold_unfreeze_all_text',
+                        [
+                            'unfreezeAll' => 1,
+                            'unfreezeAllIDS' => $params->fromPost('unfreezeAllIDS')
+                        ]
+                    );
+                } else {
+                    $unfreezeIDs = $params->fromPost('unfreezeSelectedIDS');
+                    $replacement = ((count($unfreezeIDs) > 1) ? (count($unfreezeIDs) . " requests") : "request") . "?<br>";
+                    foreach($params->fromPost('holdTitles') as $title) {
+                        $replacement .= "<br><span class=\"bold\">Title: </span>" . urldecode($title);
+                    }
+                    $msg = [['msg' => 'confirm_hold_unfreeze_selected_text',
+                             'html' => true,
+                             'tokens' => ['%%holdData%%' => $replacement]]];
+                    return $this->getController()->confirm(
+                        'hold_unfreeze_selected',
+                        $this->getController()->url()->fromRoute('myresearch-holds'),
+                        $this->getController()->url()->fromRoute('myresearch-holds'),
+                        $msg,
+                        [
+                            'unfreezeSelected' => 1,
+                            'unfreezeSelectedIDS' => $unfreezeIDs
+                        ]
+                    );
+                }
+            }
+
+            foreach ($details as $info) {
+                // If the user input contains a value not found in the session
+                // whitelist, something has been tampered with -- abort the process.
+                if (!in_array($info, $this->getSession()->validIds)) {
+                    $flashMsg->addMessage('error_inconsistent_parameters', 'error');
+                    return [];
+                }
+            }
+
+            // Add Patron Data to Submitted Data
+            $unfreezeResults = $catalog->freezeHolds(
+                ['details' => $details, 'patron' => $patron], false
+            );
+            if ($unfreezeResults == false) {
+                $flashMsg->addMessage('hold_unfreeze_fail', 'error');
+            } else {
+                if ($unfreezeResults['success']) {
+                    $msg = $this->getController()
+                        ->translate((count($details) == 1) ? 'hold_unfreeze_success_single' : 'hold_unfreeze_success_multiple');
+                    $flashMsg->addMessage($msg, 'info');
+                } else {
+                    $msg = $this->getController()
+                        ->translate((count($details) == 1) ? 'hold_unfreeze_fail_single' : 'hold_unfreeze_fail_multiple');
+                    $flashMsg->addMessage($msg, 'error');
+                }
+                return $unfreezeResults;
+            }
+        } else {
+             $flashMsg->addMessage('hold_empty_selection', 'error');
+        }
+        return [];
+    }
+
+    /**
      * Process update requests.
      *
      * @param \VuFind\ILS\Connection $catalog ILS connection object

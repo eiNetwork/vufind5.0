@@ -383,6 +383,42 @@ class Connection implements TranslatorAwareInterface, LoggerAwareInterface
     }
 
     /**
+     * Check Freeze Holds
+     *
+     * A support method for checkFunction(). This is responsible for checking
+     * the driver configuration to determine if the system supports Freezing Holds.
+     *
+     * @param array $functionConfig The Cancel Hold configuration values
+     * @param array $params         An array of function-specific params (or null)
+     *
+     * @return mixed On success, an associative array with specific function keys
+     * and values either for freezing holds via a form or a URL;
+     * on failure, false.
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
+     */
+    protected function checkMethodfreezeHolds($functionConfig, $params)
+    {
+        $response = false;
+
+        // We can't pass exactly accurate parameters to checkCapability in this
+        // context, so we'll just pass along $params as the best available
+        // approximation.
+        if (isset($this->config->freeze_holds_enabled)
+            && $this->config->freeze_holds_enabled == true
+            && $this->checkCapability('freezeHolds', [$params ?: []])
+        ) {
+            $response = ['function' => "freezeHolds"];
+        } elseif (isset($this->config->freeze_holds_enabled)
+            && $this->config->freeze_holds_enabled == true
+            && $this->checkCapability('getFreezeHoldLink', [$params ?: []])
+        ) {
+            $response = ['function' => "getFreezeHoldLink"];
+        }
+        return $response;
+    }
+
+    /**
      * Check Renewals
      *
      * A support method for checkFunction(). This is responsible for checking
