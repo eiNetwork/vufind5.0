@@ -1118,6 +1118,23 @@ class MyResearchController extends AbstractBase
             }
         }
 
+        // see if we are trying to change the notification email
+        if( $this->params()->fromPost('changeEmail') ) {
+            if( $this->params()->fromPost('placeHold') ) {
+                $view->updateResults = $this->holds()->updateHolds($catalog, $patron);
+                $view->setTemplate('blankModal');
+                $view->suppressFlashMessages = true;
+                $view->reloadParent = true;
+                return $view;
+            } else {
+                $view->setTemplate('record/email');
+                $view->referrer = $this->params()->fromPost('referrer');
+                $view->skip = true;
+                $view->ids = $this->params()->fromPost('ids');
+                return $view;
+            }
+        }
+
         // Process cancel requests if necessary:
         $cancelStatus = $catalog->checkFunction('cancelHolds', compact('patron'));
         $view->cancelResults = $cancelStatus

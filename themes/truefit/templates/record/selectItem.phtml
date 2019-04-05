@@ -69,9 +69,5 @@
         $(item).parents('tr').find('button').removeClass("hovered");
       }
     }
-
-    function SelectItem(chosenID) {
-      Lightbox.get('Record', 'Hold', {'id':'<?=$this->id?>','hashKey':'<?=$this->hashKey?>'}, {'gatheredDetails':{'itemId':chosenID}});
-    }
   </script>
 </div>

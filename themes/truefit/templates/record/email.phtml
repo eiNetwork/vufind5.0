@@ -1,0 +1,41 @@
+<?=$this->flashmessages(false)?>
+<h2><?=$this->transEsc("Change Notification Email")?></h2>
+<div class="hold-form">
+  <div style="margin:auto">
+    <div class="textBoxContainer">
+      <input type="text" name="email" id="update_email" value="Enter your Email" onfocus="if (this.value=='Enter your Email') {this.value = '';this.style.color='#3d3d3d';}" onblur="if (this.value=='') {this.value = 'Enter your Email';this.style.color='#949494';}" class="form-control textBox"/>
+    </div>
+  </div>
+</div>
+<div class="modal-footer">
+  <div id="holdFooter">
+    <form action="" class="form-horizontal" method="post" name="placeHold" target="loginFrame">
+      <input type="hidden" name="updateODEmail" value="false">
+      <input type="hidden" name="placeHold" value="1">
+      <input type="hidden" name="changeEmail" value="true">
+      <input type="hidden" name="referrer" value="<?=$this->referrer?>">
+      <? foreach( $this->ids as $id ): ?>
+        <input type="hidden" name="updateIDs[]" value="<?=$id?>">
+      <? endforeach; ?>
+      <button class="btn-default btn-wide" onclick="$('#holdFooter').css('display', 'none');$('#loadingFooter').css('display', 'block');ProcessHoldForm();">Okay</button>
+    </form>
+  </div>
+  <div id="loadingFooter" style="display:none;padding:9px;color:#3d3d3d">
+    <span><i class="fa fa-spinner"></i></span>
+    <span>&nbsp;Loading...</span>
+  </div>
+
+  <script type="text/javascript">
+    function ProcessHoldForm() {
+      $('form[name="placeHold"]').children('input[name="updateODEmail"]').attr("value", document.getElementById('update_email').value);
+      var currUrl = VuFind.lightbox.getCurrentUrl();
+      if( currUrl ) {
+        $('form[name="placeHold"]').attr("action", currUrl);
+      } else {
+        $('form[name="placeHold"]').attr("action", VuFind.lightbox.getOriginalUrl());
+      }
+      $('form[name="placeHold"]').get(0).submit();
+      return false;
+    }
+  </script>
+</div>

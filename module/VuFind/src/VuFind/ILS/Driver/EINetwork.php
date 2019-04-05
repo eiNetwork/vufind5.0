@@ -938,6 +938,12 @@ class EINetwork extends SierraRest implements
         // grab a copy of this because the OverDrive functionality can wipe it
         $cachedHolds = $this->sessionCache->holds;
 
+        // process the overdrive holds
+        foreach($overDriveHolds as $overDriveID ) {
+            $overDriveResults = $this->connector->updateHold($overDriveID, $holds["newEmail"]);
+            $success &= $overDriveResults->status;
+        }
+
         // compare the sierra holds to my list of holds (workaround for item-level stuff)
         if( count($holds["details"]) > 0 ) {
             foreach( $holds["details"] as $key => $thisUpdateId ) {

@@ -221,6 +221,9 @@ class CartController extends AbstractBase
         } else if (strlen($this->params()->fromPost('changePickup', '')) > 0) {
             $controller = 'MyResearch';
             $action = 'Holds';
+        } else if (strlen($this->params()->fromPost('changeEmail', '')) > 0) {
+            $controller = 'MyResearch';
+            $action = 'Holds';
         } else if (strlen($this->params()->fromPost('freeze', '')) > 0) {
             $controller = 'MyResearch';
             $action = 'Holds';

@@ -584,6 +584,40 @@ class OverdriveConnector implements LoggerAwareInterface,
     }
 
     /**
+     * @param string $overDriveId
+     * @param string $newEmail
+     * @return \stdClass Object with result
+     */
+    public function updateHold($overDriveId, $newEmail){
+        $holdResult = $this->getResultObject();
+        $this->debug("OverdriveConnector: cancelHold");
+        //$this->debug(print_r($user,true));
+        if (!$user = $this->getUser()) {
+            $this->error("user is not logged in", false, true);
+            return $holdResult;
+        }
+        if ($config = $this->getConfig()) {
+            $url = $config->circURL . "/v1/patrons/me/holds/$overDriveId";
+            $params = array(
+                'reserveId' => $overDriveId,
+                'emailAddress' => $newEmail
+            );
+            $response = $this->callPatronUrl(
+                $user["cat_username"], $user["cat_password"], $url, $params, 
+                "PUT"
+            );
+
+            if ($response === true){
+                $holdResult->status = true;
+                $holdResult->msg = 'Your request was updated successfully.';
+            } else {
+                $holdResult->msg = 'There was an error updating your request.  ' . ($response->message ?? "");
+            }
+        }
+        return $holdResult;
+    }
+
+    /**
      * Cancel Hold
      * Cancel and existing Overdrive Hold
      *
@@ -1132,9 +1166,9 @@ class OverdriveConnector implements LoggerAwareInterface,
                 if (!empty($response)) {
                     $result->status = true;
                     $result->message = 'hold_place_success_html';
-                    $result->data = $response->holds;
+                    $result->data = $response->holds ?? [];
                     //Check for holds ready for chechout
-                    foreach ($response->holds as $key => $hold) {
+                    foreach ($response->holds ?? [] as $key => $hold) {
                         if (!$hold->autoCheckout
                             && $hold->holdListPosition == 1
                         ) {
@@ -1155,7 +1189,7 @@ class OverdriveConnector implements LoggerAwareInterface,
                             (string)$config->displayDateFormat
                         );
                     }
-                    $this->sessionContainer->holds = $response->holds;
+                    $this->sessionContainer->holds = $response->holds ?? [];
                 } else {
                     $result->code = 'od_code_connection_failed';
                 }
