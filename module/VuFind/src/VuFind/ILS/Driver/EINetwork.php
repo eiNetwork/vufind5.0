@@ -804,6 +804,12 @@ class EINetwork extends SierraRest implements
         // grab a copy of this because the OverDrive functionality can wipe it
         $cachedHolds = $this->sessionCache->holds;
 
+        // process the overdrive holds
+        foreach($overDriveHolds as $overDriveID ) {
+            $overDriveResults = $this->connector->freezeHold($overDriveID, $doFreeze);
+            $success &= $overDriveResults->status;
+        }
+
         // process the sierra holds
         foreach( $holds["details"] ?? [] as $thisHold ) {
             $result = $this->makeRequest(

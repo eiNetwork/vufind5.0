@@ -617,6 +617,46 @@ class OverdriveConnector implements LoggerAwareInterface,
         return $holdResult;
     }
 
+    /**
+     * @param string $overDriveId
+     * @param boolean $freeze
+     * @return \stdClass Object with result
+     */
+    public function freezeHold($overDriveId, $doFreeze){
+        $holdResult = $this->getResultObject();
+        $this->debug("OverdriveConnector: freezeHold");
+
+        if (!$user = $this->getUser()) {
+            $this->error("user is not logged in", false, true);
+            return $holdResult;
+        }
+        if ($config = $this->getConfig()) {
+            $url = $config->circURL . "/v1/patrons/me/holds/$overDriveId/suspension";
+            if( $doFreeze ) {
+                $params = array(
+                    "emailAddress" => $user["email"],
+                    "suspensionType" => "indefinite"
+                );
+                $response = $this->callPatronUrl(
+                    $user["cat_username"], $user["cat_password"], $url, $params,
+                    "POST"
+                );
+            } else {
+                $response = $this->callPatronUrl(
+                    $user["cat_username"], $user["cat_password"], $url, null, 
+                    "DELETE"
+                );
+            }
+
+            if ($response === true || ($doFreeze && ($response->reserveId ?? null == $overDriveId) && isset($response->holdSuspension))){
+                $holdResult->status = true;
+                $holdResult->msg = 'Your request was ' . ($doFreeze ? "" : "un") . 'frozen successfully.';
+            } else {
+                $holdResult->msg = 'There was an error ' . ($doFreeze ? "" : "un") . 'freezing your request.  ' . ($response->message ?? "");
+            }
+        }
+        return $holdResult;
+    }
 
     /**
      * Return Resource
