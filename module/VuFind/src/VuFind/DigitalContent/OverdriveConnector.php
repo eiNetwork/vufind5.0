@@ -611,7 +611,7 @@ class OverdriveConnector implements LoggerAwareInterface,
             if ($response) {
                 $holdResult->status = true;
             } else {
-                $holdResult->msg = $response->message;
+                $holdResult->msg = $response->message ?? null;
             }
         }
         return $holdResult;

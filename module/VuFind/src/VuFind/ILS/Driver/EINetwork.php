@@ -756,30 +756,15 @@ class EINetwork extends SierraRest implements
         // grab a copy of this because the OverDrive functionality can wipe it
         $cachedHolds = $this->sessionCache->holds;
 
-/* VF5UPGRADE
         // process the overdrive holds
         foreach($overDriveHolds as $overDriveID ) {
-            $overDriveResults = $this->cancelOverDriveHold($overDriveID, $holds["patron"]);
-            $success &= $overDriveResults["result"];
+            $overDriveResults = $this->connector->cancelHold($overDriveID);
             $results['count']++;
             $results['items'][$overDriveID] = ['item_id' => $overDriveID,
-                                               'success' => $overDriveResults["result"],
-                                               'status' => $overDriveResults["result"] ? 'hold_cancel_success' : 'hold_cancel_fail',
-                                               'sysMessage => $overDriveResults["result"] ? null : $this->formatErrorMessage($result['description'])];
+                                               'success' => $overDriveResults->status,
+                                               'status' => $overDriveResults->status ? 'hold_cancel_success' : 'hold_cancel_fail',
+                                               'sysMessage' => $overDriveResults->status ? null : $this->formatErrorMessage($overDriveResults->msg)];
         }
-
-        // compare the sierra holds to my list of holds (workaround for item-level stuff)
-        if( count($holds["details"]) > 0 ) {
-            foreach( $holds["details"] as $key => $thisCancelId ) {
-                foreach( $cachedHolds as $thisHold ) {
-                    if( $thisHold["hold_id"] == $thisCancelId && isset( $thisHold["item_id"] ) ) {
-                        $success &= $this->updateHoldDetailed($holds["patron"], "requestId", "patronId", "cancel", "title", $thisHold["item_id"], null);
-                        unset($holds["details"][$key]);
-                    }
-                }
-            }
-        }
-*/
 
         // process the sierra holds
         if( count($cancelDetails["details"]) > 0 ) {
