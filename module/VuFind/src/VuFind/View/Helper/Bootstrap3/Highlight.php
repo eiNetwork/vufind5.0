@@ -44,6 +44,6 @@ class Highlight extends \VuFind\View\Helper\Root\Highlight
     public function __construct()
     {
         $this->startTag = '<mark>';
-        $this->endTag = '</mark>';
+        $this->endTag = '<span class="recessedHighlight"></span></mark>';
     }
 }

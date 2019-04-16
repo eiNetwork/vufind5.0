@@ -454,7 +454,6 @@ JS;
           HideLocationsToolTip();
         }
       }
-/**/
     </script>
     <?php if ($this->recaptcha()->active()): ?>
       <?=$this->inlineScript(\Zend\View\Helper\HeadScript::FILE, "https://www.google.com/recaptcha/api.js?onload=recaptchaOnLoad&render=explicit&hl=" . $this->layout()->userLang, 'SET')?>

@@ -113,6 +113,8 @@ class InjectHighlightingListener
                 if (!isset($hl[0]) || $hl[0] != 'false') {
                     $this->active = true;
                     $params->set('hl', 'true');
+                    $params->set('hl.snippets', '10');
+                    $params->set('hl.fl', $this->fieldList);
                     $params->set('hl.simple.pre', '{{{{START_HILITE}}}}');
                     $params->set('hl.simple.post', '{{{{END_HILITE}}}}');
 

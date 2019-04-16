@@ -487,8 +487,8 @@ class SearchController extends AbstractSolrSearch
     {
         // Special case -- redirect tag searches.
         $tag = $this->params()->fromQuery('tag');
+        $query = $this->getRequest()->getQuery();
         if (!empty($tag)) {
-            $query = $this->getRequest()->getQuery();
             $query->set('lookfor', $tag);
             $query->set('type', 'tag');
         }
@@ -509,6 +509,41 @@ class SearchController extends AbstractSolrSearch
         if( $this->params()->fromQuery('lookfor') == "Search For..." ) {
             $this->getRequest()->getQuery()->set('lookfor', "");
         }
+
+        // make everything case insensitive
+        if( $thisLF = $this->params()->fromQuery('lookfor') ) {
+            $bits = explode(" ", $thisLF);
+            foreach( $bits as $index => $thisBit ) {
+                if( !in_array($thisBit, ["AND", "OR", "NOT"]) ) {
+                    $bits[$index] = strtolower($thisBit);
+                }
+            }
+            $queryArgs = $query->toArray();
+            $queryArgs["lookfor"] = implode(" ", $bits);
+            $query->fromArray($queryArgs);
+        }
+        $lfIndex = 0;
+        while( $thisLF = $this->params()->fromQuery('lookfor' . $lfIndex) ) {
+            $queryArgs = $query->toArray();
+            foreach( $thisLF as $stIndex => $thisSearchTerm ) {
+                $bits = explode(" ", $thisSearchTerm);
+                foreach( $bits as $index => $thisBit ) {
+                    if( !in_array($thisBit, ["AND", "OR", "NOT"]) ) {
+                        $bits[$index] = strtolower($thisBit);
+                    }
+                }
+                $queryArgs["lookfor" . $lfIndex][$stIndex] = implode(" ", $bits);
+            }
+            $query->fromArray($queryArgs);
+            $lfIndex++;
+        }
+
+        // limit to only needed fields
+        if( $this->getRequest()->getQuery("fl") === null ) {
+            $this->getRequest()->getQuery()->set('fl', $this->getConfig()->LimitedSearchFields->shortList);
+        }
+
+        $this->getRequest()->getQuery()->set('hl.snippets', '10');
 
         // Default case -- standard behavior.
         $view = parent::resultsAction();

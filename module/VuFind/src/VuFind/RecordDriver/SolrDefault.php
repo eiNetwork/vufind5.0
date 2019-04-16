@@ -188,33 +188,70 @@ class SolrDefault extends DefaultRecord
      * @return mixed False if no snippet found, otherwise associative array
      * with 'snippet' and 'caption' keys.
      */
-    public function getHighlightedSnippet()
+    public function getHighlightedSnippet($lookfor="")
     {
         // Only process snippets if the setting is enabled:
         if ($this->snippet) {
+            $highlights = [];
+
             // First check for preferred fields:
             foreach ($this->preferredSnippetFields as $current) {
-                if (isset($this->highlightDetails[$current][0])) {
-                    return [
-                        'snippet' => $this->highlightDetails[$current][0],
-                        'caption' => $this->getSnippetCaption($current)
-                    ];
+                if (count($lookfor) > 0 && isset($this->highlightDetails[$current][0])) {
+                    foreach( $this->highlightDetails[$current] as $thisHighlight ) {
+                        $haystack = strtolower($thisHighlight);
+                        foreach( $lookfor as $index => $value ) {
+                            // make sure it wasnt included in any of the other snippets we already added
+                            foreach( $highlights as $greenLitHighlight ) {
+                                $haystack2 = strtolower($greenLitHighlight["snippet"]);
+                                if( strpos($haystack2, $value) !== false ) {
+                                    unset($lookfor[$index]);
+                                    continue 2;
+                                }
+                            }
+                            if( strpos($haystack, $value) !== false ) {
+                                $highlights[] = [
+                                    'snippet' => $thisHighlight,
+                                    'caption' => $this->getSnippetCaption($current)
+                                ];
+                                unset($lookfor[$index]);
+                            }
+                        }
+                    }
                 }
+            }
+
+            if( count($lookfor) == 0 ) {
+                return $highlights;
             }
 
             // No preferred field found, so try for a non-forbidden field:
             if (isset($this->highlightDetails)
-                && is_array($this->highlightDetails)
+                && is_array($this->highlightDetails) && (count($lookfor) > 0)
             ) {
                 foreach ($this->highlightDetails as $key => $value) {
+                    $haystack = strtolower($value[0]);
                     if ($value && !in_array($key, $this->forbiddenSnippetFields)) {
-                        return [
-                            'snippet' => $value[0],
-                            'caption' => $this->getSnippetCaption($key)
-                        ];
+                        foreach( $lookfor as $index => $value2 ) {
+                            // make sure it wasnt included in any of the other snippets we already added
+                            foreach( $highlights as $greenLitHighlight ) {
+                                $haystack2 = strtolower($greenLitHighlight["snippet"]);
+                                if( strpos($haystack2, $value2) !== false ) {
+                                    unset($lookfor[$index]);
+                                    continue 2;
+                                }
+                            }
+                            if( strpos($haystack, $value2) !== false ) {
+                                $highlights[] = [
+                                    'snippet' => $value[0],
+                                    'caption' => $this->getSnippetCaption($key)
+                                ];
+                                unset($lookfor[$index]);
+                            }
+                        }
                     }
                 }
             }
+            return $highlights;
         }
 
         // If we got this far, no snippet was found:

@@ -158,12 +158,12 @@
         <?php endif; ?>
         <?php if( $showMatch ): ?>
           <?php if( $snippets = $this->driver->getHighlightedSnippet($lookfor) ): ?>
-            <?php foreach( $snippets as $thisSnippet ): /*VF5UPGRADE* ?>
+            <?php foreach( $snippets as $thisSnippet ): ?>
               <tr>
                 <td class="EIN-hide-m itemDetailCategory"><?=($thisSnippet["caption"] ? $thisSnippet["caption"] : "Other")?>:</td>
                 <td>... <?=$this->highlight($thisSnippet["snippet"])?> ...</td>
               </tr>
-            <?php /*VF5UPGRADE*/ endforeach; ?>
+            <?php endforeach; ?>
           <?php elseif( $summary = $this->driver->getSummary() ): ?>
             <?php $cleanSummary = ""; ?>
             <?php $summary = $summary[0] ?? $summary["Summary"]; ?>

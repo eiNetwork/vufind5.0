@@ -1671,7 +1671,7 @@ class SierraRest extends AbstractBase implements TranslatorAwareInterface,
                         ? preg_replace('/^\|a/', '', $item['callNumber']) : '',
                     'duedate' => $duedate,
                     'number' => $volume,
-                    'barcode' => $item['barcode'],
+                    'barcode' => $item['barcode'] ?? null,
                     'sort' => $i
                 ];
                 if ($notes) {
