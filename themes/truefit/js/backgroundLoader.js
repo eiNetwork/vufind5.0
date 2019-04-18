@@ -1,5 +1,3 @@
-/*global path*/
-
 function checkPatronHolds() {
   $('#backgroundLoaderHolds').each( function() {
     $(this).attr("src", "/MyResearch/BackgroundLoader?content=holds");
@@ -16,7 +14,7 @@ function ajaxLoadList(id) {
   $('.ajaxListID' + id).each( function() {
     $.ajax({
       dataType: 'json',
-      url: path + '/AJAX/JSON?method=getListContents',
+      url: VuFind.path + '/AJAX/JSON?method=EINgetListContents',
       data: {id:[id], 
              page:[$(this).find(".ajaxListPage").attr("value")], 
              path:[$(this).find(".ajaxListSortControls").html()], 
@@ -27,7 +25,7 @@ function ajaxLoadList(id) {
 }
 
 function handleListContentResponse(response) {
-  if(response.status == 'OK') {
+  if(response.data.status == 'OK') {
     $('.ajaxListID' + response.data.id).each( function() {
       $(this).find(".ajaxListContents").append(response.data.html);
       $("span.pull-left").css({"display":"none"});

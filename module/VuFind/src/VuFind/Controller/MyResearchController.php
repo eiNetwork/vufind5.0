@@ -873,26 +873,54 @@ class MyResearchController extends AbstractBase
         try {
             $runner = $this->serviceLocator->get('VuFind\Search\SearchRunner');
 
-            // We want to merge together GET, POST and route parameters to
-            // initialize our search object:
-            $request = $this->getRequest()->getQuery()->toArray()
-                + $this->getRequest()->getPost()->toArray()
-                + ['id' => $this->params()->fromRoute('id')];
+            $lists = [];
+            if( !$this->params()->fromRoute('id') && !$this->params()->fromQuery('id') ) {
+                // make sure they are logged in
+                if (!$this->getUser()) {
+                    return $this->forceLogin();
+                }
 
-            // Set up listener for recommendations:
-            $rManager = $this->serviceLocator
-                ->get('VuFind\Recommend\PluginManager');
-            $setupCallback = function ($runner, $params, $searchId) use ($rManager) {
-                $listener = new RecommendListener($rManager, $searchId);
-                $listener->setConfig(
-                    $params->getOptions()->getRecommendationSettings()
-                );
-                $listener->attach($runner->getEventManager()->getSharedManager());
-            };
+                foreach($this->getUser()->getLists() as $thisList) {
+                    if( !$thisList->isBookCart() ) {
+                        $lists[] = $thisList;
+                    }
+                }
+            } else {
+                $lists[] = $this->getTable('UserList')->getExisting($this->params()->fromRoute('id') ? $this->params()->fromRoute('id') : $this->params()->fromQuery('id'));
+            }
 
-            $results = $runner->run($request, 'Favorites', $setupCallback);
+            $results = [];
+            $listFound = !isset($_COOKIE["mostRecentList"]);
+            foreach( $lists as $thisList ) {
+                // We want to merge together GET, POST and route parameters to
+                // initialize our search object:
+                $request = $this->getRequest()->getQuery()->toArray()
+                    + $this->getRequest()->getPost()->toArray()
+                    + ['id' => $this->params()->fromRoute('id')];
+
+                // Set up listener for recommendations:
+                $rManager = $this->serviceLocator
+                    ->get('VuFind\Recommend\PluginManager');
+                $setupCallback = function ($runner, $params, $searchId) use ($rManager) {
+                    $listener = new RecommendListener($rManager, $searchId);
+                    $listener->setConfig(
+                        $params->getOptions()->getRecommendationSettings()
+                    );
+                    $listener->attach($runner->getEventManager()->getSharedManager());
+                };
+
+                if( !$listFound && $_COOKIE["mostRecentList"] == $thisList->id ) {
+                    $listFound = true;
+                }
+
+                $results[] = ['list' => $thisList, 'items' => ((!$this->params()->fromRoute('id') && !$this->params()->fromQuery('id')) ? [] : $runner->run($request, 'Favorites', $setupCallback))];
+            }
+
+            $args = $this->getRequest()->getQuery()->toArray();
+            $listToShow = ($listFound && isset($_COOKIE["mostRecentList"])) ? $_COOKIE["mostRecentList"] : $lists[0]->id;
+            $sort = isset($args["sort"]) ? $args["sort"] : "title";
             return $this->createViewModel(
-                ['params' => $results->getParams(), 'results' => $results]
+                ['results' => $results, 'showList' => $listToShow, 'sort' => $sort]
             );
         } catch (ListPermissionException $e) {
             if (!$this->getUser()) {

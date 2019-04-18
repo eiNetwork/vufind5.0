@@ -1,0 +1,6 @@
+<?
+  $user = $this->auth()->isLoggedIn();
+  foreach($this->results as $thisResult) {
+    echo $this->record($thisResult)->getListEntry($this->list, $user);
+  }
+?>

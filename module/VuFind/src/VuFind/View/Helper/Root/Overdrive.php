@@ -65,6 +65,10 @@ class Overdrive extends \Zend\View\Helper\AbstractHelper
      */
     public function showMyContentLink()
     {
+        if( !$this->connector ) {
+            return false;
+        }
+
         $config = $this->connector->getConfig();
         if ($config->showMyContent == "always") {
             return true;

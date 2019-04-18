@@ -241,6 +241,29 @@ class UserList extends RowGateway implements \VuFind\Db\Table\DbTableAwareInterf
         return $results->count() > 0;
     }
 
+
+    /**
+     * How many items does this list?
+     *
+     * @return int
+     */
+    public function count()
+    {
+        $listId = $this->id;
+        $callback = function ($select) use ($listId) {
+            $select->columns(
+                [
+                    '*'
+                ]
+            );
+            $select->where->equalTo('list_id', $listId)
+                          ->equalTo('hideFlag', 'N');
+        };
+        $table = $this->getDbTable('UserResource');
+        $results = $table->select($callback);
+        return $results->count();
+    }
+
     /**
      * Destroy the list.
      *

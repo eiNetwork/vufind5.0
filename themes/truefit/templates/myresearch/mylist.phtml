@@ -1,0 +1,223 @@
+<?
+  // Convenience variable:
+  $account = $this->auth()->getManager();
+  $user = $this->auth()->isLoggedIn();
+  $isBookCart = (count($this->results) == 1) && ($this->results[0]["list"]->title == "Book Cart");
+
+  // Set up page title:
+  $this->headTitle($isBookCart ? $this->results[0]["list"]->title : $this->translate('Lists'));
+
+  // Set up breadcrumbs:
+  $currPage = $isBookCart ? 'List' : 'Favorites';
+  $this->layout()->breadcrumbs = '<li><a href="' .  $this->url('myresearch-home') . '">' . $this->transEsc('Your Account') . '</a></li> <li class="active">' . $this->transEsc($currPage) . '</li>';
+
+  // Load Javascript dependencies into header:
+  $this->headScript()->appendFile("check_item_statuses.js");
+?>
+
+<?=$this->flashmessages()?>
+
+<div class="EIN-col-m-12 padded">
+  <? if( count($this->results) > 0 && !$isBookCart ): ?>
+    <div class="EIN-hide-m EIN-col-t-3 EIN-col-3 accordionButtonsLeft">
+      <div class="facetTitle">Lists</div>
+      <? foreach($this->results as $thisResult): ?>
+        <? $list = $thisResult["list"]; ?>    
+        <div class="panel-heading">
+          <h4 class="panel-title">
+            <a data-toggle="collapse" data-parent="#listAccordion" href="#details<?=$list->id?>" class="collapsed leftTab" onclick="setTimeout( function() { createCookie('mostRecentList','<?=$list->id?>'); ajaxLoadList('<?=$list->id?>'); $('#sortButton<?=$list->id?>').css('width', $('#sortButtonDropdown<?=$list->id?>').children().outerWidth())}, 10);"><?=$list->title?><span class="badge"><?=$list->count()?></span></a>
+            <div class="openAccordionTab"></div>
+          </h4>
+        </div>
+      <? endforeach; ?>
+      <div class="panel-heading">
+        <h4 class="panel-title">
+          <a onclick="Lightbox.get('MyResearch','editList',{'id':'NEW'})" class="collapsed leftTab">Create New List</a>
+          <div class="openAccordionTab"></div>
+        </h4>
+      </div>
+      <div class="panel-heading"></div>
+    </div>
+    <div class="EIN-col-m-12 EIN-col-t-9 EIN-col-9">
+      <h1 class="pageTitle EIN-hide-t EIN-hide"><?=($isBookCart ? ($this->results[0]["list"]->title) : "Lists")?></h1>
+  <? else: ?>
+    <div class="EIN-col-m-12">
+      <h1 class="pageTitle"><?=($isBookCart ? ($this->results[0]["list"]->title) : "Lists")?></h1>
+  <? endif; ?>
+    <? if( count($this->results) == 0 ): ?>
+      <div class="EIN-col-m-12" style="height:20px"></div>
+      <div class="center">You have not created any lists yet.</div>
+    <? else: ?>
+      <? if( !$isBookCart ): ?>
+        <div class="panel-group" id="listAccordion">
+      <? endif; ?>
+      <? foreach($this->results as $thisResult): ?>
+        <? $list = $thisResult["list"]; ?>
+        <? if( !$isBookCart ): ?>
+          <div class="panel panel-default listAccordion">
+            <div class="panel-heading EIN-hide-t EIN-hide">
+              <h4 class="panel-title">
+                <a data-toggle="collapse" data-parent="#listAccordion" href="#details<?=$list->id?>" class="collapsed" onclick="setTimeout( function() { createCookie('mostRecentList','<?=$list->id?>'); ajaxLoadList('<?=$list->id?>'); $('#sortButton<?=$list->id?>').css('width', $('#sortButtonDropdown<?=$list->id?>').children().outerWidth())}, 10);"><?=$list->title?><span class="badge"><?=$list->count()?></span><i class="fa fa-caret-down"></i><i class="fa fa-caret-up"></i></a>
+              </h4>
+            </div>
+            <div id="details<?=$list->id?>" class="panel-collapse collapse">
+        <? endif; ?>
+        <div class="panel-body ajaxListID<?=$list->id?>">
+          <input type="hidden" class="ajaxListPage" value="1">
+          <input type="hidden" class="ajaxListSort" value="<?=$this->sort?>">
+          <? if ($list && !empty($list->description)): ?>
+            <p><?=$this->escapeHtml($list->description)?></p>
+          <? endif; ?>
+          <? if (isset($list) && !($list->isBookCart())): ?>
+            <? if ($list->editAllowed($account->isLoggedIn())): ?>
+              <div class="EIN-col-m-12" style="height:10px"></div>
+              <div class="EIN-col-m-12 center">
+                <button class="btn-alternate btn-wide EIN-hide-m" onclick="Lightbox.get('MyResearch', 'EditList', {'id':'<?=$list->id?>'})"><i class="fa fa-pencil"></i><?=$this->transEsc("edit_list")?></button></td>
+                <button class="btn-alternate btn-wide EIN-hide-m" onclick="Lightbox.get('MyResearch', 'DeleteList', {'id':'<?=$list->id?>'})"><i class="fa fa-trash"></i><?=$this->transEsc("delete_list")?></button></td>
+              </div>
+              <div class="EIN-col-m-6 EIN-hide-t EIN-hide">
+                <button class="btn-alternate leftButton" onclick="Lightbox.get('MyResearch', 'EditList', {'id':'<?=$list->id?>'})"><i class="fa fa-pencil"></i><?=$this->transEsc("edit_list")?></button></td>
+              </div>
+              <div class="EIN-col-m-6 EIN-hide-t EIN-hide">
+                <button class="btn-alternate rightButton" onclick="Lightbox.get('MyResearch', 'DeleteList', {'id':'<?=$list->id?>'})"><i class="fa fa-trash"></i><?=$this->transEsc("delete_list")?></button></td>
+              </div>
+              <div class="EIN-col-m-12" style="height:10px"></div>
+              <div class="EIN-col-m-12">
+                <hr style="margin:5px 0">
+              </div>
+            <? endif; ?>
+          <? endif; ?>
+          <? if ($list->count() > 0): ?>
+            <div class="clearfix hidden-print center">
+              <div class="EIN-hide-m EIN-col-t-12 EIN-col-12" style="height:10px"></div>
+              <table style="margin:auto;display:inline-block">
+                <tr style="display:none">
+                  <td><span><strong><?=$this->localizedNumber($list->count())?></strong> titles sorted by </span></td>
+                  <td style="padding-left:5px" class="ajaxListSortControls"><?=$this->currentPath()?></td>
+                </tr>
+              </table>
+            </div>
+          <? endif; ?>
+          <? if ($list->count() > 0): ?>
+            <form class="form-inline" method="post" action="<?=$this->url('cart-myresearchbulk')?>" target="loginFrame">
+              <span class="ajaxListBulkButtons"></span>
+              <div style="display:none"></div>
+            </form>
+            <span class="ajaxListContents"><div class="loadingWall"><i class="fa fa-spinner"></i>&nbsp;Loading...</div></span>
+          <? else: ?>
+            <p><?=$this->transEsc('You do not have any saved resources' . ($list->isBookCart() ? " BOOKCART" : ""))?></p>
+          <? endif; ?>
+        </div>
+        <? if( !$isBookCart ): ?>
+            </div>
+          </div>
+        <? endif; ?>
+      <? endforeach; ?>
+      <? if( !$isBookCart ): ?>
+        <script type="text/javascript">
+          $('.panel-heading a').on('click',function(e){
+            // prevent them from dismissing the last open section if we're in tablet or desktop layout
+            if($(document).width() >= 600) {
+              if($($(this).attr("href")).hasClass('in')){
+                e.stopPropagation();
+              }
+              // You can also add preventDefault to remove the anchor behavior that makes the page jump
+              e.preventDefault();
+            }
+          });
+          jQuery(document).ready(function() {
+            $('body').css({"overflow-y":"hidden"});
+            if($(document).width() >= <?=(isset($this->showList) ? 0 : 600)?>) {
+              <? if( isset($this->showList) ): ?>
+                $('div[id="details<?=$this->showList?>"]').parents('.listAccordion').find('.panel-heading a').click();
+              <? else: ?>
+                $('.panel-heading a').first().click();
+              <? endif; ?>
+            }
+            $('body').css({"overflow-y":"auto"});
+            $('#detailsAccordion').css({"min-height":$('.accordionButtonsLeft').height() + "px"});
+            // if they switch from mobile to tablet/desktop, make sure there's an open tab
+            $(window).resize( function() { 
+              if(($(document).width() >= 600) && ($('#listAccordion').find('div .collapse.in').length == 0) ) {
+                $('.panel-heading a').first().click();
+              }
+            });
+          } );
+        </script>
+      <? endif; ?>
+    <? endif; ?>
+    <? if( $isBookCart ): ?>
+      <div class="EIN-col-m-12 EIN-hide-t EIN-hide" style="height:10px"></div>
+      <script type="text/javascript">
+        jQuery(document).ready(function() {
+          ajaxLoadList("<?=$this->results[0]["list"]->id?>");
+        } );
+      </script>
+    <? elseif( count($this->results) == 0 ): ?>
+      <div class="EIN-col-m-12" style="height:20px"></div>
+      <div class="EIN-col-m-12 center">
+        <button class="btn-default btn-wide" onclick="Lightbox.get('MyResearch','editList',{'id':'NEW'})">Create New List</button>
+      </div>
+      <div class="EIN-col-m-12" style="height:10px"></div>
+    <? else: ?>
+      <div class="EIN-col-m-12 EIN-hide-t EIN-hide center">
+        <div class="EIN-col-m-12" style="height:20px"></div>
+        <button class="btn-default btn-wide" onclick="Lightbox.get('MyResearch','editList',{'id':'NEW'})">Create New List</button>
+        <div class="EIN-col-m-12" style="height:10px"></div>
+      </div>
+    <? endif; ?>
+  </div>
+</div>
+<div class="dropdown" id="saveButtonDropdown">
+  <ul role="navigation" class="dropdown-menu standardDropdown manageListDropdown">
+    <? if($user):  foreach($user->getLists() as $list): ?>
+      <li>
+        <form class="removeFromList" method="post" action="<?=$this->url('userList', array('id' => $list->id))?>">
+          <input type="hidden" name="confirm" value="1">
+          <input type="hidden" name="delete" value="">
+          <input type="hidden" name="source" value="">
+          <input type="hidden" name="list" value="<?=$list->id?>">
+          <button class="btn-dropdown btn-standardDropdown" onClick="$(this).parents('.dropdown').siblings('.rightButton').html('<i class=\'fa fa-spinner bwSpinner\'></i>&nbsp;Loading...')"><span class="sr-only">Checked</span><i class="fa fa-check greenCheck"></i><?=$list->title?></button>
+        </form>
+        <form class="addToList" method="post" action="">
+          <input type="hidden" name="submit" value="1">
+          <input type="hidden" name="id" value="">
+          <input type="hidden" name="source" value="">
+          <input type="hidden" name="list" value="<?=$list->id?>">
+          <button class="btn-dropdown btn-standardDropdown" onClick="$(this).parents('.dropdown').siblings('.rightButton').html('<i class=\'fa fa-spinner bwSpinner\'></i>&nbsp;Loading...')"><?=$list->title?></button>
+        </form>
+      </li>
+    <? endforeach;  endif; ?>
+    <li><button class="btn-dropdown btn-standardDropdown newListButton" onclick="">New list...</button></li>
+    <hr class="stretchHR">
+    <li><span class="modalNote">Click a non-checked list to add this title.  Click a checked list to remove this title.</span></li>
+  </ul>
+</div>
+<script type="text/javascript">
+  function moveSaveDropdown(button, itemData) {
+    $(button).after($("#saveButtonDropdown"));
+    itemData = JSON.parse(itemData.replace(/'/g, "\""));
+    $("#saveButtonDropdown").find(".removeFromList").each( function() {
+      var myId = parseInt($(this).find("input[name='list']").attr("value"));
+      if( itemData.lists.indexOf(myId) != -1 ) {
+        $(this).find("input[name='delete']").attr("value", itemData.id.split("|")[1]);
+        $(this).find("input[name='source']").attr("value", itemData.id.split("|")[0]);
+        $(this).css({"display":"inherit"});
+      } else {
+        $(this).css({"display":"none"});
+      }
+    });
+    $("#saveButtonDropdown").find(".addToList").each( function() {
+      var myId = parseInt($(this).find("input[name='list']").attr("value"));
+      if( itemData.lists.indexOf(myId) == -1 ) {
+        $(this).attr("action", itemData.saveLink);
+        $(this).find("input[name='id']").attr("value", itemData.id.split("|")[1]);
+        $(this).find("input[name='source']").attr("value", itemData.id.split("|")[0]);
+        $(this).css({"display":"inherit"});
+      } else {
+        $(this).css({"display":"none"});
+      }
+    });
+    $("#saveButtonDropdown").find(".newListButton").attr("onClick", "Lightbox.get('MyResearch','EditList',{'id':'NEW','recordId':'" + itemData.id.split("|")[1] + "'})");
+  }
+</script>
