@@ -126,7 +126,7 @@ class RecordController extends AbstractRecord
             $patron = $this->catalogLogin();
             $holds = $catalog->getMyHolds($patron);
             foreach($holds as $thisHold) {
-                if($thisHold['id'] == substr($bib, 2, -1)) {
+                if(($thisHold['id'] == substr($bib, 2, -1)) || ($thisHold['id'] == $bib)) {
                     $canHold = false;
                     $view->isTitleHeld = true;
                 }
@@ -274,6 +274,40 @@ class RecordController extends AbstractRecord
         $catalog->setMemcachedVar("holdingID" . $bib, $cache, $time);
 
         return $view;
+    }
+
+    /**
+     * Save action - Allows the save template to appear,
+     *   passes containingLists & nonContainingLists
+     *
+     * @return mixed
+     */
+    public function saveAction() {
+        try {
+            // keep a hold of the referring page since we are skipping the submit step
+            $referer = $this->getRequest()->getServer()->get('HTTP_REFERER');
+            if (substr($referer, -5) != '/Save'
+                && stripos($referer, 'MyResearch/EditList/NEW') === false
+            ) {
+                $this->setFollowupUrlToReferer();
+            } else {
+                $this->clearFollowupUrl();
+            }
+            // clear the cached contents
+            $post = $this->getRequest()->getPost()->toArray();
+            $this->getILS()->clearMemcachedVar("cachedList" . $post['list']);
+            return parent::saveAction();
+        } catch (\Exception $e) {
+            switch(get_class($e)) {
+            case 'VuFind\Exception\ListSize':
+                $this->flashMessenger()->addMessage($e->getMessage(), 'error');
+                return $this->redirect()->toUrl($referer);
+            case 'VuFind\Exception\LoginRequired':
+                return $this->forceLogin();
+            default:
+                throw $e;
+            }
+        }
     }
 
     /**

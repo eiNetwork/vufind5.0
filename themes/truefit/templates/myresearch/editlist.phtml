@@ -1,0 +1,90 @@
+<?
+  // Set up page title:
+  $pageTitle = empty($this->list->id) ? 'Create a List' : "edit_list";
+  $this->headTitle($this->translate($pageTitle));
+
+  // Set up breadcrumbs:
+  $this->layout()->breadcrumbs = '<li><a href="' . $this->url('myresearch-home') . '">' . $this->transEsc('Your Account') . '</a></li>'
+    . '<li>' . $this->transEsc($pageTitle) . '</li>';
+?>
+
+<?=$this->flashmessages(false)?>
+
+<h2><?=$this->transEsc($pageTitle); ?></h2>
+
+<form class="form-horizontal edit-list-form" target="loginFrame" method="post" id="editListForm" name="<?=empty($this->list->id) ? 'newList' : 'editListForm'?>" action="/MyResearch/EditList">
+  <input type="hidden" name="id" value="<?=empty($this->list->id) ? 'NEW' : $this->list->id ?>"/>
+  <div class="textBoxContainer">
+    <input type="text" name="title" id="list_title" value="<?=(isset($this->list['title']) ? $this->escapeHtml($this->list['title']) : 'New List Name')?>" onfocus="ClearFormError(this); if (this.value=='<?=(isset($this->list['title']) ? '' : 'New ')?>List Name') {this.value = '';this.style.color='#3d3d3d';}" onblur="if (this.value=='') {this.value = '<?=(isset($this->list['title']) ? '' : 'New ')?>List Name';this.style.color='#949494';}" <?=(isset($this->list['title']) ? " style='color:#3d3d3d'" : '')?>class="form-control textBox"/>
+    <i class="fa fa-exclamation-circle formErrorIcon"></i>
+    <span id="list_titleError" class="formError"></span>
+  </div>
+  <input type="hidden" id="list_desc" name="desc" value="">
+  <? if( $this->recordId ): ?>
+    <? if( is_array($this->recordId) ): ?>
+      <? foreach( $this->recordId as $thisRecord ): ?>
+        <input type="hidden" name="recordId[]" value="<?=$thisRecord?>">
+      <? endforeach; ?>
+    <? else: ?>
+      <input type="hidden" name="recordId" value="<?=$this->recordId ?>">
+    <? endif; ?>
+  <? endif; ?>
+  <input type="hidden" name="public" value="0" />
+  <input type="hidden" name="submit" value="1" />
+  <? if (isset($this->bulkAction)): ?>
+    <input type="hidden" name="<?=$this->bulkAction?>" value="true" />
+  <? endif; ?>
+</form>
+<div class="modal-footer">
+  <div id="editListFooter">
+    <button class="btn-alternate btn-wide" onclick="$('#modalClose').click()">Cancel</button>
+    <button class="btn-default btn-wide" onclick="SubmitEditList()"><?=(empty($this->list->id) ? 'Create' : 'Rename')?></button>
+  </div>
+  <div id="loadingFooter" style="display:none;padding:9px;color:#3d3d3d">
+    <span><i class="fa fa-spinner"></i></span>
+    <span>&nbsp;Loading...</span>
+  </div
+</div>
+
+<script type="text/javascript">
+  // process an attempted edit
+  function SubmitEditList() {
+    // make sure they've given us all the relevant info
+    var title = document.getElementById("list_title");
+    if( title.value == "" || title.value == "New List Name" ) {
+      document.getElementById("list_titleError").style.display = "block";
+      document.getElementById("list_titleError").innerHTML = "Please name your list above.";
+      $("#list_titleError").attr("tabIndex", -1).focusout( function() { $("#list_title").focus(); } ).focus();
+      if( "classList" in title ) {
+        title.classList.add("textBoxError");
+      } else {
+        title.className += " textBoxError";
+      }
+      title.nextElementSibling.style.display = "block";
+    } else {
+      document.getElementById("editListFooter").style.display = "none";
+      document.getElementById("loadingFooter").style.display = "block";
+      HTMLFormElement.prototype.submit.call(document.getElementById("editListForm"));
+    }
+  }
+
+  // clean out the error problems
+  function ClearFormError(element) {
+    if( "classList" in element ) {
+      element.classList.remove("textBoxError");
+    } else {
+      element.className = element.className.replace("textBoxError", "");
+    }
+    document.getElementById(element.id + "Error").style.display = "none";
+    element.nextElementSibling.style.display = "none";
+  }
+
+  // submit the login on enter press
+  $("#editListForm input").keypress(function(event) {
+    if (event.which == 13) {
+      event.preventDefault();
+      SubmitEditList();
+    }
+  });
+</script>
+

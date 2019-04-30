@@ -122,6 +122,19 @@ class User extends Gateway
     }
 
     /**
+     * Retrieve a user object from the database based on cat_username.
+     *
+     * @param string $cat_username Username to use for retrieval.
+     *
+     * @return UserRow
+     */
+    public function getByCatUsername($cat_username)
+    {
+        $row = $this->select(['cat_username' => $cat_username])->current();
+        return $row;
+    }
+
+    /**
      * Retrieve a user object from the database based on email.
      *
      * @param string $email email to use for retrieval.

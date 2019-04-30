@@ -215,13 +215,22 @@ class CartController extends AbstractBase
             $action = 'Home';
         } elseif (strlen($this->params()->fromPost('export', '')) > 0) {
             $action = 'Export';
+        } else if (strlen($this->params()->fromPost('addBulk', '')) > 0) {
+            $controller = 'MyResearch';
+            $action = 'AddBulk';
         } else if (strlen($this->params()->fromPost('renew', '')) > 0) {
             $controller = 'MyResearch';
             $action = 'CheckedOut';
+        } else if (strlen($this->params()->fromPost('createListBulk', '')) > 0) {
+            $controller = 'MyResearch';
+            $action = 'EditList';
         } else if (strlen($this->params()->fromPost('changePickup', '')) > 0) {
             $controller = 'MyResearch';
             $action = 'Holds';
         } else if (strlen($this->params()->fromPost('changeEmail', '')) > 0) {
+            $controller = 'MyResearch';
+            $action = 'Holds';
+        } else if (strlen($this->params()->fromPost('bulkHold', '')) > 0) {
             $controller = 'MyResearch';
             $action = 'Holds';
         } else if (strlen($this->params()->fromPost('freeze', '')) > 0) {

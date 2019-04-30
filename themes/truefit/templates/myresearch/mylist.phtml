@@ -32,7 +32,7 @@
       <? endforeach; ?>
       <div class="panel-heading">
         <h4 class="panel-title">
-          <a onclick="Lightbox.get('MyResearch','editList',{'id':'NEW'})" class="collapsed leftTab">Create New List</a>
+          <a href="/MyResearch/EditList?id=NEW" class="collapsed leftTab allowClicks" data-lightbox>Create New List</a>
           <div class="openAccordionTab"></div>
         </h4>
       </div>
@@ -72,14 +72,14 @@
             <? if ($list->editAllowed($account->isLoggedIn())): ?>
               <div class="EIN-col-m-12" style="height:10px"></div>
               <div class="EIN-col-m-12 center">
-                <button class="btn-alternate btn-wide EIN-hide-m" onclick="Lightbox.get('MyResearch', 'EditList', {'id':'<?=$list->id?>'})"><i class="fa fa-pencil"></i><?=$this->transEsc("edit_list")?></button></td>
-                <button class="btn-alternate btn-wide EIN-hide-m" onclick="Lightbox.get('MyResearch', 'DeleteList', {'id':'<?=$list->id?>'})"><i class="fa fa-trash"></i><?=$this->transEsc("delete_list")?></button></td>
+                <a href="/MyResearch/EditList?id=<?=$list->id?>" data-lightbox><button class="btn-alternate btn-wide EIN-hide-m"><i class="fa fa-pencil"></i><?=$this->transEsc("edit_list")?></button></a>
+                <a href="/MyResearch/DeleteList?id=<?=$list->id?>" data-lightbox><button class="btn-alternate btn-wide EIN-hide-m"><i class="fa fa-trash"></i><?=$this->transEsc("delete_list")?></button></a>
               </div>
               <div class="EIN-col-m-6 EIN-hide-t EIN-hide">
-                <button class="btn-alternate leftButton" onclick="Lightbox.get('MyResearch', 'EditList', {'id':'<?=$list->id?>'})"><i class="fa fa-pencil"></i><?=$this->transEsc("edit_list")?></button></td>
+                <a href="/MyResearch/EditList?id=<?=$list->id?>" data-lightbox><button class="btn-alternate leftButton"><i class="fa fa-pencil"></i><?=$this->transEsc("edit_list")?></button></a>
               </div>
               <div class="EIN-col-m-6 EIN-hide-t EIN-hide">
-                <button class="btn-alternate rightButton" onclick="Lightbox.get('MyResearch', 'DeleteList', {'id':'<?=$list->id?>'})"><i class="fa fa-trash"></i><?=$this->transEsc("delete_list")?></button></td>
+                <a href="/MyResearch/DeleteList?id=<?=$list->id?>" data-lightbox><button class="btn-alternate rightButton"><i class="fa fa-trash"></i><?=$this->transEsc("delete_list")?></button></a>
               </div>
               <div class="EIN-col-m-12" style="height:10px"></div>
               <div class="EIN-col-m-12">
@@ -99,7 +99,7 @@
             </div>
           <? endif; ?>
           <? if ($list->count() > 0): ?>
-            <form class="form-inline" method="post" action="<?=$this->url('cart-myresearchbulk')?>" target="loginFrame">
+            <form class="form-inline" method="post" action="<?=$this->url('cart-myresearchbulk')?>" data-lightbox>
               <span class="ajaxListBulkButtons"></span>
               <div style="display:none"></div>
             </form>
@@ -115,7 +115,7 @@
       <? endforeach; ?>
       <? if( !$isBookCart ): ?>
         <script type="text/javascript">
-          $('.panel-heading a').on('click',function(e){
+          $('.panel-heading a:not(.allowClicks)').on('click',function(e){
             // prevent them from dismissing the last open section if we're in tablet or desktop layout
             if($(document).width() >= 600) {
               if($($(this).attr("href")).hasClass('in')){
@@ -156,13 +156,13 @@
     <? elseif( count($this->results) == 0 ): ?>
       <div class="EIN-col-m-12" style="height:20px"></div>
       <div class="EIN-col-m-12 center">
-        <button class="btn-default btn-wide" onclick="Lightbox.get('MyResearch','editList',{'id':'NEW'})">Create New List</button>
+        <a href="/MyResearch/EditList?id=NEW" data-lightbox><button class="btn-default btn-wide">Create New List</button></a>
       </div>
       <div class="EIN-col-m-12" style="height:10px"></div>
     <? else: ?>
       <div class="EIN-col-m-12 EIN-hide-t EIN-hide center">
         <div class="EIN-col-m-12" style="height:20px"></div>
-        <button class="btn-default btn-wide" onclick="Lightbox.get('MyResearch','editList',{'id':'NEW'})">Create New List</button>
+        <a href="/MyResearch/EditList?id=NEW" data-lightbox><button class="btn-default btn-wide">Create New List</button></a>
         <div class="EIN-col-m-12" style="height:10px"></div>
       </div>
     <? endif; ?>
@@ -188,7 +188,7 @@
         </form>
       </li>
     <? endforeach;  endif; ?>
-    <li><button class="btn-dropdown btn-standardDropdown newListButton" onclick="">New list...</button></li>
+    <li><a href="" data-lightbox><button class="btn-dropdown btn-standardDropdown newListButton">New list...</button></a></li>
     <hr class="stretchHR">
     <li><span class="modalNote">Click a non-checked list to add this title.  Click a checked list to remove this title.</span></li>
   </ul>
@@ -218,6 +218,6 @@
         $(this).css({"display":"none"});
       }
     });
-    $("#saveButtonDropdown").find(".newListButton").attr("onClick", "Lightbox.get('MyResearch','EditList',{'id':'NEW','recordId':'" + itemData.id.split("|")[1] + "'})");
+    $("#saveButtonDropdown").find(".newListButton").parent().attr("href", "/MyResearch/EditList?id=NEW&recordId=" + itemData.id.split("|")[1]);
   }
 </script>

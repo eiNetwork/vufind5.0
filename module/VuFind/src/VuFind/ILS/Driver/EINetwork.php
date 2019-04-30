@@ -157,6 +157,10 @@ class EINetwork extends SierraRest implements
         }
     }
 
+    public function clearMemcachedVar($name) {
+        return $this->memcached->delete($name);
+    }
+
 
 
     public function getClassicLink($bib) {
@@ -878,11 +882,19 @@ class EINetwork extends SierraRest implements
      */
     public function placeHold($holdDetails)
     {
+        // see whether or not it's an overdrive hold
+        if( $holdDetails['overDriveId'] ?? false ) {
+            return $this->connector->placeOverDriveHold($holdDetails['overDriveId']);
+        }
+
         // sanitize the ids if necessary
         if( substr($holdDetails["id"], 0, 2) == ".b" ) {
+            if( !isset($holdDetails["bibId"]) ) {
+                $holdDetails["bibId"] = $holdDetails["id"];
+            }
             $holdDetails["id"] = substr($holdDetails["id"], 2, -1);
         }
-        if( substr($holdDetails["item_id"], 0, 2) == ".i" ) {
+        if( substr($holdDetails["item_id"] ?? "", 0, 2) == ".i" ) {
             $holdDetails["item_id"] = substr($holdDetails["item_id"], 2, -1);
         }
 
@@ -894,15 +906,13 @@ class EINetwork extends SierraRest implements
         if( true || isset($holdDetails["item_id"]) ) {
             $holdsInfo = $this->placeItemLevelHold($holdDetails);
         } else {
-            $holdInfo = parent::placeHold($holdDetails);
+            $holdsInfo = parent::placeHold($holdDetails);
         }
 
-/*VF5UPGRADE
         // if they successfully placed the hold, check to see whether this item is in their book cart. If so, remove it.
         if( $holdsInfo['success'] ) {
-            $this->removeFromBookCart([isset($details['bibId']) ? $details['bibId'] : $details['id']]);
+            $this->removeFromBookCart([isset($holdDetails['bibId']) ? $holdDetails['bibId'] : $holdDetails['id']]);
         }
-*/
         return $holdsInfo;
     }
 
@@ -1175,6 +1185,26 @@ class EINetwork extends SierraRest implements
         }
         // not in Solr
         return false;
+    }
+
+    /**
+     * Remove from book cart
+     *
+     * This removes the given bib from the logged in user's book cart.
+     *
+     * @param string  $id    The record id to remove from the book cart
+     */
+    public function removeFromBookCart($id) {
+        if( !isset($this->sessionCache->patron) ) {
+            return;
+        }
+        // get the bookcart
+        $user = $this->getDbTable('User')->getByCatUsername($this->sessionCache->patron["cat_username"]);
+        $bookCart = $user->getBookCart();
+        // remove this item from it
+        $bookCart->removeResourcesById($user, [$id]);
+        // clear the cached contents of the list
+        $this->clearMemcachedVar("cachedList" . $bookCart->id);
     }
 
     /**

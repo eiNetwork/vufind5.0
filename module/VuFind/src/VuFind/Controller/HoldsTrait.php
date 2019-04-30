@@ -145,7 +145,7 @@ trait HoldsTrait
                             '%%url%%' => $this->url()->fromRoute('myresearch-holds')
                         ],
                     ];
-                    $this->flashMessenger()->addMessage($msg, 'info');
+                    $this->flashMessenger()->addMessage($msg, 'success');
                     $view = $this->createViewModel(['skip' => true, 'title' => 'Hold Item', 'reloadParent' => true]);
                     $view->setTemplate('blankModal');
                     return $view;

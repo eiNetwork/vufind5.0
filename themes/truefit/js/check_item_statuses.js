@@ -154,6 +154,9 @@ function handleItemStatusResponse(response) {
           qMark = false;
         }
       }
+      if( leftButton.parent("a").length == 0 ) {
+        leftButton.wrap("<a data-lightbox></a>");
+      }
       leftButton.parent().attr("href", holdLink);
       if( isOverDrive ) {
         leftButton.parent().removeAttr("data-lightbox").attr({"target":"loginFrame","data-lightbox-ignore":true});

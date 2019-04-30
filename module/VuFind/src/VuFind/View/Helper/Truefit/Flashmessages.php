@@ -46,7 +46,7 @@ class Flashmessages extends \VuFind\View\Helper\Bootstrap3\Flashmessages
     public function __invoke($showAnnouncements = true)
     {
         $html = '';
-        $namespaces = ['error', 'info'];
+        $namespaces = ['error', 'info', 'success'];
         if( $showAnnouncements ) {
             array_splice($namespaces, 0, 0, 'announcement');
         }

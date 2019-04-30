@@ -107,6 +107,9 @@ class Resource extends Gateway
             $result = $this->createRow();
             $result->record_id = $id;
             $result->source = $source;
+            if( substr($id, 0, 2) == ".b" && strlen($id) == 10 ) {
+                $result->shortid = substr($id, 1, 8);
+            }
 
             // Load record if it was not provided:
             if (null === $driver) {

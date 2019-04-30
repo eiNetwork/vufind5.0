@@ -97,7 +97,7 @@
       }
     } );
 
-    bulkActionSubmit(form);
+    form.submit();
 
     if( temporaryUncheck.length > 0 ) {
       for(var i=0; i<temporaryUncheck.length; i++ ) {
@@ -131,13 +131,15 @@
            $(this).append('<input type="hidden" class="temporaryInput" name="recordId[]" value="' + $(this).attr('value') + '">');
         }
       } );
-      bulkActionSubmit(form);
+      form.submit();
     } else {
       form.find('#bulkAction' + id).attr('name','addBulk');
       form.find('#bulkAction2' + id).attr('name','addListID');
       form.find('#bulkAction2' + id).attr('value',listID);
       form.find('.bulkButton').html('<i class=\'fa fa-spinner bwSpinner\'></i>&nbsp;Loading...');
-      bulkActionSubmit(form);
+      form.unbind('submit', VuFind.lightbox._constrainLink);
+      form.attr('target', 'loginFrame');
+      form.submit();
     }
   }
 
@@ -168,12 +170,12 @@
         <ul role="navigation" class="dropdown-menu standardDropdown manageListDropdown" style="width:100%">
           <? if (isset($list)): ?>
             <li><button class="btn-dropdown btn-standardDropdown" onclick="HoldSelected($(this).parents('form'), '<?=$bulkID?>'); return false;"><?=$this->transEsc('hold_button_place_hold')?></button></li>
-            <li><button class="btn-dropdown btn-standardDropdown" onclick="$('#bulkAction<?=$bulkID?>').attr('name','delete');bulkActionSubmit($(this).parents('form'));return false;">Remove...</button></li>
+            <li><button class="btn-dropdown btn-standardDropdown" onclick="$('#bulkAction<?=$bulkID?>').attr('name','delete');$(this).parents('form').submit();return false;">Remove...</button></li>
             <hr class="stretchHR">
             <? if( $lists = $user->getLists() ): ?>
               <? foreach( $lists as $thisList ): ?>
                 <? if( $thisList->id != $list->id ): ?>
-                  <li><button class="btn-dropdown btn-standardDropdown" onclick="AddSelected($(this).parents('form'), '<?=$bulkID?>', <?=$thisList->id?>)"><?=$thisList->title?></button></li>
+                  <li><button class="btn-dropdown btn-standardDropdown" onclick="AddSelected($(this).parents('form'), '<?=$bulkID?>', <?=$thisList->id?>);return false;"><?=$thisList->title?></button></li>
                 <? endif; ?>
               <? endforeach; ?>
             <? endif; ?>
@@ -205,7 +207,7 @@
             <? if( $lists = $user->getLists() ): ?>
               <? foreach( $lists as $thisList ): ?>
                 <? if( $thisList->id != $list->id ): ?>
-                  <li><button class="btn-dropdown btn-standardDropdown" onclick="AddSelected($(this).parents('form'), '<?=$bulkID?>', <?=$thisList->id?>)"><?=$thisList->title?></button></li>
+                  <li><button class="btn-dropdown btn-standardDropdown" onclick="AddSelected($(this).parents('form'), '<?=$bulkID?>', <?=$thisList->id?>); return false;"><?=$thisList->title?></button></li>
                 <? endif; ?>
               <? endforeach; ?>
             <? endif; ?>

@@ -384,7 +384,7 @@
         </form>
       </li>
     <?php endforeach;  endif; ?>
-    <li><button class="btn-dropdown btn-standardDropdown newListButton" onclick="">New list...</button></li>
+    <li><a href="" data-lightbox><button class="btn-dropdown btn-standardDropdown newListButton">New list...</button></a></li>
     <hr class="stretchHR">
     <li><span class="modalNote">Click a non-checked list to add this title.  Click a checked list to remove this title.</span></li>
   </ul>
@@ -414,6 +414,6 @@
         $(this).css({"display":"none"});
       }
     });
-    $("#saveButtonDropdown").find(".newListButton").attr("onClick", "Lightbox.get('MyResearch','EditList',{'id':'NEW','recordId':'" + itemData.id.split("|")[1] + "'})");
+    $("#saveButtonDropdown").find(".newListButton").parent().attr("href", "/MyResearch/EditList?id=NEW&recordId=" + itemData.id.split("|")[1]);
   }
 </script>

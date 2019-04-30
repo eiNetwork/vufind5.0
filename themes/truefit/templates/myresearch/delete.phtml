@@ -1,0 +1,49 @@
+<h2><?=$this->transEsc((count($this->records) == 1) ? 'confirm_delete_brief' : 'confirm_delete_multiple_brief')?></h2>
+<form action="<?=$this->url('myresearch-delete')?>" id="deleteForm" method="post" name="bulkDelete" target="loginFrame" data-lightbox-ignore>
+  <div id="popupMessages"><?=$this->flashmessages(false)?></div>
+  <div id="popupDetails" class="lightboxText">
+    <span>Remove the following item<?=((count($this->records) == 1) ? "" : "s")?> from your <?=($this->list->isBookCart() ? "" : "list ")?>
+    <span class="bold"><?=$this->list->title?></span>?</span><br /><br />
+
+    <? foreach ($this->records as $favorite): ?>
+      <strong><?=$this->transEsc('Title') ?>:</strong>
+      <?=$this->escapeHtml(trim($favorite->getTitle(),"\0\t\n\x0B\r /"))?><br />
+    <? endforeach; ?>
+    <? foreach ($this->deleteIDS as $deleteID): ?>
+      <input type="hidden" name="ids[]" value="<?=$this->escapeHtmlAttr($deleteID)?>" />
+    <? endforeach; ?>
+    <input type="hidden" name="listID" value="<?=$this->list?$this->escapeHtmlAttr($this->list->id):''?>" />
+    <input type="hidden" name="actualSubmit" value="true" />
+  </div>
+</form>
+<div class="modal-footer">
+  <div id="confirmFooter">
+    <form id="confirmForm" action="<?=$this->escapeHtmlAttr($this->confirm)?>" method="post">
+      <input type="hidden" name="confirm" value="true">
+      <? if (isset($this->extras)): ?>
+        <? foreach ($this->extras as $extra=>$value): ?>
+          <? if (is_array($value)): ?>
+            <? foreach ($value as $current): ?>
+              <input type="hidden" name="<?=$this->escapeHtmlAttr($extra) ?>[]" value="<?=$this->escapeHtmlAttr($current) ?>" />
+            <? endforeach; ?>
+          <? else: ?>
+            <input type="hidden" name="<?=$this->escapeHtmlAttr($extra) ?>" value="<?=$this->escapeHtmlAttr($value) ?>" />
+          <? endif; ?>
+        <? endforeach; ?>
+      <? endif;?>
+    </form>
+    <button class="btn-alternate btn-wide" onclick="$('#modalClose').click()"><?=$this->transEsc('confirm_dialog_no')?></button>
+    <button class="btn-default btn-wide" onclick="SubmitDeletion();return false;"><?=$this->transEsc('confirm_dialog_yes') ?></button>
+  </div>
+  <div id="loadingFooter" style="display:none;padding:9px;color:#3d3d3d">
+    <span><i class="fa fa-spinner"></i></span>
+    <span>&nbsp;Loading...</span>
+  </div
+</div>
+<script type="text/javascript">
+  function SubmitDeletion() {
+    $('#confirmFooter').css('display','none');
+    $('#loadingFooter').css('display','block');
+    $('#deleteForm').submit();
+  }
+</script>

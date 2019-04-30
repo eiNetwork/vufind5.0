@@ -442,4 +442,78 @@ class Holds extends AbstractRequestBase
         }
         return [];
     }
+
+    /**
+     * Process bulk hold requests.
+     *
+     * @param \VuFind\ILS\Connection $catalog ILS connection object
+     * @param array                  $patron  Current logged in patron
+     *
+     * @return array                          The result of the hold, an
+     * associative array keyed by item ID (empty if no updates performed)
+     */
+    public function createHolds($catalog, $patron)
+    {
+        // Retrieve the flashMessenger helper:
+        $flashMsg = $this->getController()->flashMessenger();
+        $params = $this->getController()->params();
+
+        // Pick IDs to update based on which button was pressed:
+        $details = $params->fromPost('holdIDs');
+        if (!empty($details)) {
+            $successes = 0;
+            $failures = 0;
+            $successMsg = "";
+            $failureMsg = "";
+            foreach($details as $id) {
+                $title = "";
+                foreach($params->fromPost('holdTitles') as $thisTitle) {
+                    if( substr($thisTitle, 0, strlen($id)) == $id ) {
+                        $title = urldecode(substr($thisTitle, strlen($id) + 1));
+                    }
+                }
+                // process overdrive holds
+                if( $overDriveId = $catalog->getOverDriveID($id) )
+                {
+                    $results = $catalog->placeHold(['overDriveId' => $overDriveId]);
+                    if( $results->status ?? false ) {
+                        $successes++;
+                        $successMsg .= $title . "<br>";
+                        // clear the cached contents of the list
+                        $catalog->removeFromBookCart($id);
+                    } else {
+                        $failures++;
+                        $failureMsg .= $title . "<br>";
+                    }
+                // process physical item holds
+                } else {
+                    $holdResults = $catalog->placeHold(
+                        ['id' => $id, 'bibId' => $id, 'patron' => $patron, 'pickUpLocation' => $params->fromPost('gatheredDetails')["pickUpLocation"], 'requiredBy' => $params->fromPost('gatheredDetails')["requiredBy"]]
+                    );
+                    if( $holdResults['success'] ) {
+                        $successes++;
+                        $successMsg .= $title . "<br>";
+                    } else {
+                        $failures++;
+                        $failureMsg .= $title . "<br>";
+                    }
+                }
+            }
+            if ($successes > 0) {
+                $msg = ['msg' => ($successes == 1) ? 'hold_place_success_single' : 'hold_place_success_multiple',
+                        'html' => true,
+                        'tokens' => ['%%holdData%%' => $successMsg, '%%url%%' => $this->getController()->url()->fromRoute('myresearch-holds')]];
+                $flashMsg->addMessage($msg, 'info');
+            }
+            if ($failures > 0) {
+                $msg = ['msg' => ($failures == 1) ? 'hold_place_failure_single' : 'hold_place_failure_multiple',
+                        'html' => true,
+                        'tokens' => ['%%holdData%%' => $failureMsg]];
+                $flashMsg->addMessage($msg, 'error');
+            }
+        } else {
+             $flashMsg->addMessage('hold_empty_selection', 'error');
+        }
+        return [];
+    }
 }

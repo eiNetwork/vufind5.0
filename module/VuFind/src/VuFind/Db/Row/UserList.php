@@ -114,6 +114,23 @@ class UserList extends RowGateway implements \VuFind\Db\Table\DbTableAwareInterf
     }
 
     /**
+     * Create a brand new list object to serve as the user's book cart
+     *
+     * @param \VuFind\Db\Row\User $user    Logged-in user
+     *
+     * @return newly created row
+     * @throws ListPermissionException
+     * @throws MissingFieldException
+     */
+    public function updateNewBookCart($user)
+    {
+        $this->title = "Book Cart";
+        $this->public = 0;
+        $this->save($user);
+        return $this;
+    }
+
+    /**
      * Return whether this list object is a user's book cart
      *
      * @return bool
@@ -201,8 +218,10 @@ class UserList extends RowGateway implements \VuFind\Db\Table\DbTableAwareInterf
         }
 
         // Remove Resource (related tags are also removed implicitly)
-        $userResourceTable = $this->getDbTable('UserResource');
-        $userResourceTable->destroyLinks($resourceIDs, $this->user_id, $this->id);
+        if( $resourceIDs ) {
+            $userResourceTable = $this->getDbTable('UserResource');
+            $userResourceTable->destroyLinks($resourceIDs, $this->user_id, $this->id);
+        }
     }
 
     /**

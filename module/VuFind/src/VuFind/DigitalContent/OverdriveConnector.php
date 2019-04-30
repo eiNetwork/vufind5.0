@@ -572,7 +572,11 @@ class OverdriveConnector implements LoggerAwareInterface,
                     }
                     $holdResult->data->holdListPosition
                         = $response->holdListPosition;
-                    $holdResult->msg = ['html' => true, 'msg' => 'hold_place_success_html'];
+                    $holdResult->msg = [
+                        'html' => true,
+                        'msg' => 'hold_place_success_html',
+                        'tokens' => ['%%url%%' => '/MyResearch/Holds']
+                    ];
                 } else {
                     $holdResult->msg = '<i class=\'fa fa-exclamation-triangle\'></i>Sorry, but we could not place a request for you on this title.  ' . $response->message;
                 }

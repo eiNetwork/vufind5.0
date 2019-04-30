@@ -67,7 +67,7 @@
         <li><a href="<?=$this->url('myresearch-checkedout')?>"><button class="btn-dropdown btn-whiteDropdown">Checked Out<? if($checkoutsCount>0): ?><span class="badge"><?=$checkoutsCount?></span><? endif; ?></button></a></li>
         <li><a href="<?=$this->url('myresearch-holds')?>"><button class="btn-dropdown btn-whiteDropdown">Holds<? if($holdsCount>0): ?><span class="badge"><?=$holdsCount?></span><? endif; ?></button></a></li>
         <li><a href="<?=$this->url('myresearch-mylist')?>"><button class="btn-dropdown btn-whiteDropdown">Lists<? if($listCount>0): ?><span class="badge"><?=$listCount?></span><? endif; ?></button></a></li>
-        <li><a href="<?=""/*VF5UPGRADE$this->url('myresearch-bookcart')*/?>"><button class="btn-dropdown btn-whiteDropdown">Book Cart<? if($bookCartCount>0): ?><span class="badge"><?=$bookCartCount?></span><? endif; ?></button></a></li>
+        <li><a href="<?=$this->url('myresearch-bookcart')?>"><button class="btn-dropdown btn-whiteDropdown">Book Cart<? if($bookCartCount>0): ?><span class="badge"><?=$bookCartCount?></span><? endif; ?></button></a></li>
         <li><a href="<?=""/*VF5UPGRADE$this->url('myresearch-readinghistory')*/?>"><button class="btn-dropdown btn-whiteDropdown">Reading History</button></a></li>
         <li><a href="<?=$this->url('search-history')?>"><button class="btn-dropdown btn-whiteDropdown">Saved Searches</button></a></li>
         <li><a href="<?=$this->url('myresearch-profile')?>"><button class="btn-dropdown btn-whiteDropdown">Profile</button></a></li>

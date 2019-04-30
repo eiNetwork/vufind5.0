@@ -295,14 +295,7 @@ class AbstractRecord extends AbstractBase
         $results = $favorites->save($post, $user, $driver);
 
         // Display a success status message:
-        $listUrl = $this->url()->fromRoute('userList', ['id' => $results['listId']]);
-        $message = [
-            'html' => true,
-            'msg' => $this->translate('bulk_save_success') . '. '
-            . '<a href="' . $listUrl . '" class="gotolist">'
-            . $this->translate('go_to_list') . '</a>.'
-        ];
-        $this->flashMessenger()->addMessage($message, 'success');
+        $this->flashMessenger()->addMessage((count($post['id']) > 1) ? 'bulk_save_success' : 'single_save_success', 'info');
 
         // redirect to followup url saved in saveAction
         if ($url = $this->getFollowupUrl()) {

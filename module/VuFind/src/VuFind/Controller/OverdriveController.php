@@ -281,6 +281,9 @@ class OverdriveController extends AbstractBase implements LoggerAwareInterface
             $email = $this->params()->fromQuery('email');
             $result = $this->connector->placeOverDriveHold($od_id, $email);
 
+            if( $result->status ) {
+                $this->getILS()->removeFromBookCart($rec_id);
+            }
         } elseif ($action == "cancelHold") {
             $actionTitleCode = "od_cancel_hold";
             $result = $this->connector->cancelHold($od_id);

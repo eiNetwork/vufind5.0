@@ -604,6 +604,24 @@ class MyResearchController extends AbstractBase
     }
 
     /**
+     * Action for sending all of a user's saved book cart items to the view
+     *
+     * @return mixed
+     */
+    public function bookCartAction()
+    {
+        // make sure they're logged in
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->forwardTo('MyResearch', 'Home');
+        }
+        // Book cart is the same as MyList, but with one specific list.  Also, make sure we
+        // know that this is the book cart
+        $this->getRequest()->getQuery()->set('id', $this->getUser()->getBookCart()['id']);
+        return $this->forwardTo('MyResearch', 'MyList');
+    }
+
+    /**
      * Delete group of records from favorites.
      *
      * @return mixed
@@ -631,11 +649,16 @@ class MyResearchController extends AbstractBase
             return $this->redirect()->toUrl($newUrl);
         }
 
+        // clear the cached contents
+        $this->getILS()->clearMemcachedVar("cachedList" . $listID);
+
         // Process the deletes if necessary:
-        if ($this->formWasSubmitted('submit')) {
+        if ( $this->formWasSubmitted('actualSubmit') ) {
             $this->favorites()->delete($ids, $listID, $user);
-            $this->flashMessenger()->addMessage('fav_delete_success', 'success');
-            return $this->redirect()->toUrl($newUrl);
+            $this->flashMessenger()->addMessage((count($ids) == 1) ? 'single_delete_success' : 'multiple_delete_success', 'success');
+            $view = $this->createViewModel(['reloadParent' => true]);
+            $view->setTemplate('blankModal');
+            return $view;
         }
 
         // If we got this far, the operation has not been confirmed yet; show
@@ -652,6 +675,50 @@ class MyResearchController extends AbstractBase
                 'records' => $this->getRecordLoader()->loadBatch($ids)
             ]
         );
+    }
+
+
+    /**
+     * Add group of records to favorites.
+     *
+     * @return mixed
+     */
+    public function addBulkAction()
+    {
+        // Force login:
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->forceLogin();
+        }
+        // Process form within a try..catch so we can handle errors appropriately:
+        try {
+            // Get target URL for after deletion:
+            $listID = $this->params()->fromPost('addListID');
+            // Fail if we have nothing to delete:
+            $ids = $this->params()->fromPost('ids');
+            if (!is_array($ids) || empty($ids)) {
+                $this->flashMessenger()->addMessage('bulk_noitems_advice', 'error');
+                return $this->redirect()->toUrl($newUrl);
+            }
+            // clear the cached contents
+            $this->getILS()->clearMemcachedVar("cachedList" . $listID);
+            // Process the adds:
+            $this->favorites()->saveBulk(['ids' => $ids, 'list' => $listID], $user);
+            $this->flashMessenger()->addMessage((count($ids) == 1) ? 'single_save_success' : 'multiple_save_success', 'info');
+            $view = $this->createViewModel(['skip' => true, 'reloadParent' => true]);
+            $view->setTemplate('blankModal');
+            return $view;
+        } catch (\Exception $e) {
+            switch(get_class($e)) {
+            case 'VuFind\Exception\ListSize':
+                $this->flashMessenger()->addMessage($e->getMessage(), 'error');
+                $view = $this->createViewModel(['skip' => true, 'reloadParent' => true]);
+                $view->setTemplate('blankModal');
+                return $view;
+            default:
+                throw $e;
+            }
+        }
     }
 
     /**
@@ -684,7 +751,10 @@ class MyResearchController extends AbstractBase
             $table = $this->getTable('UserList');
             $list = $table->getExisting($listID);
             $list->removeResourcesById($user, [$id], $source);
-            $this->flashMessenger()->addMessage('Item removed from list', 'success');
+            $this->flashMessenger()->addMessage('single_delete_success', 'info');
+
+            // clear the cached contents
+            $this->getILS()->clearMemcachedVar("cachedList" . $listID);
         } else {
             // ...My Favorites
             $user->removeResourcesById([$id], $source);
@@ -693,7 +763,7 @@ class MyResearchController extends AbstractBase
         }
 
         // All done -- return true to indicate success.
-        return true;
+        return $this->redirect()->toUrl($this->getRequest()->getServer()->get('HTTP_REFERER'));
     }
 
     /**
@@ -822,7 +892,7 @@ class MyResearchController extends AbstractBase
         // may sometimes be a GET parameter.  We must cover both cases.
         $listID = $this->params()->fromRoute('id', $this->params()->fromQuery('id'));
         if (empty($listID)) {
-            $url = $this->url()->fromRoute('myresearch-favorites');
+            $url = $this->url()->fromRoute('myresearch-mylist');
         } else {
             $url = $this->url()->fromRoute('userList', ['id' => $listID]);
         }
@@ -939,7 +1009,7 @@ class MyResearchController extends AbstractBase
      * @return object|bool                  Response object if redirect is
      * needed, false if form needs to be redisplayed.
      */
-    protected function processEditList($user, $list)
+    protected function processEditList($user, $list, $isNew=false)
     {
         // Process form within a try..catch so we can handle errors appropriately:
         try {
@@ -949,16 +1019,18 @@ class MyResearchController extends AbstractBase
             // If the user is in the process of saving a record, send them back
             // to the save screen; otherwise, send them back to the list they
             // just edited.
-            $recordId = $this->params()->fromQuery('recordId');
+            $recordId = $this->params()->fromQuery('recordId', $this->params()->fromPost('recordId'));
             $recordSource
                 = $this->params()->fromQuery('recordSource', DEFAULT_SEARCH_BACKEND);
             if (!empty($recordId)) {
-                $details = $this->getRecordRouter()->getActionRouteDetails(
-                    $recordSource . '|' . $recordId, 'Save'
-                );
-                return $this->redirect()->toRoute(
-                    $details['route'], $details['params']
-                );
+                $this->favorites()->saveBulk(['ids' => (is_array($recordId) ? $recordId : [$recordSource."|".$recordId]), 'list' => $finalId], $user);
+
+                // success message
+                $this->flashMessenger()->setNamespace('info')->addMessage(is_array($recordId) ? 'list_create_add_multiple' : 'list_create_add_single');
+                $view = $this->createViewModel();
+                $view->reloadParent = true;
+                $view->setTemplate('blankModal');
+                return $view;
             }
 
             // Similarly, if the user is in the process of bulk-saving records,
@@ -977,7 +1049,11 @@ class MyResearchController extends AbstractBase
                     ->toUrl($saveUrl . implode('&', $params));
             }
 
-            return $this->redirect()->toRoute('userList', ['id' => $finalId]);
+            $this->flashMessenger()->setNamespace('info')->addMessage($isNew ? 'list_create' : 'edit_list_success');
+            $view = $this->createViewModel();
+            $view->setTemplate('blankModal');
+            $view->reloadParent = true;
+            return $view;
         } catch (\Exception $e) {
             switch (get_class($e)) {
             case 'VuFind\Exception\ListPermission':
@@ -1012,7 +1088,8 @@ class MyResearchController extends AbstractBase
 
         // Is this a new list or an existing list?  Handle the special 'NEW' value
         // of the ID parameter:
-        $id = $this->params()->fromRoute('id', $this->params()->fromQuery('id'));
+        $id = $this->params()->fromRoute('id', $this->params()->fromQuery('id', $this->params()->fromPost('id')));
+        $recordId = $this->params()->fromRoute('recordId', $this->params()->fromQuery('recordId', $this->params()->fromPost('recordId')));
         $table = $this->getTable('UserList');
         $newList = ($id == 'NEW');
         $list = $newList ? $table->getNew($user) : $table->getExisting($id);
@@ -1023,14 +1100,19 @@ class MyResearchController extends AbstractBase
         }
 
         // Process form submission:
-        if ($this->formWasSubmitted('submit')) {
-            if ($redirect = $this->processEditList($user, $list)) {
+        $wasEdited = $this->params()->fromPost('title', false) || $this->params()->fromPost('desc', false) || $this->params()->fromPost('public', false);
+        if ($this->formWasSubmitted('submit') && $wasEdited) {
+            if ($redirect = $this->processEditList($user, $list, $newList)) {
                 return $redirect;
             }
         }
 
         // Send the list to the view:
-        return $this->createViewModel(['list' => $list, 'newList' => $newList]);
+        $args = ['list' => $list, 'newList' => $newList, 'recordId' => $recordId];
+        if( $this->params()->fromPost("createListBulk") != null ) {
+            $args["bulkAction"] = "createListBulk";
+        }
+        return $this->createViewModel($args);
     }
 
     /**
@@ -1047,7 +1129,7 @@ class MyResearchController extends AbstractBase
 
         // Get requested list ID:
         $listID = $this->params()
-            ->fromPost('listID', $this->params()->fromQuery('listID'));
+            ->fromPost('listID', $this->params()->fromQuery('id'));
 
         // Have we confirmed this?
         $confirm = $this->params()->fromPost(
@@ -1075,7 +1157,7 @@ class MyResearchController extends AbstractBase
                 }
             }
             // Redirect to MyResearch home
-            return $this->redirect()->toRoute('myresearch-favorites');
+            return $this->redirect()->toRoute('myresearch-mylist');
         }
 
         // If we got this far, we must display a confirmation message:
@@ -1159,6 +1241,57 @@ class MyResearchController extends AbstractBase
                 $view->referrer = $this->params()->fromPost('referrer');
                 $view->skip = true;
                 $view->ids = $this->params()->fromPost('ids');
+                return $view;
+            }
+        }
+
+        // see if we are trying to do a bulk hold
+        if( $this->params()->fromPost('bulkHold') ) {
+            if( $this->params()->fromPost('placeHold') ) {
+                $view->updateResults = $this->holds()->createHolds($catalog, $patron);
+                $view->setTemplate('blankModal');
+                $view->suppressFlashMessages = true;
+                $view->reloadParent = true;
+                return $view;
+            } else {
+                $view->setTemplate('record/hold');
+                $view->referrer = $this->params()->fromPost('referrer');
+                $view->bulkHold = true;
+                $view->skip = true;
+                $view->pickup = $catalog->getPickUpLocations($patron);
+                $view->homeLibrary = $this->getUser()->home_library;
+                $view->preferredLibrary = $this->getUser()->preferred_library;
+                $view->alternateLibrary = $this->getUser()->alternate_library;
+                $rawIds = $this->params()->fromPost('ids');
+                $ids = [];
+                foreach($rawIds as $id) {
+                    $ids[] = explode("|", $id)[1];
+                }
+                $view->ids = $ids;
+                $defaultRequired = $this->holds()->getDefaultRequiredDate(
+                    null, $catalog, $patron, null
+                );
+                $defaultRequired = $this->serviceLocator->get('VuFind\Date\Converter')
+                    ->convertToDisplayDate("U", $defaultRequired);
+                $view->defaultRequiredDate = $defaultRequired;
+                $rawTitles = $this->params()->fromPost('holdTitles');
+                $titles = [];
+                foreach($rawTitles as $title) {
+                    $titles[] = explode("|", $title, 2)[1];
+                }
+                $view->titles = $titles;
+                $rawHasVolumesTitles = $this->params()->fromPost('hasVolumesTitles') ?? [];
+                $hasVolumesTitles = [];
+                foreach($rawHasVolumesTitles as $title) {
+                    $hasVolumesTitles[] = explode("|", $title, 2)[1];
+                }
+                $view->hasVolumesTitles = $hasVolumesTitles;
+                $rawLocalCopyTitles = $this->params()->fromPost('localCopyTitles') ?? [];
+                $localCopyTitles = [];
+                foreach($rawLocalCopyTitles as $title) {
+                    $localCopyTitles[] = explode("|", $title, 2)[1];
+                }
+                $view->localCopyTitles = $localCopyTitles;
                 return $view;
             }
         }

@@ -197,7 +197,7 @@
           $hasLists = $user->getLists($this->driver->getResourceSource()."|".$this->driver->getUniqueID());
           $containingLists = [];
           foreach($hasLists as $thisList):
-            //VF5UPGRADE$containingLists[] = $thisList->list_id;
+            $containingLists[] = $thisList->id;
           endforeach;
 
           $itemData = json_encode(["id" => $this->driver->getResourceSource() . "|" . $this->driver->getUniqueID(), "lists" => $containingLists, "saveLink" => $this->recordLink()->getActionUrl($this->driver, 'Save')]);

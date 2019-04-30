@@ -320,15 +320,19 @@ class User extends RowGateway implements \VuFind\Db\Table\DbTableAwareInterface,
      *
      * @return \Zend\Db\ResultSet\AbstractResultSet
      */
-    public function getLists()
+    public function getLists($itemId=null)
     {
         $userId = $this->id;
-        $callback = function ($select) use ($userId) {
+        $callback = function ($select) use ($userId, $itemId) {
             $select->columns(
                 [
                     '*',
                     'cnt' => new Expression(
                         'COUNT(DISTINCT(?))', ['ur.resource_id'],
+                        [Expression::TYPE_IDENTIFIER]
+                    ),
+                    'isBookCart' => new Expression(
+                        'if(?="Book Cart",1,0)', ['user_list.title'],
                         [Expression::TYPE_IDENTIFIER]
                     )
                 ]
@@ -338,17 +342,42 @@ class User extends RowGateway implements \VuFind\Db\Table\DbTableAwareInterface,
                 [], $select::JOIN_LEFT
             );
             $select->where->equalTo('user_list.user_id', $userId);
+            if (!is_null($itemId)) {
+                $select->join(
+                    ['r' => 'resource'], 'r.id = ur.resource_id',
+                    [], $select::JOIN_LEFT
+                );
+                $select->where->equalTo('r.source', explode("|", $itemId)[0])
+                              ->equalTo('r.record_id', explode("|", $itemId)[1]);
+            }
             $select->group(
                 [
                     'user_list.id', 'user_list.user_id', 'title', 'description',
                     'created', 'public'
                 ]
             );
-            $select->order(['title']);
+            $select->order(['isBookCart desc', 'user_list.title']);
         };
 
         $table = $this->getDbTable('UserList');
         return $table->select($callback);
+    }
+
+    /**
+     * Get the book cart associated with this user.
+     *
+     * @return \VuFind\Db\Row\UserList
+     */
+    public function getBookCart()
+    {
+        // see whether they have a book cart already
+        foreach( $this->getLists() as $list ) {
+            if( $list['title'] == "Book Cart" ) {
+                return $list;
+            }
+        }
+        // if they made it here, they don't have one
+        return $this->getDbTable('UserList')->getNew($this)->updateNewBookCart($this);
     }
 
     /**
@@ -385,6 +414,12 @@ class User extends RowGateway implements \VuFind\Db\Table\DbTableAwareInterface,
     public function saveResource(
         $resource, $list, $tagArray, $notes, $replaceExisting = true
     ) {
+        // make sure there is room for this item
+        $listMaxCount = 300;
+        if( $list->count() >= $listMaxCount ) {
+            throw new \VuFind\Exception\ListSize('<i class="fa fa-exclamation-triangle"></i>Lists cannot contain more than ' . $listMaxCount . ' items.');
+        }
+
         // Create the resource link if it doesn't exist and update the notes in any
         // case:
         $linkTable = $this->getDbTable('UserResource');
