@@ -203,20 +203,18 @@
           $itemData = json_encode(["id" => $this->driver->getResourceSource() . "|" . $this->driver->getUniqueID(), "lists" => $containingLists, "saveLink" => $this->recordLink()->getActionUrl($this->driver, 'Save')]);
           $itemData = str_replace("\"", "\\'", $itemData);
 
-          $holdClick = "";
           $saveClick = " data-toggle=\"dropdown\" data-target=\"#saveButtonDropdown\" onclick=\"moveSaveDropdown(this, '" . $itemData . "');\"";
           $mobileSaveClick = " data-toggle=\"dropdown\" data-target=\"#saveButtonDropdown\" onclick=\"moveSaveDropdown($(this).parent().next().children('span'), '" . $itemData . "');\"";
         else:
-          $holdClick = " onClick=\"Lightbox.get('MyResearch','Login',false,{'clearLightbox':true})\"";
-          $saveClick = " onClick=\"Lightbox.get('MyResearch','Login',false,{'clearLightbox':true})\"";
-          $mobileSaveClick = " onClick=\"Lightbox.get('MyResearch','Login',false,{'clearLightbox':true})\"";
+          $saveClick = " href=\"/MyResearch/Login?clearLightbox=true\"";
+          $mobileSaveClick = " href=\"/MyResearch/Login?clearLightbox=true\"";
         endif;
       ?>
     </div>
     <div class="EIN-hide-m EIN-col-t-4 EIN-col-4" style="padding:5px 0px 10px">
       <div class="EIN-col-m-6 EIN-col-t-12 EIN-col-12">
         <a data-lightbox>
-          <button class="btn-default leftButton"<?=$holdClick?> disabled><i class="fa fa-spinner"></i>&nbsp;Loading...</button>
+          <button class="btn-default leftButton" disabled><i class="fa fa-spinner"></i>&nbsp;Loading...</button>
           <div class="dropdown" id="holdButtonDropdown<?=str_replace(".", "", $this->driver->getUniqueID())?>">
             <ul role="navigation" class="dropdown-menu standardDropdown manageListDropdown">
             </ul>
@@ -224,8 +222,8 @@
         </a>
       </div>
       <div class="EIN-col-m-12">
-        <a data-lightbox>
-          <button class="btn-default rightButton"<?=$saveClick?>><?=$this->transEsc("list_manage")?><?=($user?"<i class=\"fa fa-caret-down\"></i>":"")?></button>
+        <a<?=$user?"":$saveClick?> data-lightbox>
+          <button class="btn-default rightButton"<?=$user?$saveClick:""?>><?=$this->transEsc("list_manage")?><?=($user?"<i class=\"fa fa-caret-down\"></i>":"")?></button>
         </a>
       </div>
     </div>
@@ -233,12 +231,12 @@
   <div class="EIN-col-m-12 EIN-hide-t EIN-hide" style="padding:5px 10px 10px">
     <div class="EIN-col-m-6">
       <a data-lightbox>
-        <button class="btn-default leftButton"<?=$holdClick?> disabled><i class="fa fa-spinner"></i>&nbsp;Loading...</button>
+        <button class="btn-default leftButton" disabled><i class="fa fa-spinner"></i>&nbsp;Loading...</button>
       </a>
     </div>
     <div class="EIN-col-m-6">
-      <a data-lightbox>
-        <button class="btn-default rightButton"<?=$mobileSaveClick?>><?=$this->transEsc("list_manage")?><?=($user?"<i class=\"fa fa-caret-down\"></i>":"")?></button>
+      <a<?=$user?"":$mobileSaveClick?> data-lightbox>
+        <button class="btn-default rightButton"<?=$user?$mobileSaveClick:""?>><?=$this->transEsc("list_manage")?><?=($user?"<i class=\"fa fa-caret-down\"></i>":"")?></button>
       </a>
     </div>
     <div class="EIN-col-m-12">

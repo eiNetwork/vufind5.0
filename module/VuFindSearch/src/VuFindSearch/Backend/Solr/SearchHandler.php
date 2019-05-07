@@ -126,6 +126,77 @@ class SearchHandler
     }
 
     /**
+     * Return a EIN query string.
+     *
+     * @param string $search Search string
+     *
+     * @return string
+     */
+    public function createEINBoostString($search)
+    {
+        $mungeRules  = $this->mungeRules();
+        // Do not munge w/o rules
+        if ($mungeRules) {
+            // zero out these weights
+            foreach($mungeRules as $key => $value) {
+                foreach($value as $vKey => $row) {
+                    $value[$vKey][1] = null;
+                }
+                $mungeRules[$key] = $value;
+            }
+            $mungeValues = $this->mungeValues($search);
+            $query       = $this->munge($mungeRules, $mungeValues);
+        } else {
+            $query = $search;
+        }
+
+        $startIndex = 0;
+        while( ($startIndex = strpos($query, "title_exact:(", $startIndex)) !== false ) {
+            // generate the exact match if we havent yet
+            if( !isset($exactMatch) ) {
+                $exactMatch = trim(strtolower($search));
+                $allowedChars = "abcdefghijklmnopqrstuvwxyz0123456789 ";
+                for($i=0; $i<strlen($exactMatch); $i++) {
+                    if(strpos($allowedChars, substr($exactMatch, $i, 1)) === false) {
+                        $exactMatch = substr($exactMatch, 0, $i) . " " . substr($exactMatch, ($i + 1));
+                        $i--;
+                    }
+                }
+                while( strpos($exactMatch, "  ") !== false ) {
+                    $exactMatch = str_replace("  ", " ", $exactMatch);
+                }
+                $exactMatch = "EXACTSTART" . str_replace(" ", "SPACE", $exactMatch) . "EXACTEND";
+            }
+            $startIndex += 13;
+            $endIndex = strpos($query, ")", $startIndex);
+            $query = substr($query, 0, $startIndex) . /*$exactMatch*/ "EXACTSTARTstuffEXACTEND" . substr($query, $endIndex);
+        }
+        while( ($startIndex = strpos($query, "title_exact_substring:(", $startIndex)) !== false ) {
+            // generate the exact match if we havent yet
+            if( !isset($exactMatch) ) {
+                $exactMatch = trim(strtolower($search));
+                $allowedChars = "abcdefghijklmnopqrstuvwxyz0123456789 ";
+                for($i=0; $i<strlen($exactMatch); $i++) {
+                    if(strpos($allowedChars, substr($exactMatch, $i, 1)) === false) {
+                        $exactMatch = substr($exactMatch, 0, $i) . " " . substr($exactMatch, ($i + 1));
+                        $i--;
+                    }
+                }
+                while( strpos($exactMatch, "  ") !== false ) {
+                    $exactMatch = str_replace("  ", " ", $exactMatch);
+                }
+                $exactMatch = "EXACTSTART" . str_replace(" ", "SPACE", $exactMatch) . "EXACTEND";
+            }
+            $exactMatchSubstring = str_replace("EXACTSTART", "EXACTSTART*", $exactMatch);
+            $exactMatchSubstring = str_replace("EXACTEND", "*EXACTEND", $exactMatchSubstring);
+            $startIndex += 23;
+            $endIndex = strpos($query, ")", $startIndex);
+            $query = substr($query, 0, $startIndex) . $exactMatchSubstring . substr($query, $endIndex);
+        }
+        return $query;
+    }
+
+    /**
      * Return an advanced query string for specified search string.
      *
      * @param string $search Search string

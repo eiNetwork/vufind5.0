@@ -152,6 +152,13 @@ class MyResearchController extends AbstractBase
             try {
                 if (!$this->getAuthManager()->isLoggedIn()) {
                     $this->getAuthManager()->login($this->getRequest());
+                    if( $this->params()->fromPost('clearLightbox') ) {
+                        $view = $this->createViewModel();
+                        $view->setTemplate('blankModal');
+                        $view->title = "Logging in...";
+                        $view->reloadParent = true;
+                        return $view;
+                    }
                     // Return early to avoid unnecessary processing if we are being
                     // called from login lightbox and don't have a followup action.
                     if ($this->params()->fromPost('processLogin')
@@ -281,7 +288,7 @@ class MyResearchController extends AbstractBase
         // Make request available to view for form updating:
         $view = $this->createViewModel();
         $view->inLightbox = $this->inLightbox();
-        $view->request = $this->getRequest()->getPost();
+        $view->request = $this->getRequest()->getQuery();
         return $view;
     }
 
@@ -1579,9 +1586,9 @@ class MyResearchController extends AbstractBase
             // if they're splitting econtent, bubble those to the bottom
             if( $user['splitEcontent'] == "Y" ) {
                 usort($checkoutList[$key], function($co1, $co2) {
-                    if(!isset($co1["overDriveId"]) && isset($co2["overDriveId"])) {
+                    if(!isset($co1["reserveId"]) && isset($co2["reserveId"])) {
                         return -1;
-                    } else if(isset($co1["overDriveId"]) && !isset($co2["overDriveId"])) {
+                    } else if(isset($co1["reserveId"]) && !isset($co2["reserveId"])) {
                         return 1;
                     } else if($co1["duedate"] > $co2["duedate"]) {
                         return 1;
@@ -1623,9 +1630,9 @@ class MyResearchController extends AbstractBase
         // if they're splitting econtent, bubble those to the bottom
         if( $user['splitEcontent'] == "Y" ) {
             usort($allList, function($co1, $co2) {
-                if(!isset($co1["overDriveId"]) && isset($co2["overDriveId"])) {
+                if(!isset($co1["reserveId"]) && isset($co2["reserveId"])) {
                     return -1;
-                } else if(isset($co1["overDriveId"]) && !isset($co2["overDriveId"])) {
+                } else if(isset($co1["reserveId"]) && !isset($co2["reserveId"])) {
                     return 1;
                 } else if($co1["duedate"] > $co2["duedate"]) {
                     return 1;
