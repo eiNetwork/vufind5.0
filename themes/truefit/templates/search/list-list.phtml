@@ -1,9 +1,18 @@
 <?php if (!isset($this->indexStart)) $this->indexStart = 0; ?>
 <? $showCheckboxes = (isset($this->showCartControls) && $this->showCartControls)
   || (isset($this->showBulkOptions) && $this->showBulkOptions); ?>
-<?php $i = $this->indexStart; foreach ($this->results->getResults() as $current):
-  $recordNumber = $this->results->getStartRecord() + $i - $this->indexStart; ?>
-  <div id="result<?=$i++ ?>" class="row clearfix result<?=$current->supportsAjaxStatus()?' ajaxItem':''?>">
-    <?=$this->record($current)->getSearchResult('list')?>
-  </div>
+<?php
+  $i = $this->indexStart;
+  $expandedGroupings = $this->results->getExpandedGroupings();
+  foreach ($this->results->getResults() as $current):
+    $recordNumber = $this->results->getStartRecord() + $i - $this->indexStart;
+    if( $thisGrouping = $expandedGroupings[$current->getGroupingKey()] ?? [] ): ?>
+      <div id="result<?=$i++ ?>" class="row clearfix result">
+        <?=$this->record($current)->getGrouping($thisGrouping)?>
+      </div>
+    <?php else: ?>
+      <div id="result<?=$i++ ?>" class="row clearfix result<?=$current->supportsAjaxStatus()?' ajaxItem':''?>">
+        <?=$this->record($current)->getSearchResult('list')?>
+      </div>
+    <?php endif; ?>
 <?php endforeach; ?>

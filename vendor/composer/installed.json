@@ -7458,7 +7458,7 @@
                 "dev-develop": "4.0-dev"
             }
         },
-        "installation-source": "source",
+        "installation-source": "dist",
         "autoload": {
             "psr-4": {
                 "Zend\\ServiceManager\\": "src/"
@@ -8097,7 +8097,7 @@
                 "dev-develop": "1.2.x-dev"
             }
         },
-        "installation-source": "source",
+        "installation-source": "dist",
         "autoload": {
             "psr-4": {
                 "ZendXml\\": "src/"

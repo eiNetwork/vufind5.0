@@ -155,7 +155,7 @@ final class Versions
   'theseer/fdomdocument' => '1.6.6@6e8203e40a32a9c770bcb62fe37e68b948da6dca',
   'theseer/tokenizer' => '1.1.0@cb2f008f3f05af2893a87208fe6a6c4985483f8b',
   'webmozart/assert' => '1.3.0@0df1908962e7a3071564e857d86874dad1ef204a',
-  'vufind/vufind' => 'dev-master@f10c3b738d2ea7bb64f3e88ce52af5fb20f4a266',
+  'vufind/vufind' => 'dev-master@bddc28a0e53cd7ac9e26d6810658d9b4597498e7',
 );
 
     private function __construct()

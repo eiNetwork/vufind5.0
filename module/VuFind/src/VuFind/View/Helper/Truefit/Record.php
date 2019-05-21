@@ -152,4 +152,18 @@ class Record extends \VuFind\View\Helper\Root\Record
         // return the title
         return trim($this->driver->getTitle(),"\0\t\n\x0B\r /");
     }
+
+    /**
+     * Generate the grouping UI.
+     */
+    public function getGrouping($groupingInfo)
+    {
+        return $this->renderTemplate(
+            'grouping.phtml',
+            [
+                'driver' => $this->driver,
+                'grouping' => $groupingInfo
+            ]
+        );
+    }
 }

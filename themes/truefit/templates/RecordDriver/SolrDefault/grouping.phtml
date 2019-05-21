@@ -1,0 +1,147 @@
+<?php
+  // Set up convenience variables:
+  $account = $this->auth()->getManager();
+  $user = $account->isLoggedIn();
+  $record = $this->record($this->driver);
+  $deets = $this->driver->getHighlightDetails();
+  $lookfor = explode(" ", $this->params->getDisplayQuery());
+  foreach( $lookfor as $index => $value ) {
+    if( $value == "OR" || $value == "AND" ) {
+      unset($lookfor[$index]);
+    } else {
+      $lookfor[$index] = strtolower($value);
+    }
+  }
+  $sources = ["title","author","short_title"];
+  foreach( $sources as $thisSource ) {
+    if( isset($deets[$thisSource][0]) ) {
+      $haystack = strtolower($deets[$thisSource][0]);
+      foreach( $lookfor as $index => $value ) {
+        if( strpos($haystack, "{{{{start_hilite}}}}" . $value . "{{{{end_hilite}}}}") !== false ) {
+          unset($lookfor[$index]);
+        } else {
+          $bits = explode("{{{{start_hilite}}}}", $haystack);
+          foreach( $bits as $bitIndex => $thisBit ) {
+            if( $bitIndex == 0 ) {
+              continue;
+            }
+            $highlight = strtolower(explode("{{{{end_hilite}}}}", $thisBit, 2)[0]);
+            $count = similar_text($value, $highlight, $percent);
+            if( $percent > 60 ) {
+              unset($lookfor[$index]);
+              continue 2;
+            }
+          }
+        }
+      }
+    }
+  }
+  $showMatch = count($lookfor) > 0;
+?>
+<div class="EIN-col-m-12">
+  <div class="EIN-col-m-3">
+    <div class="text-center" style="padding:10px">
+      <?php /* Display thumbnail if appropriate: */ ?>
+      <?php $largeThumb = $record->getThumbnail('large'); ?>
+      <?php if ($largeThumb): ?>
+        <a href="<?=$this->recordLink()->getUrl($this->driver)?>">
+          <img alt="<?=$this->transEsc('Cover Image')?>" class="recordcover" src="<?=$this->escapeHtmlAttr($largeThumb);?>"/>
+        </a>
+      <?php else: ?>
+        <img src="<?=$this->url('cover-unavailable')?>" class="recordcover" alt="<?=$this->transEsc('No Cover Image')?>"/>
+      <?php endif; ?>
+    </div>
+  </div>
+  <div class="EIN-col-m-9" style="padding-right:10px">
+    <div class="highlightContainer EIN-col-m-12 EIN-col-t-8 EIN-col-8">
+      <h1 property="name" class="itemTitle"><a href="<?=$this->recordLink()->getUrl($this->driver)?>">
+        <?=$this->highlight(($this->driver->getShortTitle() == "") 
+             ? trim((isset($deets["title"][0]) ? $deets["title"][0] : $this->driver->getTitle()),"\0\t\n\x0B\r /") 
+             : (trim((isset($deets["title_short"][0]) ? $deets["title_short"][0] : $this->driver->getShortTitle()),"\0\t\n\x0B\r /") . ' ' . 
+                trim((isset($deets["title_sub"][0]) ? $deets["title_sub"][0] : $this->driver->getSubtitle()),"\0\t\n\x0B\r /") . ' ' . 
+                trim($this->driver->getTitleSection(),"\0\t\n\x0B\r /")));
+        ?>
+      </a></h1>
+
+      <?php $authors = $this->driver->getDeduplicatedAuthors(); ?>
+      <?php if (isset($authors['primary']) && !empty($authors['primary'])): ?>
+        <? $primaryAuthor = array_keys($authors['primary'])[0]; ?>
+        <h4 property="author" class="itemAuthor">by <a href="<?=$record->getLink('author', $primaryAuthor)?>" class="authorLink"><?=$this->highlight(isset($deets["author"][0]) ? $deets["author"][0] : $primaryAuthor)?></a></h4>
+      <?php endif; ?>
+
+      <table>
+        <?php $formats = $this->driver->getFormats(); $showDate = false; foreach( $this->grouping as $thisDoc ):
+                foreach( $thisDoc->getFormats() as $thisFormat ):
+                  if( (substr($thisFormat, 0, 10) != "Category: ") && !in_array($thisFormat, $formats) ):
+                    $formats[] = $thisFormat;
+                  endif;
+                  $showDate |= ($thisDoc->getFormatCategory() == "Video");
+                endforeach;
+              endforeach;
+              if (!empty($formats)): ?>
+          <?php $firstTime = true; foreach( $formats as $thisFormat ): ?>
+            <tr>
+              <td class="EIN-hide-m itemDetailCategory"><?=($firstTime?"Format:":"&nbsp;")?></td>
+              <td style="padding-bottom:5px">
+                <span class="formatTag"><?=$thisFormat?></span>
+                <?php if( $firstTime ): ?>
+                  <?php $publications = $this->driver->getPublicationDetails(); if ($showDate && !empty($publications)): ?>
+                    <?php foreach ($publications as $field): ?>
+                      <?php $pubDate = $field->getDate(); if (!empty($pubDate)): ?>
+                        <span property="publicationDate" class="publishDate"><?=$this->escapeHtml($pubDate)?></span>
+                      <?php break; endif; ?>
+                    <?php endforeach; ?>
+                  <?php endif; ?>
+                  <?php $firstTime = false; ?>
+                <?php endif; ?>
+              </td>
+            </tr>
+          <?php endforeach; ?>
+        <?php endif; ?>
+      </table>
+
+      <br>
+      <h4><strong><?=(count($this->grouping) + 1)?></strong> entries in this group</h4>
+    </div>
+    <div class="EIN-hide-m EIN-col-t-4 EIN-col-4" style="padding:5px 0px 10px">
+      <div class="EIN-col-m-12">
+        <a data-toggle="collapse" class="facetAccordionTitle collapsed" href="#grouping<?=$this->driver->getGroupingKey()?>" class="collapsed">
+          <button class="btn-default" onClick="ToggleCaret('<?=$this->driver->getGroupingKey()?>');">View Formats and Editions<i class="fa fa-caret-down"></i><i class="fa fa-caret-up facetToggleOff"></i></button>
+        </a>
+      </div>
+    </div>
+  </div>
+  <div class="EIN-col-m-12 EIN-hide-t EIN-hide" style="padding:5px 10px 10px">
+    <div class="EIN-col-m-12">
+      <a data-toggle="collapse" class="facetAccordionTitle collapsed" href="#grouping<?=$this->driver->getGroupingKey()?>" class="collapsed">
+        <button class="btn-default" onClick="ToggleCaret('<?=$this->driver->getGroupingKey()?>');" style="width:100%">View Formats and Editions<i class="fa fa-caret-down"></i><i class="fa fa-caret-up facetToggleOff"></i></button>
+      </a>
+    </div>
+    <div class="EIN-col-m-12">
+      <span></span>
+    </div>
+  </div>
+  <div class="EIN-col-m-12 panel panel-groupingAccordion">
+    <div id="grouping<?=$this->driver->getGroupingKey()?>" class="facetAccordionContent panel-collapse collapse">
+      <div class="panel-body" style="border:5px solid #3f51b5">
+        <div id="result<?=$this->driver->getGroupingKey()?>0" class="row clearfix result<?=$this->driver->supportsAjaxStatus()?' ajaxItem':''?>">
+          <?=$this->record($this->driver)->getSearchResult('list')?>
+        </div>          
+        <?php $groupIndex = 1; foreach( $this->grouping as $thisRecord ): ?>
+          <div id="result<?=$this->driver->getGroupingKey() . $groupIndex++ ?>" class="row clearfix result<?=$thisRecord->supportsAjaxStatus()?' ajaxItem':''?>">
+            <?=$this->record($thisRecord)->getSearchResult('list')?>
+          </div>          
+        <?php endforeach; ?>
+      </div>
+    </div>
+  </div>
+  <div class="EIN-col-m-12"><hr style="margin:5px 0"></div>
+</div>
+<script type="text/javascript">
+  function ToggleCaret(grouping) {
+    $('a[href="#grouping' + grouping + '"]').find('i').not('.facetToggleOff').addClass('tempToggle');
+    $('a[href="#grouping' + grouping + '"]').find('i.facetToggleOff').removeClass('facetToggleOff');
+    $('a[href="#grouping' + grouping + '"]').find('i.tempToggle').addClass('facetToggleOff').removeClass('tempToggle');
+    $('#grouping' + grouping).find("hr").last().parent().css("display", "none");
+  }
+</script>
