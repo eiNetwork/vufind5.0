@@ -261,6 +261,25 @@ class MyResearchController extends AbstractBase
     }
 
     /**
+     * Reset PIN action
+     *
+     * @return mixed
+     */
+    public function resetPINAction()
+    {
+        $catalog = $this->getILS();
+        $result = $catalog->requestPINReset($this->params()->fromPost('username'));
+
+        $view = $this->createViewModel();
+        if( $result ) {
+            $this->flashMessenger()->setNamespace('info')->addMessage("reset_success");
+        } else {
+            $this->flashMessenger()->setNamespace('error')->addMessage("reset_failure");
+        }
+        return $view;
+    }
+
+    /**
      * Login Action
      *
      * @return mixed

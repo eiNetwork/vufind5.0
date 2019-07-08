@@ -57,6 +57,16 @@ class HelpController extends AbstractBase
     }
 
     /**
+     * Shows the patron the eiNetwork Privacy Policy
+     *
+     * @return mixed
+     */
+    public function privacyPolicyAction()
+    {
+        return $this->createViewModel();
+    }
+
+    /**
      * Shows the patron the changelog
      *
      * @return mixed
