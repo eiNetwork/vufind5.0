@@ -1321,6 +1321,179 @@ class EINetwork extends SierraRest implements
         return json_decode($this->memcached->get($hash), true);
     }
 
+    /**
+     * Convenience function to get the reading history info for a set of Solr IDs
+     *
+     * @param  array $id a set of Solr ID values
+     *
+     * @return array map of the IDs to author, title, and format
+     */
+    protected function getReadingHistoryInfo($ids) {
+        $returnMap = [];
+
+        // weed out any we've already seen
+        foreach( $ids as $thisKey => $thisID ) {
+            if( $thisInfo = $this->memcached->get("readingHistoryInfo" . $thisID) ) {
+                $returnMap[$thisID] = $thisInfo;
+                unset($ids[$thisKey]);
+            }
+        }
+
+        // see if it's there
+        if( count($ids) ) {
+            // grab a bit more information from Solr
+            $solrBaseURL = $this->config['Solr']['url'];
+            $curl_url = $solrBaseURL . "/biblio/select?q=*%3A*&fq=";
+            $addOr = false;
+            foreach( $ids as $thisID ) {
+                $curl_url .= ($addOr ? "%20OR%20" : "") . "id%3A%22" . $thisID . "%22";
+                $addOr = true;
+            }
+            $curl_url .= "&fl=id,author,title,format&wt=csv&csv.separator=%07&csv.encapsulator=%15&rows=50";
+            $curl_connection = curl_init($curl_url);
+            curl_setopt($curl_connection, CURLOPT_CONNECTTIMEOUT, 30);
+            curl_setopt($curl_connection, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
+            curl_setopt($curl_connection, CURLOPT_RETURNTRANSFER, true);
+            $sresult = curl_exec($curl_connection);
+            $values = explode("\n", $sresult);
+
+            // parse this
+            $fieldMap = [];
+            foreach( $values as $index => $thisLine ) {
+                $pieces = explode(chr(7), $thisLine);
+                if( !$thisLine ) {
+                    continue;
+                }
+                if( $index == 0 ) {
+                    $fieldMap = array_flip($pieces);
+                    continue;
+                }
+
+                // we have to do some hocus pocus here since the values can also include the delimiter if they are multi-valued
+                for($i=0;$i<count($pieces);$i++) {
+                    while( substr($pieces[$i], 0, 1) == chr(21) && substr($pieces[$i], -1) != chr(21) ) {
+                        array_splice($pieces, $i, 2, $pieces[$i] . "\," . $pieces[$i+1]);
+                    }
+                    if( substr($pieces[$i], 0, 1) == chr(21) ) {
+                        $pieces[$i] = substr($pieces[$i], 1, -1);
+                    }
+                }
+
+                $newInfo = ["author" => $pieces[$fieldMap["author"]], "title" => $pieces[$fieldMap["title"]], "format" => $pieces[$fieldMap["format"]]];
+                $this->memcached->set("readingHistoryInfo" . $pieces[$fieldMap["id"]], $newInfo);
+                $returnMap[$pieces[$fieldMap["id"]]] = $newInfo;
+            }
+        }
+
+        // send it back
+        return $returnMap;
+    }
+
+    public function getReadingHistory($patron, $page = 1, $recordsPerPage = 50, $sortOption = "outDate") {
+        // if it isn't cached yet, grab it
+        if( !$this->memcached->get("readingHistory" . $patron["id"]) ) {
+            $readingHistoryTitles = [];
+            $enabled = true;
+            $done = false;
+
+            $result = $this->makeRequest(
+                ['v' . $this->apiVersion, 'patrons', $patron["id"], 'checkouts', 'history'], ['limit' => 50, 'offset' => count($readingHistoryTitles)], 'GET', $patron
+            );
+
+            if( (($result["httpStatus"] ?? 200) == 400) && (($result["code"] ?? 0) == 146) ) {
+                $enabled = false;
+            }
+
+            // fetch it by pages of 50
+            while( $enabled && count($readingHistoryTitles) < $result["total"] ) {
+                // grab the author and title
+                $ids = [];
+                foreach( $result["entries"] as $index => $thisEntry ) {
+                    $rsh = substr($thisEntry["id"], strrpos($thisEntry["id"], "/") + 1);
+                    $bibID = substr($thisEntry["bib"], strrpos($thisEntry["bib"], "/") + 1);
+                    $bibID = ".b" . $bibID . $this->getCheckDigit($bibID);
+                    $result["entries"][$index]["rsh"] = $rsh;
+                    $result["entries"][$index]["bibID"] = $bibID;
+                    $result["entries"][$index]["checkout"] = strftime("%m/%d/%y", strtotime($thisEntry["outDate"]));
+                    if( substr($result["entries"][$index]["checkout"], 3, 1) == "0" ) {
+                        $result["entries"][$index]["checkout"] = substr($result["entries"][$index]["checkout"], 0, 3) . substr($result["entries"][$index]["checkout"], 4);
+                    }
+                    if( substr($result["entries"][$index]["checkout"], 0, 1) == "0" ) {
+                        $result["entries"][$index]["checkout"] = substr($result["entries"][$index]["checkout"], 1);
+                    }
+                    $ids[] = $bibID;
+                }
+                $extraInfo = $this->getReadingHistoryInfo($ids);
+                foreach( $result["entries"] as $index => $thisEntry ) {
+                    if( isset($extraInfo[$thisEntry["bibID"]]) ) {
+                        $result["entries"][$index]["author"] = $extraInfo[$thisEntry["bibID"]]["author"];
+                        $result["entries"][$index]["title"] = $extraInfo[$thisEntry["bibID"]]["title"];
+                        $result["entries"][$index]["format"] = $extraInfo[$thisEntry["bibID"]]["format"];
+                    } else {
+                        $result["entries"][$index]["title"] = "Title no longer available";
+                        $result["entries"][$index]["skipLoad"] = true;
+                    }
+                }
+
+                // merge this info in
+                $readingHistoryTitles = array_merge($readingHistoryTitles, $result["entries"]);
+
+                // grab the next page
+                $result = $this->makeRequest(
+                    ['v5', 'patrons', $patron["id"], 'checkouts', 'history'], ['limit' => 50, 'offset' => count($readingHistoryTitles)], 'GET', $patron
+                );
+            }
+
+            $this->memcached->set("readingHistory" . $patron["id"], $enabled ? $readingHistoryTitles : false);
+        }
+        $readingHistory = $this->memcached->get("readingHistory" . $patron["id"]);
+
+        // do the desired sort
+        $sortedTitles = [];
+        if( $readingHistory !== false ) {
+            foreach( $readingHistory as $thisEntry ) {
+                $sortKey = (isset($thisEntry[$sortOption]) && $thisEntry[$sortOption] && ($thisEntry[$sortOption] != "Title no longer available")) ? $thisEntry[$sortOption] : "~~~~~";
+                $sortKey .= (isset($thisEntry["format"]) ? "" : "~~~") . $thisEntry["title"] . $thisEntry["outDate"] . $thisEntry["bibID"];
+                $sortedTitles[$sortKey] = $thisEntry;
+            }
+            ksort($sortedTitles);
+            if( $sortOption == "outDate" ) {
+                $sortedTitles = array_reverse($sortedTitles);
+            }
+            $sortedTitles = array_slice($sortedTitles, ($page - 1) * $recordsPerPage, $recordsPerPage);
+        }
+
+        return array('historyActive'=>($readingHistory !== false), 'titles'=>$sortedTitles, 'numTitles'=> count($sortedTitles), 'total_records' => ($readingHistory !== false) ? count($readingHistory) : 0, 'page' => $page);
+    }
+
+    public function deleteReadingHistoryItems($patron, $selectedIDs) {
+        $success = true;
+        foreach( $selectedIDs as $thisID ) {
+            $result = $this->makeRequest(
+                ['v' . $this->apiVersion, 'patrons', $patron["id"], 'checkouts', 'history', $thisID], '', 'DELETE', $patron
+            );
+
+            if (!empty($result['code'])) {
+                $success = false;
+            }
+        }
+
+        // invalidate the cache
+        $hierarchy = ['v' . $this->apiVersion, 'patrons', $patron['id'], 'checkouts', 'history'];
+        $offset = 0;
+        $params = ['limit' => 50, 'offset' => $offset];
+        $hash = md5(json_encode($hierarchy) . ($params ? ("###" . json_encode($params)) : ""));
+        while( $this->memcached->get($hash) ) {
+          $this->memcached->set($hash, null);
+          $params['offset'] += 50;
+          $hash = md5(json_encode($hierarchy) . ($params ? ("###" . json_encode($params)) : ""));
+        }
+        $this->memcached->delete("readingHistory" . $patron["id"]);
+
+        // return info
+        return $success;
+    }
+
 
 
 
@@ -1549,5 +1722,52 @@ class EINetwork extends SierraRest implements
             $hold_result['status'] = '<i class=\'fa fa-exclamation-triangle\'></i>There was an error placing your request';
         }
         return $hold_result;
+    }
+
+    /**
+     * Do an update or edit of reading history information.  Current actions are:
+     * deleteMarked
+     * deleteAll
+     * exportList
+     * optOut
+     *
+     * @param   array   $patron         The patron array
+     * @param   string  $action         The action to perform
+     * @param   array   $selectedTitles The titles to do the action on if applicable
+     */
+    function doReadingHistoryAction($patron, $action, $selectedTitles){
+        $curl_url = $this->config['Catalog']['classic_url'] . "/patroninfo~S1/" . $patron['id'] ."/readinghistory";
+
+        $cookie = tempnam ("/tmp", "CURLCOOKIE");
+        $curl_connection = curl_init($curl_url);
+        curl_setopt($curl_connection, CURLOPT_CONNECTTIMEOUT, 30);
+        curl_setopt($curl_connection, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
+        curl_setopt($curl_connection, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl_connection, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($curl_connection, CURLOPT_FOLLOWLOCATION, 1);
+        curl_setopt($curl_connection, CURLOPT_UNRESTRICTED_AUTH, true);
+        curl_setopt($curl_connection, CURLOPT_COOKIEJAR, $cookie);
+        curl_setopt($curl_connection, CURLOPT_COOKIESESSION, true);
+        curl_setopt($curl_connection, CURLOPT_POST, true);
+        $post_string = 'code=' . $patron['cat_username'] . '&pin=' . $patron['cat_password'] . '&submit=submit';//implode ('&', $post_items);
+        curl_setopt($curl_connection, CURLOPT_POSTFIELDS, $post_string);
+        $sresult = curl_exec($curl_connection);
+
+        if ($action == 'optOut'){
+            //load patron page readinghistory/OptOut
+            $curl_url = $this->config['Catalog']['classic_url'] . "/patroninfo~S1/" . $patron['id'] ."/readinghistory/OptOut";
+            curl_setopt($curl_connection, CURLOPT_URL, $curl_url);
+            curl_setopt($curl_connection, CURLOPT_HTTPGET, true);
+            $sresult = curl_exec($curl_connection);
+        }elseif ($action == 'optIn'){
+            //load patron page readinghistory/OptIn
+            $curl_url = $this->config['Catalog']['classic_url'] . "/patroninfo~S1}/" . $patron['id'] ."/readinghistory/OptIn";
+            curl_setopt($curl_connection, CURLOPT_URL, $curl_url);
+            curl_setopt($curl_connection, CURLOPT_HTTPGET, true);
+            $sresult = curl_exec($curl_connection);
+        }
+        curl_close($curl_connection);
+
+        return $sresult;
     }
 }

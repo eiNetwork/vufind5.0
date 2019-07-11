@@ -728,7 +728,7 @@ $staticRoutes = [
     'MyResearch/Edit', 'MyResearch/Email', 'MyResearch/Facets', 'MyResearch/Favorites',
     'MyResearch/Fines', 'MyResearch/HistoricLoans', 'MyResearch/Holds',
     'MyResearch/Home', 'MyResearch/ILLRequests', 'MyResearch/Logout', 'MyResearch/MyList',
-    'MyResearch/NewPassword', 'MyResearch/Profile',
+    'MyResearch/NewPassword', 'MyResearch/Profile', 'MyResearch/ReadingHistory',
     'MyResearch/Recover', 'MyResearch/ResetPIN', 'MyResearch/SaveSearch',
     'MyResearch/StorageRetrievalRequests', 'MyResearch/UserLogin',
     'MyResearch/Verify', 'OAI/Server', 

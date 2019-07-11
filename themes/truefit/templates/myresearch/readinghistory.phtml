@@ -1,0 +1,190 @@
+<?
+  // Convenience variable:
+  $account = $this->auth()->getManager();
+  $user = $this->auth()->isLoggedIn();
+
+  // Set up page title:
+  $this->headTitle($this->translate('Reading History'));
+
+  $maxPage = ceil($this->readingHistory["total_records"] / 50);
+  $previous = ($this->readingHistory["page"] == 1) ? null : ($this->readingHistory["page"] - 1);
+  $next = ($this->readingHistory["page"] == $maxPage) ? null : ($this->readingHistory["page"] + 1);
+  $range = [];
+  $start = $this->readingHistory["page"] - (($maxPage == $this->readingHistory["page"]) ? 4 : (($maxPage == $next) ? 3 : (($this->readingHistory["page"] == 2) ? 1 : (($this->readingHistory["page"] == 1) ? 0 : 2))));
+  for( $i=$start; $i<$start+5; $i++ ) {
+    if( ($i > 0) && ($i <= $maxPage) ) {
+      $range[] = $i;
+    }
+  }
+  $paginationInfo = [ "pageCount" => $maxPage, "previous" => $previous, "next" => $next, "current" => $this->readingHistory["page"], "pagesInRange" => $range ];
+?>
+
+<?=$this->flashmessages()?>
+
+<div class="EIN-col-m-12 padded">
+  <div class="EIN-col-m-12 panel-body" style="padding:0">
+    <h1 class="pageTitle">Reading History</h1>
+    <div class="center" style="margin:20px 0px">
+      <table style="margin:auto">
+        <tr>
+          <td style="width:50%">
+            <button class="btn-default btn-wide" style="width:100%;border-right:1px solid white;border-radius:5px 0px 0px 5px"<?=(($this->readingHistory["total_records"] == 0) ? " disabled" : "")?> onclick="SaveReadingHistory()"><?=$this->transEsc("export_reading_history")?></button>
+          </td>
+          <td style="width:50%">
+            <a target="_blank" href="https://acla.overdrive.com/account/history">
+              <button class="btn-default btn-wide" style="width:100%;border-radius:0px 5px 5px 0px"><?=$this->transEsc("overdrive_reading_history_show")?></button>
+            </a>
+          </td>
+        </tr>
+      </table>
+    </div>
+    <? if( $this->readingHistory["total_records"] == 0 ): ?>
+      <div>You do not have any items in your reading list. It may take up to 3 hours for your reading history to be updated after you start recording your history.</div>
+    <? else: ?>
+      <div class="clearfix hidden-print center">
+        <?=$this->render('myresearch/readinghistorypagination.phtml', $paginationInfo)?>
+        <div class="EIN-hide-m EIN-col-t-12 EIN-col-12" style="height:10px"></div>
+        <table style="margin:auto;display:inline-block">
+          <tr>
+            <td><span>Title<?=(($this->readingHistory["total_records"] == 1) ? "" : "s")?> <strong id="historyCount"><?=((($this->readingHistory["page"] - 1) * 50) + 1) . "-" . ((($this->readingHistory["page"] * 50) < $this->readingHistory["total_records"]) ? ($this->readingHistory["page"] * 50) : $this->readingHistory["total_records"])?> of <?=$this->readingHistory["total_records"]?></strong> sorted by </span></td>
+            <td style="padding-left:5px" class="ajaxListSortControls"><?=$this->render('myresearch/readinghistorysort.phtml', ['sort' => $this->sort])?></td>
+          </tr>
+        </table>
+      </div>
+      <form class="form-inline" method="post" name="bulkActionForm" action="<?=$this->url('cart-myresearchbulk')?>" data-lightbox>
+        <span class="ajaxReadingHistory">
+          <?=$this->context($this)->renderInContext('myresearch/bulk-action-buttons.phtml', array('idPrefix' => 'delete', 'history' => 'history'))?>
+        </span>
+        <div style="display:none">
+          <? foreach ($this->readingHistory["titles"] as $i=>$current): ?>
+            <? if( isset($current["driver"]) ): ?>
+              <?=$this->record($current["driver"])->getHoldCheckbox($current["rsh"], "readinghistory")?>
+            <? else: ?>
+              <?=$this->context()->renderInContext('record/checkbox.phtml', ['overruleId' => $current["rsh"], 'count' => $i, 'page' => 'readinghistory'])?>
+            <? endif; ?>
+          <? endforeach; ?>
+        </div>
+      </form>
+      <div class="EIN-col-m-12"><hr style="margin:5px 0"></div>
+      <table class="ajaxItem readingHistoryTable" style="width:100%">
+        <tr class="historyHeaderRow">
+          <td>&nbsp;</td>
+          <td>Title</td>
+          <td>Format</td>
+          <td style="text-align:right">Checked Out</td>
+        </tr>
+        <? $lastIndex = -1; ?>
+        <? foreach( $this->readingHistory["titles"] as $i=>$item ): ?>
+          <? if( isset($item["driver"]) ): ?>
+            <? $record = $this->record($item["driver"]); ?>
+            <? $lastIndex = (isset($item["itemindex"]) && ($item["itemindex"] > $lastIndex)) ? $item["itemindex"] : $lastIndex; ?>
+            <tr class="historyItem">
+              <td style="margin:auto">
+                <span class="pull-left flip checkBoxLabel"><?=$record->getHoldCheckbox($item["rsh"], "readinghistory") ?></span>
+                <input type="hidden" value="<?=$this->escapeHtmlAttr($item["driver"]->getUniqueId())?>" class="hiddenId" />
+                <input type="hidden" value="<?=$this->escapeHtmlAttr($item["driver"]->getResourceSource())?>" class="hiddenSource" />
+              </td>
+              <td style="padding:15px 5px" class="itemTitle">
+                <a href="<?=$this->recordLink()->getUrl($item["driver"])?>"><?=$this->escapeHtml(trim(($item["driver"]->getShortTitle() == "") ? $item["driver"]->getTitle() : $item["driver"]->getShortTitle(),"\0\t\n\x0B\r /") . ' ' . trim($item["driver"]->getSubtitle(),"\0\t\n\x0B\r /") . ' ' . trim($item["driver"]->getTitleSection(),"\0\t\n\x0B\r /"))?></a>
+                <? $authors = $item["driver"]->getDeduplicatedAuthors(); ?>
+                <? if (isset($authors['primary']) && !empty($authors['primary'])): ?>
+                  <? reset($authors['primary']); ?>
+                  <? $mainAuthor = key($authors['primary']); ?>
+                  <h4 property="author" class="itemAuthor">by <a href="<?=$record->getLink('author', $mainAuthor)?>" class="authorLink"><?=$this->escapeHtml($mainAuthor)?></a></h4>
+                <? endif; ?>
+              </td>
+              <td>
+                <? $formats = $item["driver"]->getFormats(); if (!empty($formats)): ?>
+                  <? $firstTime = true; foreach( $formats as $thisFormat ): ?>
+                    <div style="padding-bottom:5px">
+                      <span class="formatTag"><?=$thisFormat?></span>
+                    </div>
+                  <? endforeach; ?>
+                <? endif; ?>
+              </td>
+              <td style="text-align:right"><?=$item["checkout"]?></td>
+            </tr>
+          <? else: ?>
+            <tr class="historyItem">
+              <td style="margin:auto">
+                <span class="pull-left flip checkBoxLabel"><?=$this->context()->renderInContext('record/checkbox.phtml', ['overruleId' => $item["rsh"], 'count' => $i, 'page' => 'readinghistory'])?></span>
+              </td>
+              <td style="padding:15px 5px" class="itemTitle">
+                <span class="unlinkedTitle"><?=$this->escapeHtml($item["title"])?></span>
+              </td>
+              <td>
+              </td>
+              <td style="text-align:right"><?=$item["checkout"]?></td>
+            </tr>
+          <? endif; ?>
+        <? endforeach; ?>
+      </table>
+      <div class="clearfix hidden-print center">
+        <?=$this->render('myresearch/readinghistorypagination.phtml', $paginationInfo)?>
+      </div>
+    <? endif; ?>
+    <div class="center" style="margin:20px 0px">
+      <form method="post">
+        <input type="hidden" name="readingHistoryAction" value="<?=($this->readingHistory["historyActive"] ? "optOut" : "optIn")?>">
+        <button class="btn-default btn-wide"><?=$this->transEsc($this->readingHistory["historyActive"] ? "reading_history_disable" : "reading_history_enable")?></button>
+      </form>
+    </div>
+    <div class="historyNote">The library takes seriously the privacy of your library records. Therefore, we do not keep track of what you borrow after you return it. However, our automated system 
+      has a feature called "My Reading History" that allows you to track items you check out. Participation in the feature is entirely voluntary. You may start or stop using it, as well as delete 
+      all entries in "My Reading History" at any time. If you choose to start recording "My Reading History", you agree to allow our automated system to store this data. The library staff does not
+      have access to your "My Reading History", however, it is subject to all applicable local, state, and federal laws, and under those laws, could be examined by law enforcement authorities 
+      without your permission. If this is of concern to you, you should not use the "My Reading History" feature.
+    </div>
+  </div>
+  <script type="text/javascript">
+    /*** Adapted from https://ciphertrick.com/2014/12/07/download-json-data-in-csv-format-cross-browser-support/ ***/
+    function msieversion() {
+      var ua = window.navigator.userAgent;
+      var msie = ua.indexOf("MSIE ");
+      if (msie > 0 || !!navigator.userAgent.match(/Trident.*rv\:11\./)) // If Internet Explorer, return true
+      {
+        return true;
+      } else { // If another browser,
+      return false;
+      }
+      return false;
+    }
+
+    function SaveReadingHistory() {
+      var CSV = 'Title,Author,Format,Checked Out\r\n';
+
+      $('.readingHistoryTable tr').not('.historyHeaderRow').each( function() {
+        // get the needed properties
+        $title = $(this).children('td.itemTitle').children('a:first');
+        if( $title.size() == 0 )
+        {
+          $title = $(this).children('td.itemTitle').children('.unlinkedTitle')
+        }
+        $author = $(this).find('.authorLink');
+        $format = $(this).find('.formatTag');
+        $date = $(this).children('td:nth-child(4)');
+
+        // update them
+        CSV += "\"" + $title.text().replace(/"/g,"\"\"") + "\",\"" + $author.text().replace("\"","\\\"") + "\",\"" + $format.text() + "\",\"" + $date.text() + "\"\r\n";
+      });
+
+      var fileName = "Reading_History_sort_by_<?=($this->sort ? $this->sort : "date")?>_page_<?=$this->readingHistory["page"]?>.csv";
+      if(msieversion()){
+        var IEwindow = window.open();
+        IEwindow.document.write('sep=,\r\n' + CSV);
+        IEwindow.document.close();
+        IEwindow.document.execCommand('SaveAs', true, fileName);
+        IEwindow.close();
+      } else {
+        var uri = 'data:application/csv;charset=utf-8,' + escape(CSV);
+        var link = document.createElement("a");
+        link.href = uri;
+        link.style = "visibility:hidden";
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    }
+  </script>
+</div>

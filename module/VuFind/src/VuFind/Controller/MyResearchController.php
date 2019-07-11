@@ -2187,6 +2187,83 @@ class MyResearchController extends AbstractBase
     }
 
     /**
+     * Show patron their reading history
+     *
+     * @return view
+     */
+    public function readingHistoryAction()
+    {
+        // Stop now if the user does not have valid catalog credentials available:
+        if (!is_array($patron = $this->catalogLogin())) {
+            return $patron;
+        }
+
+        // see if they're trying to submit an action
+        $catalog = $this->getILS();
+        if( $action = $this->params()->fromPost('readingHistoryAction') ) {
+            $selectedIDs = $this->params()->fromPost('ids');
+            if( $action == "deleteMarked" && !$this->params()->fromPost('confirm') ) {
+                $replacement = ((count($selectedIDs) > 1) ? (count($selectedIDs) . " items") : "item") . " from your reading history?<br>";
+                foreach($this->params()->fromPost('holdTitles') as $title) {
+                    $replacement .= "<br><span class=\"bold\">Title: </span>" . urldecode($title);
+                }
+                $msg = [['msg' => 'confirm_history_delete_selected_text',
+                         'html' => true,
+                         'tokens' => ['%%deleteData%%' => $replacement]]];
+                return $this->confirm(
+                    'reading_history_delete_selected',
+                    $this->url()->fromRoute('myresearch-readinghistory'),
+                    $this->url()->fromRoute('myresearch-readinghistory'),
+                    $msg,
+                    [
+                        'history' => 'History',
+                        'readingHistoryAction' => 'deleteMarked',
+                        'ids' => $selectedIDs
+                    ]
+                );
+            }
+            if( $action == "deleteMarked" ) {
+                $success = $catalog->deleteReadingHistoryItems($patron, $selectedIDs);
+
+                $this->flashMessenger()->addMessage($success ? ((count($this->params()->fromPost('ids')) > 1) ? 'reading_history_delete_success_multiple' : 'reading_history_delete_success_single') : 'reading_history_delete_failure', 'info');
+                $view = $this->createViewModel();
+                $view->setTemplate('blankModal');
+                $view->suppressFlashMessages = true;
+                $view->reloadParent = true;
+                return $view;
+            }
+            $result = $catalog->doReadingHistoryAction($patron, $action, $selectedIDs);
+            if( $action == "optIn" ) {
+                $this->flashMessenger()->addMessage('reading_history_enabled_success', 'info');
+            } else if( $action == "optOut" ) {
+                if( strpos( $result, "You cannot optout while there is reading history" ) !== false ) {
+                    $this->flashMessenger()->addMessage('reading_history_disabled_failure_delete_all', 'error');
+                } else {
+                    $this->flashMessenger()->addMessage('reading_history_disabled_success', 'info');
+                }
+            }
+        }
+
+        $readingHistory = $catalog->getReadingHistory($patron, ($this->params()->fromQuery("pageNum") ? $this->params()->fromQuery("pageNum") : 1), 50, ($this->params()->fromQuery("sort") ? $this->params()->fromQuery("sort") : "outDate"));
+        // add in the drivers where needed
+        foreach( $readingHistory["titles"] as $key => $item ) {
+            if( !isset($item["skipLoad"]) ) {
+                try{
+                    $item["driver"] = $this->serviceLocator->get('VuFind\Record\Loader')->load($item['bibID'], DEFAULT_SEARCH_BACKEND);
+                } catch(RecordMissingException $e) {
+                }
+            }
+            $readingHistory["titles"][$key] = $item;
+        }
+
+        $view = $this->createViewModel();
+        $view->sort = $this->params()->fromQuery("sort");
+        $view->readingHistory = $readingHistory;
+        $view->indexOffset = ($this->params()->fromQuery("pageNum") ? (($this->params()->fromQuery("pageNum") - 1) * 50) : 0) + 1;
+        return $view;
+    }
+
+    /**
      * Load content in the background.  Can't do this via Ajax because they kill the session.
      */
     public function backgroundLoaderAction()

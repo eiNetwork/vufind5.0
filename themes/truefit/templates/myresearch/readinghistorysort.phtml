@@ -1,0 +1,30 @@
+<div class="EIN-col-m-4" style="display:inline;float:none;white-space:nowrap">
+  <? $caption = (($this->sort == "title") ? "Title" : (($this->sort == "author") ? "Author" : "Checkout Date")); ?>
+  <button id="readingHistorySortButton" class="btn-alternate" data-toggle="dropdown" data-target="#readingHistorySortButtonDropdown"><?=$caption?><i class="fa fa-caret-down"></i></button>
+  <div class="dropdown" id="readingHistorySortButtonDropdown" style="position:absolute">
+    <ul role="navigation" class="dropdown-menu standardDropdown">
+      <li><button class="btn-dropdown btn-standardDropdown manageListDropdown" onclick="submitSortForm('title')">Title</button></li>
+      <li><button class="btn-dropdown btn-standardDropdown manageListDropdown" onclick="submitSortForm('author')">Author</button></li>
+      <li><button class="btn-dropdown btn-standardDropdown manageListDropdown" onclick="submitSortForm('outDate')">Checkout Date</button></li>
+    </ul>
+  </div>
+</div>
+<form class="form-inline" action="<?=$this->currentPath()?>" method="get" name="readingHistorySort">
+  <input type="hidden" id="sort_options" name="sort">
+  <noscript><input type="submit" class="btn btn-default" value="<?=$this->transEsc("Set")?>" /></noscript>
+</form>
+<script type="text/javascript">
+  function submitSortForm(sortType) {
+    $('#sort_options').val(sortType);
+    $('#readingHistorySortButton').html('<?=$this->transEsc("Loading")?>... <i class="fa fa-spinner"></i>');
+    $("form[name='readingHistorySort']").submit();
+  }
+
+  jQuery(document).ready(function() {
+    $('#readingHistorySortButtonDropdown').attr("style","position:absolute;width:100%");
+    setTimeout(function() {
+      $('#readingHistorySortButton').css("width", $('#readingHistorySortButtonDropdown').children().outerWidth());
+      $('#readingHistorySortButtonDropdown').attr("style","");
+    }, 50);
+  });
+</script>
