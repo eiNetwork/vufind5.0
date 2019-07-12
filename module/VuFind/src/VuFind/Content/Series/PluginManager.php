@@ -1,8 +1,8 @@
 <?php
 /**
- * Content loader plugin manager
+ * Series content loader plugin manager
  *
- * PHP version 7
+ * PHP version 5
  *
  * Copyright (C) Villanova University 2010.
  *
@@ -17,39 +17,48 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- * @category VuFind
+ * @category VuFind2
  * @package  Content
  * @author   Demian Katz <demian.katz@villanova.edu>
  * @license  http://opensource.org/licenses/gpl-2.0.php GNU General Public License
- * @link     https://vufind.org/wiki/development:plugins:hierarchy_components Wiki
+ * @link     http://vufind.org/wiki/vufind2:hierarchy_components Wiki
  */
-namespace VuFind\Content;
+namespace VuFind\Content\Series;
 
 /**
- * Content loader plugin manager
+ * Series content loader plugin manager
  *
- * @category VuFind
+ * @category VuFind2
  * @package  Content
  * @author   Demian Katz <demian.katz@villanova.edu>
+ * @author   Brad Patton <pattonb@einetwork.net>
  * @license  http://opensource.org/licenses/gpl-2.0.php GNU General Public License
- * @link     https://vufind.org/wiki/development:plugins:hierarchy_components Wiki
+ * @link     http://vufind.org/wiki/vufind2:hierarchy_components Wiki
  */
 class PluginManager extends \VuFind\ServiceManager\AbstractPluginManager
 {
+    /**
+     * Default plugin aliases.
+     *
+     * @var array
+     */
+    protected $aliases = [
+        'syndetics' => 'VuFind\Content\Series\Syndetics',
+        'syndeticsplus' => 'VuFind\Content\Series\SyndeticsPlus',
+    ];
+
     /**
      * Default plugin factories.
      *
      * @var array
      */
     protected $factories = [
-        'authornotes' => 'VuFind\Content\Factory::getAuthorNotes',
-        'excerpts' => 'VuFind\Content\Factory::getExcerpts',
-        'reviews' => 'VuFind\Content\Factory::getReviews',
-        'series' => 'VuFind\Content\Factory::getSeries',
-        'summaries' => 'VuFind\Content\Factory::getSummaries',
-        'toc' => 'VuFind\Content\Factory::getTOC',
+        'VuFind\Content\Series\Syndetics' =>
+            'VuFind\Content\AbstractSyndeticsFactory',
+        'VuFind\Content\Series\SyndeticsPlus' =>
+            'VuFind\Content\AbstractSyndeticsFactory',
     ];
 
     /**
@@ -60,6 +69,6 @@ class PluginManager extends \VuFind\ServiceManager\AbstractPluginManager
      */
     protected function getExpectedInterface()
     {
-        return 'VuFind\Content\Loader';
+        return 'VuFind\Content\AbstractBase';
     }
 }

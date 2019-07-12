@@ -56,6 +56,7 @@ class PluginManager extends \VuFind\ServiceManager\AbstractPluginManager
         'map' => 'VuFind\RecordTab\Map',
         'preview' => 'VuFind\RecordTab\Preview',
         'reviews' => 'VuFind\RecordTab\Reviews',
+        'series' => 'VuFind\RecordTab\Series',
         'similaritemscarousel' => 'VuFind\RecordTab\SimilarItemsCarousel',
         'staffviewarray' => 'VuFind\RecordTab\StaffViewArray',
         'staffviewmarc' => 'VuFind\RecordTab\StaffViewMARC',
@@ -86,6 +87,7 @@ class PluginManager extends \VuFind\ServiceManager\AbstractPluginManager
         'VuFind\RecordTab\Map' => 'VuFind\RecordTab\Factory::getMap',
         'VuFind\RecordTab\Preview' => 'VuFind\RecordTab\Factory::getPreview',
         'VuFind\RecordTab\Reviews' => 'VuFind\RecordTab\Factory::getReviews',
+        'VuFind\RecordTab\Series' => 'VuFind\RecordTab\Factory::getSeries',
         'VuFind\RecordTab\SimilarItemsCarousel' =>
             'VuFind\RecordTab\Factory::getSimilarItemsCarousel',
         'VuFind\RecordTab\StaffViewArray' =>

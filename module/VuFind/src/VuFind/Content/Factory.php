@@ -91,6 +91,22 @@ class Factory
     }
 
     /**
+     * Create Series loader
+     *
+     * @param ServiceManager $sm Service manager
+     *
+     * @return mixed
+     */
+    public static function getSeries(ServiceManager $sm)
+    {
+        $loader = $sm->get('VuFind\Content\Series\PluginManager');
+        $config = $sm->get('VuFind\Config\PluginManager')->get('config');
+        $providers = isset($config->Content->series)
+            ? $config->Content->series : '';
+        return new Loader($loader, $providers);
+    }
+
+    /**
      * Create Summaries loader
      *
      * @param ServiceManager $sm Service manager
