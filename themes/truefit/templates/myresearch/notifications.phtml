@@ -1,0 +1,25 @@
+<h1 class="pageTitle">Message Center</h1>
+<div class="EIN-col-m-12 padded">
+  <? if( count($this->notifications) == 0 ): ?>
+    <div class="EIN-col-m-12" style="height:50px"></div>
+    <div class="EIN-col-m-12 center">You currently have no messages.</div>
+    <div class="EIN-col-m-12" style="height:50px"></div>
+  <? else: ?>
+    <table class="EIN-col-m-12">
+      <tr><td class="bold">Click a subject line below to read the message</td></tr>
+      <? foreach($this->notifications as $index => $thisMessage): ?>
+        <tr><td>
+          <div class="EIN-col-m-12"><hr style="margin:5px 0"></div>
+<!--          <div class="EIN-col-m-12 messageRow" onclick="Lightbox.get('MyResearch','Notifications',false,{'showMessage':true,'subject':'<?=$this->transEsc($thisMessage["subject"])?>','message':'<?=$this->transEsc($thisMessage["message"])?>'})"><?=(isset($thisMessage["attnSubject"]) ? $thisMessage["attnSubject"] : $thisMessage["subject"]) . (isset($thisMessage["extra"]) ? $thisMessage["extra"] : "")?></div>  -->
+          <form action="<?=$this->url('myresearch-notifications')?>" method="post" data-lightbox id="message<?=$index?>Form">
+            <input type="hidden" name="showMessage" value="true">
+            <input type="hidden" name="subject" value="<?=$this->transEsc($thisMessage["subject"])?>">
+            <input type="hidden" name="message" value="<?=$this->transEsc($thisMessage["message"])?>">
+          </form>
+          <div class="EIN-col-m-12 messageRow" onClick="$('#message<?=$index?>Form').submit();"><?=(isset($thisMessage["attnSubject"]) ? $thisMessage["attnSubject"] : $thisMessage["subject"]) . (isset($thisMessage["extra"]) ? $thisMessage["extra"] : "")?></div></a>
+        </td></tr>
+      <? endforeach; ?>
+    </table>
+  <? endif; ?>
+  <div class="EIN-col-m-12" style="height:10px"></div>
+</div>

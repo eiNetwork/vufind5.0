@@ -2187,6 +2187,32 @@ class MyResearchController extends AbstractBase
     }
 
     /**
+     * Show patron a list of notifications
+     *
+     * @return view
+     */
+    public function notificationsAction()
+    {
+        // Stop now if the user does not have valid catalog credentials available:
+        if (!is_array($patron = $this->catalogLogin())) {
+            return $patron;
+        }
+
+        // see whether they want to see a single message or not
+        $catalog = $this->getILS();
+        $profile = $catalog->getMyProfile($patron);
+        $view = $this->createViewModel();
+        if( $this->params()->fromPost('showMessage') ) {
+            $view->setTemplate('myresearch/showMessage');
+            $view->subject = $this->params()->fromPost('subject');
+            $view->message = $this->params()->fromPost('message');
+        } else {
+            $view->notifications = $catalog->getNotifications($profile);
+        }
+        return $view;
+    }
+
+    /**
      * Show patron their reading history
      *
      * @return view

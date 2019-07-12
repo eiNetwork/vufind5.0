@@ -169,10 +169,13 @@ function handleItemStatusResponse(response) {
       leftButton.prop('disabled', false);
       leftButton.attr('onClick', "window.open('" + result.learnMoreURL + "', '_blank');");
     } else if( result.accessOnline ) {
-//VF5UPGRADE - needs checked (works for 1 url, selector for multiple is probably broken)
       leftButton.empty().append('Access Online');
       leftButton.prop('disabled', false);
-      leftButton.attr('onClick', ((urls.length > 1) ? ("Lightbox.get('Record', 'ChooseLink', {'id':'" + result.fullID + "'});") : ("window.open('" + urls[0]["url"] + "', '_blank');")));
+      if( urls.length > 1 ) {
+        leftButton.wrap('<a href="/Record/' + result.fullID + '/ChooseLink" data-lightbox></a>');
+      } else {
+        leftButton.attr('onClick', "window.open('" + urls[0]["url"] + "', '_blank');");
+      }
     } else if( result.libraryOnly ) {
       leftButton.empty().append('In Library Only');
     } else {
