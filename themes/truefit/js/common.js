@@ -260,7 +260,7 @@ function setupOffcanvas() {
 
 function setupAutocomplete() {
   // If .autocomplete class is missing, autocomplete is disabled and we should bail out.
-  var searchbox = $('#searchForm_lookfor.autocomplete');
+  var searchbox = $('#LCsearchForm .autocomplete');
   if (searchbox.length < 1) {
     return;
   }
@@ -282,7 +282,7 @@ function setupAutocomplete() {
           q: query,
           method: 'getACSuggestions',
           searcher: searcher.searcher,
-          type: searcher.type ? searcher.type : $('#searchForm_type').val(),
+          type: searcher.type ? searcher.type : $('#LCsearchForm .searchTypeInput').val(),
           hiddenFilters: hiddenFilters
         },
         dataType: 'json',
@@ -301,7 +301,7 @@ function setupAutocomplete() {
     }
   });
   // Update autocomplete on type change
-  $('#searchForm_type').change(function searchTypeChange() {
+  $('#LCsearchForm .searchTypeInput').change(function searchTypeChange() {
     searchbox.autocomplete().clearCache();
   });
 }

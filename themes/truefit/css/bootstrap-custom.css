@@ -1,0 +1,36 @@
+/* crhallberg/autocomplete.js 0.14 */
+.autocomplete-results {
+  position: absolute;
+  margin: 0;
+  margin-top: 2px;
+  padding: 0;
+  border: 1px solid #d3d3d3;
+  background-color: #ffffff;
+  border-radius: 4px;
+  overflow: hidden;
+  z-index: 50;
+}
+.autocomplete-results .ac-item {
+  display: block;
+  margin: 0;
+  padding: .75rem 1.25rem;
+  border-bottom: 1px solid #d3d3d3;
+  cursor: pointer;
+}
+.autocomplete-results .ac-item:last-child {
+  border: 0;
+}
+.autocomplete-results .ac-item:hover {
+  background-color: #ededed;
+}
+.autocomplete-results .ac-item.loading {
+  background-color: #ffffff;
+}
+.autocomplete-results .ac-item.selected {
+  background-color: #3f51b5;
+  color: #ffffff;
+}
+.autocomplete-results .ac-item small {
+  display: block;
+  color: #a9a9a9;
+}

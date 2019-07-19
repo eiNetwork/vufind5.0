@@ -20,7 +20,6 @@
     $lastLimit = $this->searchMemory()->getLastLimit($this->searchClassId);
 ?>
   <form role="search" method="get" action="<?=$this->url($basicSearch)?>" name="splashSearchForm" id="LCsearchForm" autocomplete="off">
-    <?= ""/*VF5UPGRADE$this->render('search/searchTabs');*/ ?>
     <table>
       <tr>
         <td style="width:100%">
@@ -92,9 +91,6 @@
 
     function SearchFocus(elem) {
       $(elem).parent().css({"background-color":"#ededed"});
-/*VF5UPGRADE
-      $(".initialSearch").typeahead('val', '');
-*/
       $(".initialSearch").val('');
       $(".initialSearch").removeClass("initialSearch");
     }
@@ -103,9 +99,6 @@
       $(elem).parent().css({"background-color":"#fff"});
       if( $(elem).val() == '' ) {
         $(elem).addClass("initialSearch");
-/*VF5UPGRADE
-        $(".initialSearch").typeahead('val', 'Search For...');
-*/
         $(".initialSearch").val('Search For...');
       }
     }

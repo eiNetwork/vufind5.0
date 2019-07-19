@@ -1003,7 +1003,7 @@ class EINetwork extends SierraRest implements
             )));
 
             // build the message
-            $msg = "<form name=\"creditForm\" method=\"post\" onsubmit=\"return checkFees()\" target=\"_blank\" action=\"https://payflowlink.paypal.com\">" .
+            $msg = "<form name=\"creditForm\" method=\"post\" onsubmit=\"return checkFees()\" target=\"_blank\" action=\"https://payflowlink.paypal.com\" data-lightbox-ignore>" .
                    "<input type=\"hidden\" name=\"action\" value=\"confirmInfo\">" .
                    "<input type=\"hidden\" name=\"key\" value=\"-3994241445885651921\">" .
                    "<input type=\"hidden\" name=\"linkMode\" value=\"true\">" .
