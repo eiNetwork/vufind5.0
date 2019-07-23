@@ -65,6 +65,7 @@ class SolrOverdriveFactory
         $config = $container->get('VuFind\Config\PluginManager')->get('config');
         $odConfig = $container->get('VuFind\Config\PluginManager')->get('Overdrive');
         $connector = $container->get('VuFind\DigitalContent\OverdriveConnector');
-        return new $requestedName($config, $odConfig, $connector);
+        $searches = $container->get('VuFind\Config\PluginManager')->get('searches');
+        return new $requestedName($config, $odConfig, $connector, $searches);
     }
 }

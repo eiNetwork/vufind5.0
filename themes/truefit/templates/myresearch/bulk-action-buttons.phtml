@@ -66,11 +66,10 @@
         showUnfreeze = false;
       }
     } );
-
-    $(".BulkPickupLocation").css({"display":(showPickup ? "list-item" : "none")});
-    $(".BulkEmailAddress").css({"display":(showEmail ? "list-item" : "none")});
-    $(".BulkFreeze").css({"display":(showFreeze ? "list-item" : "none")});
-    $(".BulkUnfreeze").css({"display":(showUnfreeze ? "list-item" : "none")});
+    form.find(".BulkPickupLocation").css({"display":(showPickup ? "list-item" : "none")});
+    form.find(".BulkEmailAddress").css({"display":(showEmail ? "list-item" : "none")});
+    form.find(".BulkFreeze").css({"display":(showFreeze ? "list-item" : "none")});
+    form.find(".BulkUnfreeze").css({"display":(showUnfreeze ? "list-item" : "none")});
   }
 
   function HoldSelected(form, id) {

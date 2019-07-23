@@ -394,6 +394,25 @@ function setupJumpMenus(_container) {
   container.find('select.jumpMenu').change(function jumpMenu(){ $(this).parent('form').submit(); });
 }
 
+// autologout functionality
+var autoLogoutTimer1, autoLogoutTimer2;
+function autoLogoutResetTimer(){
+  clearTimeout(autoLogoutTimer1);
+  clearTimeout(autoLogoutTimer2);
+  var waitInMS=300000;
+  var delayInMS=60000;
+  autoLogoutTimer1=setTimeout("autoLogoutAlertUser()", waitInMS);
+  autoLogoutTimer2=setTimeout("autoLogout()", waitInMS + delayInMS);
+}
+
+function autoLogoutAlertUser(){
+  VuFind.lightbox.ajax({'url':'/MyResearch/LogoutWarning'});
+}
+function autoLogout(){
+  //Redirect to logout page
+  window.location = VuFind.path + "/MyResearch/Logout?target=home";
+}
+
 $(document).ready(function commonDocReady() {
   // Start up all of our submodules
   VuFind.init();

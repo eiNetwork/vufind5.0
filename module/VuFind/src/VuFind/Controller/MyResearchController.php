@@ -340,11 +340,23 @@ class MyResearchController extends AbstractBase
      *
      * @return mixed
      */
+    public function logoutWarningAction()
+    {
+        return $this->createViewModel();
+    }
+
+    /**
+     * Logout Action
+     *
+     * @return mixed
+     */
     public function logoutAction()
     {
         $config = $this->getConfig();
         if (!empty($config->Site->logOutRoute)) {
             $logoutTarget = $this->getServerUrl($config->Site->logOutRoute);
+        } else if ($targetRoute = $this->params()->fromQuery('target', false)) {
+            $logoutTarget = $this->getServerUrl($targetRoute);
         } else {
             $logoutTarget = $this->getRequest()->getServer()->get('HTTP_REFERER');
             if (empty($logoutTarget)) {
@@ -369,6 +381,19 @@ class MyResearchController extends AbstractBase
                 $logoutTarget = $this->getServerUrl('home');
             }
         }
+
+        // clear out the patron info
+        $this->getILS()->clearSessionVar("patronLogin");
+        $this->getILS()->clearSessionVar("patron");
+        $this->getILS()->clearSessionVar("dismissedAnnouncements");
+        setcookie("einStoredBarcode", "", time() - 1209600, '/');
+        setcookie("einStoredPIN", "", time() - 1209600, '/');
+        setcookie("checkoutTab", "", time() - 1209600, '/');
+        setcookie("holdsTab", "", time() - 1209600, '/');
+        setcookie("mostRecentList", "", time() - 1209600, '/');
+        setcookie("lastProfileSection", "", time() - 1209600, '/');
+        setcookie("itemDetailsTab", "", time() - 1209600, '/');
+        setcookie("catalogCheckboxes", "", time() - 1209600, '/');
 
         return $this->redirect()
             ->toUrl($this->getAuthManager()->logout($logoutTarget));
@@ -1372,8 +1397,7 @@ class MyResearchController extends AbstractBase
             $current = $this->getDriverForILSRecord($current);
             $holdDetails = $current->getExtraDetail("ils_details");
             $group = $holdDetails["available"] ? 'ready' : ($holdDetails["in_transit"] ? 'transit' : ($holdDetails["frozen"] ? 'frozen' : 'hold'));
-            $key = $current->GetTitle() . $holdDetails["requestId"];
-//VF5UPGRADE - test for ILL titles            $key = ((isset($current["ILL"]) && $current["ILL"]) ? $current["title"] : $current["driver"]->GetTitle()).$current["hold_id"];
+            $key = ((isset($holdDetails["ILL"]) && $holdDetails["ILL"]) ? $holdDetails["title"] : $current->GetTitle()).$holdDetails["requestId"];
             $recordList[$group][$key] = $current;
         }
         $allList = [];

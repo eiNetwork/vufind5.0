@@ -229,18 +229,29 @@ class SolrDefault extends DefaultRecord
                 && is_array($this->highlightDetails) && (count($lookfor) > 0)
             ) {
                 foreach ($this->highlightDetails as $key => $value) {
-                    $haystack = strtolower($value[0]);
-                    if ($value && !in_array($key, $this->forbiddenSnippetFields)) {
-                        foreach( $lookfor as $index => $value2 ) {
+                    $bits = explode("{{{{START_HILITE}}}}", $value[0]);
+                    foreach( $bits as $bitIndex => $thisBit ) {
+                        if( $bitIndex == 0 ) {
+                            continue;
+                        }
+                        $highlight = strtolower(explode("{{{{END_HILITE}}}}", $thisBit, 2)[0]);
+                        foreach ($lookfor as $index => $value2 ) {
                             // make sure it wasnt included in any of the other snippets we already added
                             foreach( $highlights as $greenLitHighlight ) {
-                                $haystack2 = strtolower($greenLitHighlight["snippet"]);
-                                if( strpos($haystack2, $value2) !== false ) {
-                                    unset($lookfor[$index]);
-                                    continue 2;
+                                $haystackBits = explode("{{{{START_HILITE}}}}", $greenLitHighlight["snippet"]);
+                                foreach( $haystackBits as $hBitIndex => $thisHBit ) {
+                                    if( $hBitIndex == 0 ) {
+                                        continue;
+                                    }
+                                    $haystackHighlight = strtolower(explode("{{{{END_HILITE}}}}", $thisHBit, 2)[0]);
+                                    if( strpos($haystackHighlight, $value2) !== false ) {
+                                        unset($lookfor[$index]);
+                                        continue 3;
+                                    }
                                 }
                             }
-                            if( strpos($haystack, $value2) !== false ) {
+
+                            if( strpos($highlight, $value2) !== false ) {
                                 $highlights[] = [
                                     'snippet' => $value[0],
                                     'caption' => $this->getSnippetCaption($key)
@@ -251,6 +262,48 @@ class SolrDefault extends DefaultRecord
                     }
                 }
             }
+
+            if( count($lookfor) == 0 ) {
+                return $highlights;
+            }
+
+            // we still haven't found an exact match. do a fuzzy search and see if there are any close matches
+            foreach ($this->highlightDetails as $key => $value) {
+                $bits = explode("{{{{START_HILITE}}}}", $value[0]);
+                foreach( $bits as $bitIndex => $thisBit ) {
+                    if( $bitIndex == 0 ) {
+                        continue;
+                    }
+                    $highlight = strtolower(explode("{{{{END_HILITE}}}}", $thisBit, 2)[0]);
+                    foreach ($lookfor as $index => $value2 ) {
+                        // make sure it wasnt included in any of the other snippets we already added
+                        foreach( $highlights as $greenLitHighlight ) {
+                            $haystackBits = explode("{{{{START_HILITE}}}}", $greenLitHighlight["snippet"]);
+                            foreach( $haystackBits as $hBitIndex => $thisHBit ) {
+                                if( $hBitIndex == 0 ) {
+                                    continue;
+                                }
+                                $haystackHighlight = strtolower(explode("{{{{END_HILITE}}}}", $thisHBit, 2)[0]);
+                                $count = similar_text($value2, $haystackHighlight, $percent);
+                                if( $percent > 60 ) {
+                                    unset($lookfor[$index]);
+                                    continue 3;
+                                }
+                            }
+                        }
+
+                        $count = similar_text($value2, $highlight, $percent);
+                        if( $percent > 60 ) {
+                            $highlights[] = [
+                                'snippet' => $value[0],
+                                'caption' => $this->getSnippetCaption($key)
+                            ];
+                            unset($lookfor[$index]);
+                        }
+                    }
+                }
+            }
+
             return $highlights;
         }
 

@@ -190,14 +190,12 @@ JS;
           $(window).scroll(moveButtons);
           $(window).resize(moveButtons);
 <?    /* log them out if they're at a library location AND (they're logged in OR not on the home page) */ 
-  //VF5UPGRADEif( $this->ils()->getDriver()->getCurrentLocation() && ($account->isLoggedIn() || ($_SERVER["REQUEST_URI"] != "/")) ): 
+  if( $this->ils()->getDriver()->getCurrentLocation() && ($account->isLoggedIn() || ($_SERVER["REQUEST_URI"] != "/")) ): 
 ?>
-/*VF5UPGRADE
           if( self.window === self.top ) {
             autoLogoutResetTimer();
           }
-*/
-<? //VF5UPGRADEendif; ?>
+<? endif; ?>
         });
 
         function moveButtons() {

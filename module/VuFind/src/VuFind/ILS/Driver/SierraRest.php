@@ -766,12 +766,13 @@ class SierraRest extends AbstractBase implements TranslatorAwareInterface,
             $title = '';
             $volume = '';
             $publicationYear = '';
+            $ILLtitle = null;
             if ($entry['recordType'] == 'i') {
                 $itemId = $this->extractId($entry['record']);
                 // Fetch bib ID from item
                 $item = $this->makeRequest(
                     ['v' . $this->apiVersion, 'items', $itemId],
-                    ['fields' => 'bibIds,varFields'],
+                    ['fields' => 'bibIds,varFields,location,callNumber'],
                     'GET',
                     $patron
                 );
@@ -779,6 +780,10 @@ class SierraRest extends AbstractBase implements TranslatorAwareInterface,
                     $bibId = $item['bibIds'][0];
                 }
                 $volume = $this->extractVolume($item);
+                // see if it's ILL
+                if( $item['location']['code'] == "xzill" ) {
+                    $ILLtitle = $item["callNumber"];
+                }
             } elseif ($entry['recordType'] == 'b') {
                 $bibId = $this->extractId($entry['record']);
             }
@@ -820,6 +825,11 @@ class SierraRest extends AbstractBase implements TranslatorAwareInterface,
                 'title' => $title,
                 'frozen' => !empty($entry['frozen'])
             ];
+            if( $ILLtitle ) {
+                $holds[count($holds)-1]['ILL'] = true;
+                $holds[count($holds)-1]['title'] = $ILLtitle;
+                $holds[count($holds)-1]['author'] = "InterLibrary Loan";
+            }
         }
         return $holds;
     }
