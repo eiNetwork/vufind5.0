@@ -1692,4 +1692,15 @@ class DefaultRecord extends AbstractBase
         return isset($this->fields['long_lat_label'])
             ? $this->fields['long_lat_label'] : [];
     }
+
+    /**
+     * Get the grouping_key variable.
+     *
+     * @return string
+     */
+    public function getGroupingKey()
+    {
+        return isset($this->fields['grouping_key'])
+            ? $this->fields['grouping_key'] : "";
+    }
 }

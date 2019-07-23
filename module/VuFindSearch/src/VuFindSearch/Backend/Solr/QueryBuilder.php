@@ -118,7 +118,7 @@ class QueryBuilder implements QueryBuilderInterface
      *
      * @return ParamBag
      */
-    public function build(AbstractQuery $query)
+    public function build(AbstractQuery $query, bool $addGrouping=true)
     {
         $params = new ParamBag();
 
@@ -183,6 +183,12 @@ class QueryBuilder implements QueryBuilderInterface
 
         $params->set('q', $string);
 
+        // grouping
+        if( $addGrouping ) {
+            $params->add('fq', '{!collapse field=grouping_key nullPolicy=expand rows=200}');
+            $params->add('expand', 'true');
+            $params->add('expand.rows', '200');
+        }
         return $params;
     }
 

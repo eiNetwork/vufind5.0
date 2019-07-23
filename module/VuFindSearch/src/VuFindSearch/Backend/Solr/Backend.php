@@ -111,7 +111,7 @@ class Backend extends AbstractBackend
 
         $params->set('rows', $limit);
         $params->set('start', $offset);
-        $params->mergeWith($this->getQueryBuilder()->build($query));
+        $params->mergeWith($this->getQueryBuilder()->build($query, ($limit > 0)));
         $response   = $this->connector->search($params);
         $collection = $this->createRecordCollection($response);
         $this->injectSourceIdentifier($collection);

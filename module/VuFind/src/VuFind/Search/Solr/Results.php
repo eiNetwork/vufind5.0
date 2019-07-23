@@ -72,6 +72,13 @@ class Results extends \VuFind\Search\Base\Results
     protected $spellingProcessor = null;
 
     /**
+     * Array of expanded groupings retrieved on latest search
+     *
+     * @var array
+     */
+    protected $expandedGroupings = null;
+
+    /**
      * Get spelling processor.
      *
      * @return SpellingProcessor
@@ -113,6 +120,10 @@ class Results extends \VuFind\Search\Base\Results
         try {
             $collection = $searchService
                 ->search($this->backendId, $query, $offset, $limit, $params);
+
+            // grab the results of the non-grouped search for correct facet values
+            $facetCollection = $searchService
+                ->search($this->backendId, $query, 0, 0, $this->getParams()->getBackendParameters());
         } catch (\VuFindSearch\Backend\Exception\BackendException $e) {
             // If the query caused a parser error, see if we can clean it up:
             if ($e->hasTag('VuFind\Search\ParserError')
@@ -128,7 +139,7 @@ class Results extends \VuFind\Search\Base\Results
             }
         }
 
-        $this->responseFacets = $collection->getFacets();
+        $this->responseFacets = $facetCollection->getFacets();
         $this->resultTotal = $collection->getTotal();
 
         // Process spelling suggestions
@@ -139,6 +150,7 @@ class Results extends \VuFind\Search\Base\Results
 
         // Construct record drivers for all the items in the response:
         $this->results = $collection->getRecords();
+        $this->expandedGroupings = $collection->getExpandedGroupings();
     }
 
     /**
@@ -380,5 +392,18 @@ class Results extends \VuFind\Search\Base\Results
         $visualFacets = $this->responseFacets->getPivotFacets();
         $flare->children = $visualFacets;
         return $flare;
+    }
+
+    /**
+     * Basic 'getter' for expanded groupings.
+     *
+     * @return array
+     */
+    public function getExpandedGroupings()
+    {
+        if (null === $this->expandedGroupings) {
+            $this->performAndProcessSearch();
+        }
+        return $this->expandedGroupings;
     }
 }

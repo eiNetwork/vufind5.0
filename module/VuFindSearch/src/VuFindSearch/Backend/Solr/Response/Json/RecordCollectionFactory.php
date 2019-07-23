@@ -100,6 +100,13 @@ class RecordCollectionFactory implements RecordCollectionFactoryInterface
                 $collection->add(call_user_func($this->recordFactory, $doc));
             }
         }
+        if (isset($response['expanded'])) {
+            foreach ($response['expanded'] as $groupingKey => $groupInfo) {
+                foreach ($groupInfo['docs'] as $doc) {
+                    $collection->addGroupDoc($groupingKey, call_user_func($this->recordFactory, $doc));
+                }
+            }
+        }
         return $collection;
     }
 }

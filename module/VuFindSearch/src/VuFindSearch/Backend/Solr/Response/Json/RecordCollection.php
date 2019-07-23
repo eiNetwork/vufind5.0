@@ -77,6 +77,13 @@ class RecordCollection extends AbstractRecordCollection
     protected $spellcheck;
 
     /**
+     * Expanded groupings information.
+     *
+     * @var array
+     */
+    protected $expandedGroupings;
+
+    /**
      * Constructor.
      *
      * @param array $response Deserialized SOLR response
@@ -88,6 +95,7 @@ class RecordCollection extends AbstractRecordCollection
         $this->response = array_replace_recursive(static::$template, $response);
         $this->offset = $this->response['response']['start'];
         $this->rewind();
+        $this->expandedGroupings = [];
     }
 
     /**
@@ -177,5 +185,33 @@ class RecordCollection extends AbstractRecordCollection
     protected function getRawSpellcheckSuggestions()
     {
         return $this->response['spellcheck']['suggestions'] ?? [];
+    }
+
+    /**
+     * Get Solr expanded groupings.
+     *
+     * @return array
+     */
+    public function getExpandedGroupings()
+    {
+        return $this->expandedGroupings;
+    }
+
+    /**
+     * Add a record to the collection's groupings.
+     *
+     * @param string          $groupingKey Group to add record to
+     * @param RecordInterface $record      Record to add
+     *
+     * @return void
+     */
+    public function addGroupDoc($groupingKey, $record)
+    {
+        if( !isset($this->expandedGroupings[$groupingKey]) ) {
+            $this->expandedGroupings[$groupingKey] = [];
+        }
+        if (!in_array($record, $this->expandedGroupings[$groupingKey], true)) {
+            $this->expandedGroupings[$groupingKey][] = $record;
+        }
     }
 }
