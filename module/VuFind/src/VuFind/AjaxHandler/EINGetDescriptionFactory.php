@@ -1,6 +1,6 @@
 <?php
 /**
- * Factory for Overdrive record drivers.
+ * Factory for EIN GetDescription AJAX handler.
  *
  * PHP version 7
  *
@@ -20,27 +20,27 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  *
  * @category VuFind
- * @package  RecordDrivers
+ * @package  AJAX
  * @author   Demian Katz <demian.katz@villanova.edu>
- * @author   Brent Palmer <brent-palmer@icpl.org> 
+ * @author   Brad Patton <pattonb@einetwork.net>
  * @license  http://opensource.org/licenses/gpl-2.0.php GNU General Public License
  * @link     https://vufind.org/wiki/development Wiki
  */
-namespace VuFind\RecordDriver;
-
+namespace VuFind\AjaxHandler;
 
 use Interop\Container\ContainerInterface;
+
 /**
- * Factory for Overdrive record drivers.
+ * Factory for EINGetDescription AJAX handler.
  *
  * @category VuFind
- * @package  RecordDrivers
+ * @package  AJAX
  * @author   Demian Katz <demian.katz@villanova.edu>
- * @author   Brent Palmer <brent-palmer@icpl.org>
+ * @author   Brad Patton <pattonb@einetwork.net>
  * @license  http://opensource.org/licenses/gpl-2.0.php GNU General Public License
  * @link     https://vufind.org/wiki/development Wiki
  */
-class SolrOverdriveFactory
+class EINGetDescriptionFactory implements \Zend\ServiceManager\Factory\FactoryInterface
 {
     /**
      * Create an object
@@ -55,17 +55,21 @@ class SolrOverdriveFactory
      * @throws ServiceNotCreatedException if an exception is raised when
      * creating a service.
      * @throws ContainerException if any other error occurs
+     *
+     * @SuppressWarnings(PHPMD.UnusedFormalParameter)
      */
     public function __invoke(ContainerInterface $container, $requestedName,
         array $options = null
     ) {
-        if ($options !== null) {
-            throw new \Exception('Unexpected options sent to factory!');
+        if (!empty($options)) {
+            throw new \Exception('Unexpected options passed to factory.');
         }
-        $config = $container->get('VuFind\Config\PluginManager')->get('config');
-        $odConfig = $container->get('VuFind\Config\PluginManager')->get('Overdrive');
-        $connector = $container->get('VuFind\DigitalContent\OverdriveConnector');
-        $searches = $container->get('VuFind\Config\PluginManager')->get('searches');
-        return new $requestedName($config, $odConfig, $connector, $searches);
+        return new $requestedName(
+            $container->get('VuFind\Session\Settings'),
+            $container->get('Config'),
+            $container->get('VuFind\ILS\Connection'),
+            $container->get('VuFind\RecordTab\PluginManager'),
+            $container->get('VuFind\Record\Loader')
+        );
     }
 }

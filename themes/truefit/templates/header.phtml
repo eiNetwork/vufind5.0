@@ -5,7 +5,7 @@
     $displayName = ucwords( strtolower( $displayName ) );
     $patron = $this->ils()->getDriver()->patronLogin(null,null);
     $profile = $this->ils()->getDriver()->getMyProfile($patron);
-    $notifications = []; //VF5UPGRADE$this->ils()->getDriver()->getNotifications($profile);
+    $notifications = $this->ils()->getDriver()->getNotifications($profile);
     $holdsCount = $this->ils()->getDriver()->getNumberOfMyHolds($profile);
     $checkoutsCount = $this->ils()->getDriver()->getNumberOfMyTransactions($profile);
   }
@@ -68,10 +68,10 @@
         <li><a href="<?=$this->url('myresearch-holds')?>"><button class="btn-dropdown btn-whiteDropdown">Holds<? if($holdsCount>0): ?><span class="badge"><?=$holdsCount?></span><? endif; ?></button></a></li>
         <li><a href="<?=$this->url('myresearch-mylist')?>"><button class="btn-dropdown btn-whiteDropdown">Lists<? if($listCount>0): ?><span class="badge"><?=$listCount?></span><? endif; ?></button></a></li>
         <li><a href="<?=$this->url('myresearch-bookcart')?>"><button class="btn-dropdown btn-whiteDropdown">Book Cart<? if($bookCartCount>0): ?><span class="badge"><?=$bookCartCount?></span><? endif; ?></button></a></li>
-        <li><a href="<?=""/*VF5UPGRADE$this->url('myresearch-readinghistory')*/?>"><button class="btn-dropdown btn-whiteDropdown">Reading History</button></a></li>
+        <li><a href="<?=$this->url('myresearch-readinghistory')?>"><button class="btn-dropdown btn-whiteDropdown">Reading History</button></a></li>
         <li><a href="<?=$this->url('search-history')?>"><button class="btn-dropdown btn-whiteDropdown">Saved Searches</button></a></li>
         <li><a href="<?=$this->url('myresearch-profile')?>"><button class="btn-dropdown btn-whiteDropdown">Profile</button></a></li>
-        <li><a href="<?=""/*VF5UPGRADE$this->url('myresearch-notifications')*/?>"><button class="btn-dropdown btn-whiteDropdown">Message Center<? if(count($notifications)>0): ?><span class="badge notificationsCount"><?=count($notifications)?></span><? endif; ?></button></a></li>
+        <li><a href="<?=$this->url('myresearch-notifications')?>"><button class="btn-dropdown btn-whiteDropdown">Message Center<? if(count($notifications)>0): ?><span class="badge notificationsCount"><?=count($notifications)?></span><? endif; ?></button></a></li>
         <hr class="stretchHR">
         <li><button class="btn-dropdown btn-whiteDropdown EIN-hide" onclick="Lightbox.get('Help','Home')">Help</button></li>
         <li><button class="btn-dropdown btn-whiteDropdown EIN-hide" onclick="Lightbox.get('MyResearch','comingsoon'); return false;" style="display:none">Locations</button></li>

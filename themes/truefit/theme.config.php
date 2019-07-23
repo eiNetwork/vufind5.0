@@ -16,8 +16,5 @@ return [
     'css' => [
         'vendor/font-awesome.min.css',
         'vendor/bootstrap-slider.min.css'
-    ]/*,
-    'js' => [
-        'vendor/typeahead.js',
-    ]*/
+    ]
 ];

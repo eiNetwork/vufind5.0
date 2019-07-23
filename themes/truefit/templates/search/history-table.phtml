@@ -1,0 +1,38 @@
+<table class="EIN-col-m-12">
+  <tr>
+    <th class="EIN-hide-m EIN-hide-t EIN-hide"><?=$this->transEsc("history_time")?></th>
+    <th class="EIN-col-m-4 EIN-col-t-3"><?=$this->transEsc("history_search")?></th>
+    <th class="EIN-col-m-7 EIN-col-t-6"><?=$this->transEsc("history_limits")?></th>
+    <th class="EIN-hide-m EIN-col-t-2"><?=$this->transEsc("history_results")?></th>
+    <th class="EIN-col-m-1" style="text-align:right"><?=$this->transEsc($this->showSaved?"history_delete":"history_save")?></th>
+  </tr>
+  <? foreach (($this->showSaved ? array_reverse($this->saved) : array_reverse($this->unsaved)) as $iteration => $info): ?>
+    <tr><td colspan=5 style="padding:5px 0"><hr></hr></td></tr>
+    <tr>
+      <td class="EIN-hide-m EIN-hide-t EIN-hide"><?=$this->escapeHtml($this->dateTime()->convertToDisplayDateAndTime("U", $info->getStartTime()))?></td>
+      <td class="EIN-col-m-4 EIN-col-t-3">
+        <?=$this->historylabel($info->getParams()->getSearchClassId())?>
+        <a href="<?=$this->url($info->getOptions()->getSearchAction()) . $info->getUrlQuery()->getParams()?>"><?
+          $desc = $info->getParams()->getDisplayQuery();
+          echo empty($desc) ? $this->transEsc("history_empty_search") : $this->escapeHtml($desc);
+        ?></a>
+      </td>
+      <td class="EIN-col-m-7 EIN-col-t-6">
+        <? $info->getParams()->activateAllFacets(); foreach ($info->getParams()->getFilterList() as $field => $filters): ?>
+          <? foreach ($filters as $i => $filter): ?>
+            <? if ($filter['operator'] == 'NOT') echo $this->transEsc('NOT') . ' '; if ($filter['operator'] == 'OR' && $i > 0) echo $this->transEsc('OR') . ' '; ?>
+            <strong><?=$this->transEsc($field)?></strong>: <?=$this->escapeHtml($filter['displayText'])?><br/>
+          <? endforeach; ?>
+        <? endforeach; ?>
+      </td>
+      <td class="EIN-hide-m EIN-col-t-2"><?=$this->escapeHtml($this->localizedNumber($info->getResultTotal()))?></td>
+      <td class="EIN-col-m-1 center">
+        <? if ($this->showSaved): ?>
+          <a href="<?=$this->url('myresearch-savesearch')?>?delete=<?=urlencode($info->getSearchId())?>&amp;mode=history"><button class="btn-noBorderAlternate close"><span class="sr-only">Delete</span><i class="fa fa-close"></i></button></a>
+        <? else: ?>
+          <a href="<?=$this->url('myresearch-savesearch')?>?save=<?=urlencode($info->getSearchId())?>&amp;mode=history"><button class="btn-noBorderAlternate floatR"><span class="sr-only">Checked</span><i class="fa fa-check greenCheck"></i></button></a>
+        <? endif; ?>
+      </td>
+    </tr>
+  <? endforeach; ?>
+</table>

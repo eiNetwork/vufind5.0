@@ -167,6 +167,8 @@ class QueryBuilder implements QueryBuilderInterface
                 if ($handler->hasFilterQuery()) {
                     $params->add('fq', $handler->getFilterQuery());
                 }
+                $params->add('q.alt', $handler->createEINBoostString($string));
+                $string = "";
             } else {
                 $string = $handler->createSimpleQueryString($string);
             }
@@ -176,6 +178,9 @@ class QueryBuilder implements QueryBuilderInterface
             $filter = $handler ? $handler->getAllFields() : [];
             $params->add('hl.fl', $this->getFieldsToHighlight($filter));
         }
+        // add boost
+        $params->add('bf', "sum(product(language_boost,0.04),product(num_holdings,0.06,div(format_boost,250)),15)");
+
         $params->set('q', $string);
 
         // grouping

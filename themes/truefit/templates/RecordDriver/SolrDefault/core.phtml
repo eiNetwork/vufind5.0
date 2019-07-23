@@ -315,8 +315,8 @@
             $holdClick = " onClick=\"window.open('" . $onlineVersions[0]["url"] . "', '_blank');\"";
             $holdLink = null;
           } else {
-            $holdClick = " onClick=\"Lightbox.get('Record', 'ChooseLink', " . $this->idArgs . ");\"";
-            $holdLink = null;
+            $holdClick = null;
+            $holdLink = $this->recordLink()->getActionUrl($this->driver, "ChooseLink", json_decode($this->idArgs));
           }
         endif;
       ?>

@@ -1,0 +1,481 @@
+<?
+  // Set page title.
+  $this->headTitle($this->translate('EIN Privacy Policy'));
+?>
+<div class="EIN-col-m-12">
+  <div class="privacyTitle">
+    <a href="/eiNetworkPrivacyPolicy.doc"><button class="btn-default btn-wide">Download</button></a><br><br>
+    <?=$this->translate('EINETWORK POLICY STATEMENT ON PRIVACY')?>
+  </div>
+  <div class="EIN-col-m-12 padded">
+    <div class="EIN-hide-m EIN-col-t-3 EIN-col-3 accordionButtonsLeft">
+      <div class="facetTitle">Topic</div>
+      <div class="panel-heading">
+        <h4 class="panel-title">
+          <a data-toggle="collapse" data-parent="#privacyAccordion" href="#privacy_general" class="collapsed leftTab" onclick="createCookie('lastPrivacySection','general')"><?=$this->transEsc('privacy_general')?></a>
+          <div class="openAccordionTab"></div>
+        </h4>
+      </div>
+      <div class="panel-heading">
+        <h4 class="panel-title">
+          <a data-toggle="collapse" data-parent="#privacyAccordion" href="#privacy_policy" class="collapsed leftTab" onclick="createCookie('lastPrivacySection','policy')"><?=$this->transEsc('privacy_policy')?></a>
+          <div class="openAccordionTab"></div>
+        </h4>
+      </div>
+      <div class="panel-heading">
+        <h4 class="panel-title">
+          <a data-toggle="collapse" data-parent="#privacyAccordion" href="#privacy_personalInfo" class="collapsed leftTab" onclick="createCookie('lastPrivacySection','personalInfo')"><?=$this->transEsc('privacy_personalInfo')?></a>
+          <div class="openAccordionTab"></div>
+        </h4>
+      </div>
+      <div class="panel-heading">
+        <h4 class="panel-title">
+          <a data-toggle="collapse" data-parent="#privacyAccordion" href="#privacy_nondisclosure" class="collapsed leftTab" onclick="createCookie('lastPrivacySection','nondisclosure')"><?=$this->transEsc('privacy_nondisclosure')?></a>
+          <div class="openAccordionTab"></div>
+        </h4>
+      </div>
+      <div class="panel-heading">
+        <h4 class="panel-title">
+          <a data-toggle="collapse" data-parent="#privacyAccordion" href="#privacy_dataSecurity" class="collapsed leftTab" onclick="createCookie('lastPrivacySection','dataSecurity')"><?=$this->transEsc('privacy_dataSecurity')?></a>
+          <div class="openAccordionTab"></div>
+        </h4>
+      </div>
+      <div class="panel-heading">
+        <h4 class="panel-title">
+          <a data-toggle="collapse" data-parent="#privacyAccordion" href="#privacy_guidelines" class="collapsed leftTab" onclick="createCookie('lastPrivacySection','guidelines')"><?=$this->transEsc('privacy_guidelines')?></a>
+          <div class="openAccordionTab"></div>
+        </h4>
+      </div>
+      <div class="panel-heading">
+        <h4 class="panel-title">
+          <a data-toggle="collapse" data-parent="#privacyAccordion" href="#privacy_libraryUse" class="collapsed leftTab" onclick="createCookie('lastPrivacySection','libraryUse')"><?=$this->transEsc('privacy_libraryUse')?></a>
+          <div class="openAccordionTab"></div>
+        </h4>
+      </div>
+      <div class="panel-heading">
+        <h4 class="panel-title">
+          <a data-toggle="collapse" data-parent="#privacyAccordion" href="#privacy_notice" class="collapsed leftTab" onclick="createCookie('lastPrivacySection','notice')"><?=$this->transEsc('privacy_notice')?></a>
+          <div class="openAccordionTab"></div>
+        </h4>
+      </div>
+      <div class="facetTitle"><?=$this->transEsc('privacy_categories')?></div>
+      <div class="panel-heading">
+        <h4 class="panel-title">
+          <a data-toggle="collapse" data-parent="#privacyAccordion" href="#privacy_networkSecurity" class="collapsed leftTab" onclick="createCookie('lastPrivacySection','networkSecurity')"><?=$this->transEsc('privacy_networkSecurity')?></a>
+          <div class="openAccordionTab"></div>
+        </h4>
+      </div>
+      <div class="panel-heading">
+        <h4 class="panel-title">
+          <a data-toggle="collapse" data-parent="#privacyAccordion" href="#privacy_computerUse" class="collapsed leftTab" onclick="createCookie('lastPrivacySection','computerUse')"><?=$this->transEsc('privacy_computerUse')?></a>
+          <div class="openAccordionTab"></div>
+        </h4>
+      </div>
+      <div class="panel-heading">
+        <h4 class="panel-title">
+          <a data-toggle="collapse" data-parent="#privacyAccordion" href="#privacy_circulation" class="collapsed leftTab" onclick="createCookie('lastPrivacySection','circulation')"><?=$this->transEsc('privacy_circulation')?></a>
+          <div class="openAccordionTab"></div>
+        </h4>
+      </div>
+      <div class="panel-heading">
+        <h4 class="panel-title">
+          <a data-toggle="collapse" data-parent="#privacyAccordion" href="#privacy_search" class="collapsed leftTab" onclick="createCookie('lastPrivacySection','search')"><?=$this->transEsc('privacy_search')?></a>
+          <div class="openAccordionTab"></div>
+        </h4>
+      </div>
+      <div class="panel-heading">
+        <h4 class="panel-title">
+          <a data-toggle="collapse" data-parent="#privacyAccordion" href="#privacy_database" class="collapsed leftTab" onclick="createCookie('lastPrivacySection','database')"><?=$this->transEsc('privacy_database')?></a>
+          <div class="openAccordionTab"></div>
+        </h4>
+      </div>
+      <div class="panel-heading">
+        <h4 class="panel-title">
+          <a data-toggle="collapse" data-parent="#privacyAccordion" href="#privacy_email" class="collapsed leftTab" onclick="createCookie('lastPrivacySection','email')"><?=$this->transEsc('privacy_email')?></a>
+          <div class="openAccordionTab"></div>
+        </h4>
+      </div>
+      <div class="panel-heading">
+        <h4 class="panel-title">
+          <a data-toggle="collapse" data-parent="#privacyAccordion" href="#privacy_internet" class="collapsed leftTab" onclick="createCookie('lastPrivacySection','internet')"><?=$this->transEsc('privacy_internet')?></a>
+          <div class="openAccordionTab"></div>
+        </h4>
+      </div>
+      <div class="panel-heading"></div>
+    </div>
+    <div class="EIN-col-m-12 EIN-col-t-9 EIN-col-9 panel-group" id="privacyAccordion">
+      <h1 class="pageTitle EIN-hide-t EIN-hide">Topic</h1>
+      <div class="panel panel-default listAccordion">
+        <div class="panel-heading EIN-hide-t EIN-hide">
+          <h4 class="panel-title">
+            <a data-toggle="collapse" data-parent="#privacyAccordion" href="#privacy_general" class="collapsed" onclick="createCookie('lastPrivacySection','general')"><?=$this->transEsc('privacy_general')?><i class="fa fa-caret-down"></i><i class="fa fa-caret-up"></i></a>
+          </h4>
+        </div>
+        <div id="privacy_general" class="panel-collapse collapse">
+          <div class="panel-body">
+            <div class="EIN-col-m-12" style="height:5px"></div>
+            <div class="privacyText">
+               Personal privacy is a basic cornerstone for the exercise of free speech, free inquiry, and free association in a democracy.  Libraries have long been considered essential to
+               the exercise of First Amendment rights in the United States by an informed citizenry.  Courts have recognized many aspects of a right to personal privacy enjoyed by all Americans,
+               and state constitutions and statutes afford added protections for that right.  The Pennsylvania Supreme Court has held that the Commonwealth's Constitution affords protection
+               for the privacy of state residents, and the confidentiality of library users' circulation data is specifically safeguarded by statute.
+               <br><br>
+               Consistent with these values, both eiNetwork and participating libraries are committed to respecting and protecting the privacy of users and employees.  We are committed to
+               maintaining the privacy of users of our network, and we will treat as confidential all records in our possession or control that reveal the identity or other personal information
+               of library users.
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="panel panel-default listAccordion">
+        <div class="panel-heading EIN-hide-t EIN-hide">
+          <h4 class="panel-title">
+            <a data-toggle="collapse" data-parent="#privacyAccordion" href="#privacy_policy" class="collapsed" onclick="createCookie('lastPrivacySection','policy')"><?=$this->transEsc('privacy_policy')?><i class="fa fa-caret-down"></i><i class="fa fa-caret-up"></i></a>
+          </h4>
+        </div>
+        <div id="privacy_policy" class="panel-collapse collapse">
+          <div class="panel-body">
+            <div class="EIN-col-m-12" style="height:5px"></div>
+            <div class="privacyText">
+              This Privacy Policy sets out the policies that the eiNetwork has adopted and the procedures that it is implementing to protect the privacy of those who use resources in the
+              eiNetwork participating libraries.
+              <br><br>
+              Any questions concerning our Privacy Policy and any complaints or concerns regarding how eiNetwork protects patron privacy should be directed to the eiNetwork Director.
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="panel panel-default listAccordion">
+        <div class="panel-heading EIN-hide-t EIN-hide">
+          <h4 class="panel-title">
+            <a data-toggle="collapse" data-parent="#privacyAccordion" href="#privacy_personalInfo" class="collapsed" onclick="createCookie('lastPrivacySection','personalInfo')"><?=$this->transEsc('privacy_personalInfo')?><i class="fa fa-caret-down"></i><i class="fa fa-caret-up"></i></a>
+          </h4>
+        </div>
+        <div id="privacy_personalInfo" class="panel-collapse collapse">
+          <div class="panel-body">
+            <div class="EIN-col-m-12" style="height:5px"></div>
+            <div class="privacyText">
+              We must obtain certain personal information about users in order to provide access to materials and maintain the integrity of our system and participating libraries' collections.
+              This may include patron's name, home address, telephone number, e-mail address, birth date, and library card number.  This information about library users is found in the following
+              contexts:
+              <br><br>
+              <ul>
+                <li>User registration information - This is the information, including names, home addresses, phone numbers, and e-mail addresses, that is provided to the library when a library
+                    card is obtained by a user.  This information is retained by the interlibrary computer system for all active accounts.</li><br>
+                <li>Circulation information - When library materials are borrowed through our interlibrary computer system, records indicating the dates, materials, and borrowers are captured
+                    in our database.  While we compile and retain data on how often each item is borrowed, we typically do not retain information for more than a few weeks on who borrowed the
+                    item after it has been returned.   The interlibrary computer system does retain the most recent borrower so that libraries may address missing or damaged items as necessary.</li><br>
+                <li>Electronic access information - We may obtain data regarding users at the time they use a library card to gain access to an electronic database or use computers within the
+                    library.  Our software is programmed to purge personally identifying information automatically after a short period of time, usually about 24 hours.</li>
+              </ul><br>
+              In all cases we make every reasonable effort to avoid creating unnecessary records, and thus we have systems in place to avoid retention of records that are not needed for the
+              fulfillment of the mission of the eiNetwork or its participating libraries.  These systems may not always function perfectly; however, eiNetwork assumes no liability should data be
+              retained longer than our policy dictates.  A catalog of the types of data we collect that may have personal identifying information appears at the end of this Policy Statement.
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="panel panel-default listAccordion">
+        <div class="panel-heading EIN-hide-t EIN-hide">
+          <h4 class="panel-title">
+            <a data-toggle="collapse" data-parent="#privacyAccordion" href="#privacy_nondisclosure" class="collapsed" onclick="createCookie('lastPrivacySection','nondisclosure')"><?=$this->transEsc('privacy_nondisclosure')?><i class="fa fa-caret-down"></i><i class="fa fa-caret-up"></i></a>
+          </h4>
+        </div>
+        <div id="privacy_nondisclosure" class="panel-collapse collapse">
+          <div class="panel-body">
+            <div class="EIN-col-m-12" style="height:5px"></div>
+            <div class="privacyText">
+              The eiNetwork will not publicly disclose personal information about library users under any circumstances.  The eiNetwork will not sell, lease, or give users' personal information
+              to companies, governmental agencies, or individuals except as needed by the participating libraries or as required by law.
+              <br><br>
+              Personal information of library users may be accessed by and used by a staff member of eiNetwork or of a participating library when the staff member is acting within the scope
+              of his or duties in the administration of the library or interlibrary computer system.  Staff access must be authorized by Director of the participating library. The eiNetwork
+              assumes no liability for disclosure of library user personal information by any library staff acting within or outside the scope of his or her duties.
+              <br><br>
+              The eiNetwork or a participating library may be required to provide a user's personal information to a local, state or federal governmental entity pursuant to compulsory legal
+              process.  While we will make every effort to respect our users' privacy in these circumstances, we may be under a legal requirement to turn over data, and we intend to comply with
+              the law.  We have adopted guidelines for responding to a subpoena, warrant, legal demand, or court order for personal information that has been authorized pursuant to a federal,
+              state, or local law; these guidelines are set out below.
+              <br><br>
+              The eiNetwork cooperates with law enforcement authorities at the request of one of its Corporate members (Allegheny County Library Association or Carnegie Library of Pittsburgh),
+              and may provide information to such authorities, for the purpose of investigating and prosecuting theft of library materials.  We may also provide information to certain collection
+              agencies or in judicial proceedings for the purpose of collecting fines or recovering the cost of items not returned to the library.   The eiNetwork will comply with a request for
+              data from a participating library to enforce its local policies.  The eiNetwork requires a written request from the Library Director for such data referencing the local policy and
+              releasing eiNetwork from any liability associated with how the data is used.
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="panel panel-default listAccordion">
+        <div class="panel-heading EIN-hide-t EIN-hide">
+          <h4 class="panel-title">
+            <a data-toggle="collapse" data-parent="#privacyAccordion" href="#privacy_dataSecurity" class="collapsed" onclick="createCookie('lastPrivacySection','dataSecurity')"><?=$this->transEsc('privacy_dataSecurity')?><i class="fa fa-caret-down"></i><i class="fa fa-caret-up"></i></a>
+          </h4>
+        </div>
+        <div id="privacy_dataSecurity" class="panel-collapse collapse">
+          <div class="panel-body">
+            <div class="EIN-col-m-12" style="height:5px"></div>
+            <div class="privacyText">
+              The eiNetwork endeavors to maintain the accuracy of all information we collect and retain.  We also are committed to maintaining the security of all personal information.  We have
+              put in place appropriate physical, electronic, and managerial procedures in an effort to safeguard and secure the information we collect to prevent unauthorized access, to maintain
+              data security, and to ensure the proper use of information.  We recognize that no system is immune from unlawful intrusion through hacking, which violates both federal and state laws,
+              but we utilize both managerial and technological security procedures to protect confidential data.
+              <br><br>
+              We also permit only authorized eiNetwork or library staff to access personal information stored in our computer system; additionally, access to our network is password protected.
+              <br><br>
+              Despite the precautions we take to prevent unauthorized access to personal information, however, the eiNetwork cannot guarantee that information we collect can never be accessed by
+              unauthorized users.  While we will remain vigilant and take all reasonable precautions to prevent this, the eiNetwork is not liable for unauthorized access to user personal information.
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="panel panel-default listAccordion">
+        <div class="panel-heading EIN-hide-t EIN-hide">
+          <h4 class="panel-title">
+            <a data-toggle="collapse" data-parent="#privacyAccordion" href="#privacy_guidelines" class="collapsed" onclick="createCookie('lastPrivacySection','guidelines')"><?=$this->transEsc('privacy_guidelines')?><i class="fa fa-caret-down"></i><i class="fa fa-caret-up"></i></a>
+          </h4>
+        </div>
+        <div id="privacy_guidelines" class="panel-collapse collapse">
+          <div class="panel-body">
+            <div class="EIN-col-m-12" style="height:5px"></div>
+            <div class="privacyText">
+              There may be occasion when the eiNetwork or its participating libraries are required to respond to a subpoena, warrant, legal demand, or court order for personal information that has
+              been authorized pursuant to a federal, state, or local law.  We have instituted the following procedures to ensure that personal information will be disclosed only where legally required.
+              <br><br>
+              <ol>
+                <li>The eiNetwork will not make any library records available to any agency of state, federal, or local government unless a subpoena, warrant, court order or other investigatory
+                    document in proper form is issued by a law enforcement authority or court of competent jurisdiction.</li><br>
+                <li>Participating libraries that receive a subpoena, warrant, court order or other investigatory document requiring production of any eiNetwork information should contact the
+                    eiNetwork Director, unless prohibited from doing so by law.</li><br>
+                <li>If the eiNetwork receives a subpoena, warrant, court order or other investigatory document, the eiNetwork Director will inform the Director of the Library in question, unless
+                    prohibited from doing so by law.</li><br>
+                <li>The eiNetwork Director is the only person authorized to receive or comply with requests or inquiries from law enforcement officers.  The eiNetwork Director may delegate this
+                    authority to specific designated members of the eiNetwork staff.</li><br>
+                <li>Should a law enforcement authority serve a warrant requiring that eiNetwork or the library provide immediate access by law enforcement officers to specific records, staff will
+                    not impede access, but will immediately contact the eiNetwork Director.</li><br>
+                <li>The eiNetwork will consult with legal counsel in the event of such request for release of library records and will respond to the request consistent with advice of counsel.</li><br>
+                <li>The eiNetwork staff will refer any informal law enforcement or other individual or agency inquiries (not involving the service or compulsory process) to the eiNetwork Director.
+                    Staff should cooperate with law enforcement authorities in every way practicable, but must not provide those authorities or any requester with personal information of library
+                    users obtained from or in the possession of eiNetwork based upon an oral or noncompulsory written request.</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="panel panel-default listAccordion">
+        <div class="panel-heading EIN-hide-t EIN-hide">
+          <h4 class="panel-title">
+            <a data-toggle="collapse" data-parent="#privacyAccordion" href="#privacy_libraryUse" class="collapsed" onclick="createCookie('lastPrivacySection','libraryUse')"><?=$this->transEsc('privacy_libraryUse')?><i class="fa fa-caret-down"></i><i class="fa fa-caret-up"></i></a>
+          </h4>
+        </div>
+        <div id="privacy_libraryUse" class="panel-collapse collapse">
+          <div class="panel-body">
+            <div class="EIN-col-m-12" style="height:5px"></div>
+            <div class="privacyText">
+              The eiNetwork will provide library user information to a participating library upon receipt of a written request from the Library Director, subject to the restrictions contained in
+              this paragraph.  First, only information pertaining to those users living within the predetermined service area boundary of the requesting library may be provided to that library.
+              Second, only names, addresses, phone numbers, and e-mail addresses of users extracted from registration data may be provided to the requesting library.  Third, personal data provided
+              under this paragraph may be used only for promoting the services or programs of the requesting library or fundraising for the requesting library, and for no other purpose.  Finally,
+              such data may not be sold, copied, or made available to anyone outside of the requesting library (except where a commercial mailing, solicitation, or similar service firm is used and
+              that firm agrees in writing to confidentiality restrictions and to return or purge the data after the library's requirements have been fulfilled).  The eiNetwork may provide library
+              user data to its Corporate members for the purposes of analyzing, developing, and enhancing library services.
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="panel panel-default listAccordion">
+        <div class="panel-heading EIN-hide-t EIN-hide">
+          <h4 class="panel-title">
+            <a data-toggle="collapse" data-parent="#privacyAccordion" href="#privacy_notice" class="collapsed" onclick="createCookie('lastPrivacySection','notice')"><?=$this->transEsc('privacy_notice')?><i class="fa fa-caret-down"></i><i class="fa fa-caret-up"></i></a>
+          </h4>
+        </div>
+        <div id="privacy_notice" class="panel-collapse collapse">
+          <div class="panel-body">
+            <div class="EIN-col-m-12" style="height:5px"></div>
+            <div class="privacyText">
+              The eiNetwork and its participating libraries shall inform all staff of these privacy policies, shall publicize or post these policies to the attention of library users, and shall
+              make reasonable efforts to ensure compliance with this Policy Statement, as well as with state, federal, and local laws applicable to privacy and confidentiality.
+            </div>
+          </div>
+        </div>
+      </div>
+      <h1 class="pageTitle EIN-hide-t EIN-hide"><br><?=$this->transEsc('privacy_categories')?></h1>
+      <div class="panel panel-default listAccordion">
+        <div class="panel-heading EIN-hide-t EIN-hide">
+          <h4 class="panel-title">
+            <a data-toggle="collapse" data-parent="#privacyAccordion" href="#privacy_networkSecurity" class="collapsed" onclick="createCookie('lastPrivacySection','networkSecurity')"><?=$this->transEsc('privacy_networkSecurity')?><i class="fa fa-caret-down"></i><i class="fa fa-caret-up"></i></a>
+          </h4>
+        </div>
+        <div id="privacy_networkSecurity" class="panel-collapse collapse">
+          <div class="panel-body">
+            <div class="EIN-col-m-12" style="height:5px"></div>
+            <div class="privacyText">
+              For site security purposes and to ensure that service remains available to all users, the eiNetwork uses software programs to monitor network traffic to identify unauthorized
+              attempts to upload or change information or otherwise cause damage.  Except for these purposes, no other attempts are made to identify individual users or their usage habits.
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="panel panel-default listAccordion">
+        <div class="panel-heading EIN-hide-t EIN-hide">
+          <h4 class="panel-title">
+            <a data-toggle="collapse" data-parent="#privacyAccordion" href="#privacy_computerUse" class="collapsed" onclick="createCookie('lastPrivacySection','computerUse')"><?=$this->transEsc('privacy_computerUse')?><i class="fa fa-caret-down"></i><i class="fa fa-caret-up"></i></a>
+          </h4>
+        </div>
+        <div id="privacy_computerUse" class="panel-collapse collapse">
+          <div class="panel-body">
+            <div class="EIN-col-m-12" style="height:5px"></div>
+            <div class="privacyText">
+              The eiNetwork's participating libraries offer computers for public access.  Software is used to manage the high demand for these computers.  Users enter their library card
+              registration number (or barcode) to use a computer.  While statistics about overall usage patterns are maintained in order to improve services offered, the activities of specific
+              patrons are not retained.  Patron log-in information is removed from the computer nightly.
+              <br><br>
+              Library patrons must keep in mind that public workstations are neither private nor secure and must use judgment and discretion when using a library computer.  The eiNetwork assumes
+              no liability for any violation of privacy of individual or any commercial or financial loss patrons who use library computers.  Use of computers is subject to the eiNetwork Policy
+              Statement on Computer and Internet Use.
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="panel panel-default listAccordion">
+        <div class="panel-heading EIN-hide-t EIN-hide">
+          <h4 class="panel-title">
+            <a data-toggle="collapse" data-parent="#privacyAccordion" href="#privacy_circulation" class="collapsed" onclick="createCookie('lastPrivacySection','circulation')"><?=$this->transEsc('privacy_circulation')?><i class="fa fa-caret-down"></i><i class="fa fa-caret-up"></i></a>
+          </h4>
+        </div>
+        <div id="privacy_circulation" class="panel-collapse collapse">
+          <div class="panel-body">
+            <div class="EIN-col-m-12" style="height:5px"></div>
+            <div class="privacyText">
+              Patron material is circulated via the Innovative system software.  This circulation software tracks materials currently checked out and automatically erases a user's borrowing record
+              once material is returned and all fines are paid.  A link from the item to the borrower is maintained until either (1) the item is loaned to the next borrower, or (2) a reasonably
+              short time period elapses.
+              <br><br>
+              Copies of the operating system, application software, and transaction records of the eiNetwork integrated library system are kept on backup tapes.  This information is retained in
+              the event that a catastrophic hardware or software failure would require restoration of software or data files.  All of those data are purged through the eiNetwork's back up process.
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="panel panel-default listAccordion">
+        <div class="panel-heading EIN-hide-t EIN-hide">
+          <h4 class="panel-title">
+            <a data-toggle="collapse" data-parent="#privacyAccordion" href="#privacy_search" class="collapsed" onclick="createCookie('lastPrivacySection','search')"><?=$this->transEsc('privacy_search')?><i class="fa fa-caret-down"></i><i class="fa fa-caret-up"></i></a>
+          </h4>
+        </div>
+        <div id="privacy_search" class="panel-collapse collapse">
+          <div class="panel-body">
+            <div class="EIN-col-m-12" style="height:5px"></div>
+            <div class="privacyText">
+              Searches of the collection using The Catalog, the on-line catalog, are conducted by using the library's automated circulation system.  Information about saved searches is not available
+              to the eiNetwork or library staff.
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="panel panel-default listAccordion">
+        <div class="panel-heading EIN-hide-t EIN-hide">
+          <h4 class="panel-title">
+            <a data-toggle="collapse" data-parent="#privacyAccordion" href="#privacy_database" class="collapsed" onclick="createCookie('lastPrivacySection','database')"><?=$this->transEsc('privacy_database')?><i class="fa fa-caret-down"></i><i class="fa fa-caret-up"></i></a>
+          </h4>
+        </div>
+        <div id="privacy_database" class="panel-collapse collapse">
+          <div class="panel-body">
+            <div class="EIN-col-m-12" style="height:5px"></div>
+            <div class="privacyText">
+              To access databases - to which eiNetwork subscribes for the use of library users - remotely (from outside a participating library), users must enter their library card numbers to help
+              ensure that the system is used only by Allegheny County residents.  This information is not provided to database vendors, which are not able to obtain information relating to individual
+              users of the database via eiNetwork.
+              <br><br>
+              The eiNetwork does not retain data relating to searches of other databases, such as newspaper, magazine, or encyclopedic databases, licensed by the eiNetwork.
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="panel panel-default listAccordion">
+        <div class="panel-heading EIN-hide-t EIN-hide">
+          <h4 class="panel-title">
+            <a data-toggle="collapse" data-parent="#privacyAccordion" href="#privacy_email" class="collapsed" onclick="createCookie('lastPrivacySection','email')"><?=$this->transEsc('privacy_email')?><i class="fa fa-caret-down"></i><i class="fa fa-caret-up"></i></a>
+          </h4>
+        </div>
+        <div id="privacy_email" class="panel-collapse collapse">
+          <div class="panel-body">
+            <div class="EIN-col-m-12" style="height:5px"></div>
+            <div class="privacyText">
+              Users have the option of providing eiNetwork with an email address for the purpose of notifying the user about his or her library account.  This information is not made available
+              to any person outside eiNetwork for any reason or to any eiNetwork or library staff person for any reason other than such notification or as otherwise authorized in the Privacy
+              Policy.  Any user may request that we remove an email address from his or her record at any time; thereafter, future notifications will be made by telephone or U.S. mail.
+              <br><br>
+              The eiNetwork and participating libraries are not responsible for the privacy of email and other electronic communications that are sent or received from an eiNetwork computer via
+              the Internet.
+              <br><br>
+              Use of computers and the email system by library employees is governed by each participating library, which may allow incidental use of those computers for personal purposes.  However,
+              the computers are the property of either the library or eiNetwork, and eiNetwork owns and manages the network to which they are connected.  eiNetwork reserves the right to inspect the
+              contents of any library employee's email account to investigate compliance with applicable laws, and eiNetwork or the library may, where appropriate, exercise its right to inspect
+              computer hard drives to ensure compliance with applicable laws.  Because eiNetwork respects the privacy rights of library computer users, it will only exercise this right to inspect
+              contents of email or files where it has cause to believe that there has been a violation of law and with the concurrence of a participating library; when it has legally requested by
+              law enforcement authorities; and when requested by a Library Director consistent with individual library policy.
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="panel panel-default listAccordion">
+        <div class="panel-heading EIN-hide-t EIN-hide">
+          <h4 class="panel-title">
+            <a data-toggle="collapse" data-parent="#privacyAccordion" href="#privacy_internet" class="collapsed" onclick="createCookie('lastPrivacySection','internet')"><?=$this->transEsc('privacy_internet')?><i class="fa fa-caret-down"></i><i class="fa fa-caret-up"></i></a>
+          </h4>
+        </div>
+        <div id="privacy_internet" class="panel-collapse collapse">
+          <div class="panel-body">
+            <div class="EIN-col-m-12" style="height:5px"></div>
+            <div class="privacyText">
+              <span style="font-style:italic">General:</span>  To improve the usefulness of the eiNetwork and participating library websites for visitors, anonymous statistical data are automatically
+              collected from usage reports that concern network traffic flow and volume.  No personal information is collected or maintained.  No attempt is made to identify individual users unless
+              we have cause to suspect illegal behavior or a violation of our Internet Use Guidelines.
+              <br><br>
+              <span style="font-style:italic">Forms:</span>  The eiNetwork website and The Catalog contain several types of forms that may be used to contact us.  The information entered into the
+              form is solely for the internal purpose of responding to a user's inquiry or request.  The form may be retained by us for the purpose of responding to the inquiry or request, but it is
+              not maintained or made available for any other purpose and is not retained by us after we have responded.
+              <br><br>
+              <span style="font-style:italic">Links to Other Sites:</span>  The eiNetwork and the participating member's websites contain links to other sites.  The eiNetwork and the participating
+              libraries are not responsible for the privacy practices of other sites, which may be different from the privacy practices described in this policy, and are not responsible for the
+              confidentiality of any information provided to outside sites.
+            </div>
+          </div>
+        </div>
+      </div>
+      <script type="text/javascript">
+        $('.panel-heading a').on('click',function(e){
+          // prevent them from dismissing the last open section if we're in tablet or desktop layout
+          var content = $($(this).attr("href")).find(".privacyText");
+          if($(document).width() >= 600) {
+            if($($(this).attr("href")).hasClass('in')){
+              e.stopPropagation();
+            }
+            // You can also add preventDefault to remove the anchor behavior that makes the page jump
+            e.preventDefault();
+
+            // adjust this so the text is next to the tab (keep it inside the div though)
+            var target = $(this).offset().top - $(".accordionButtonsLeft").offset().top;
+            setTimeout( function() {
+              var height = content.height();
+              if( (target + height + 11) > $(".accordionButtonsLeft").height() ) {
+                target = $(".accordionButtonsLeft").height() - height - 25;
+              }
+              content.css("margin-top", (target > 0) ? target : 0);
+            }, 10);
+          } else {
+            // clear the buffer zone if we are in mobile layout
+            content.css("margin-top", 0);
+          }
+        });
+        $('body').css({"overflow-y":"hidden"});
+        if($(document).width() >= 600) {
+          $('.panel-heading a').first().click();
+        }
+        $('body').css({"overflow-y":"auto"});
+        $('#privacyAccordion').css({"min-height":$('.accordionButtonsLeft').height() + "px"});
+      </script>
+    </div>
+  </div>
+</div>

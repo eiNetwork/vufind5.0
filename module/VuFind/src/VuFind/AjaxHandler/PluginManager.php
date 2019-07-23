@@ -52,6 +52,7 @@ class PluginManager extends \VuFind\ServiceManager\AbstractPluginManager
         'getFacetData' => 'VuFind\AjaxHandler\GetFacetData',
         'getIlsStatus' => 'VuFind\AjaxHandler\GetIlsStatus',
         'getItemStatuses' => 'VuFind\AjaxHandler\GetItemStatuses',
+        'EINgetDescription' => 'VuFind\AjaxHandler\EINGetDescription',
         'EINgetItemStatuses' => 'VuFind\AjaxHandler\EINGetItemStatuses',
         'EINgetListContents' => 'VuFind\AjaxHandler\EINGetListContents',
         'getLibraryPickupLocations' =>
@@ -94,6 +95,8 @@ class PluginManager extends \VuFind\ServiceManager\AbstractPluginManager
             'VuFind\AjaxHandler\GetIlsStatusFactory',
         'VuFind\AjaxHandler\GetItemStatuses' =>
             'VuFind\AjaxHandler\GetItemStatusesFactory',
+        'VuFind\AjaxHandler\EINGetDescription' =>
+            'VuFind\AjaxHandler\EINGetDescriptionFactory',
         'VuFind\AjaxHandler\EINGetItemStatuses' =>
             'VuFind\AjaxHandler\EINGetItemStatusesFactory',
         'VuFind\AjaxHandler\EINGetListContents' =>

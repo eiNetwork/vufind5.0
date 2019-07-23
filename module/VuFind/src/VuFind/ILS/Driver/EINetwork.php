@@ -7,6 +7,7 @@
 namespace VuFind\ILS\Driver;
 
 use Memcached;
+use SoapClient;
 
 class EINetwork extends SierraRest implements
     \VuFind\Db\Table\DbTableAwareInterface
@@ -979,6 +980,139 @@ class EINetwork extends SierraRest implements
     }
 
     /**
+     * Get notifications
+     *
+     * This is responsible for grabbing a few static notifications based on a patron's profile information.
+     *
+     * @param array  $profile  The patron's info
+     *
+     * @return array           Associative array of notifications
+     */
+    public function getNotifications($profile){
+        $notifications = [];
+        if( $profile["moneyOwed"] > 0 ) {
+            $domain = substr($this->config['SIERRAAPI']['url'], 0, strrpos($this->config['SIERRAAPI']['url'], "/"));
+            $sc = new SoapClient($domain . "/wspatroninfo/patroninfo.wsdl", array("trace" => 1, "exception" => 0));
+            $sc->__setLocation($domain . "/wspatroninfo/");
+            // Call wsdl function
+            $result = $sc->patronInfo(array("request" => array(
+                "index"    => 'barcode',
+                "query"    => $profile["cat_username"],
+                "username" => "milwspin",
+                "password" => "milwspin"
+            )));
+
+            // build the message
+            $msg = "<form name=\"creditForm\" method=\"post\" onsubmit=\"return checkFees()\" target=\"_blank\" action=\"https://payflowlink.paypal.com\" data-lightbox-ignore>" .
+                   "<input type=\"hidden\" name=\"action\" value=\"confirmInfo\">" .
+                   "<input type=\"hidden\" name=\"key\" value=\"-3994241445885651921\">" .
+                   "<input type=\"hidden\" name=\"linkMode\" value=\"true\">" .
+                   "<input type=\"hidden\" name=\"payAmount\" value=\"200\">" .
+                   "<input type=\"hidden\" name=\"minFeeMsg\" value=\"Please visit the library to pay this amount\">" .
+                   "<input type=\"hidden\" name=\"partner\" value=\"PayPal\">" .
+                   "<input type=\"hidden\" name=\"type\" value=\"S\">" .
+                   "<input type=\"hidden\" name=\"orderForm\" value=\"TRUE\">" .
+                   "<input type=\"hidden\" name=\"echoData\" value=\"TRUE\">" .
+                   "<input type=\"hidden\" name=\"showConfirm\" value=\"TRUE\">" .
+                   "<input type=\"hidden\" name=\"method\" value=\"CC\">" .
+                   "<input type=\"hidden\" name=\"login\" value=\"einetworklink\">" .
+                   "<input type=\"hidden\" name=\"custId\" value=\"" . substr($result->response->recordNumber, 1) . "\">" .
+                   "<input type=\"hidden\" name=\"description\" value=\"\">" .
+                   "<input type=\"hidden\" name=\"emailCustomer\" value=\"TRUE\">" .
+                   "<input type=\"hidden\" name=\"address\" value=\"\">" .
+                   "<input type=\"hidden\" name=\"city\" value=\"\">" .
+                   "<input type=\"hidden\" name=\"state\" value=\"\">" .
+                   "<input type=\"hidden\" name=\"zip\" value=\"\">" .
+                   "<input type=\"hidden\" name=\"phone\" value=\"\">" .
+                   "<input type=\"hidden\" name=\"email\" value=\"\">" .
+                   "<input type=\"hidden\" name=\"name\" value=\"\">" .
+                   "<input type=\"hidden\" name=\"user2\" value=\"\">" .
+                   "<input type=\"hidden\" name=\"user3\" value=\"\">" .
+                   "<input type=\"hidden\" name=\"user4\" value=\"\">" .
+                   "<input type=\"hidden\" name=\"user5\" value=\"\">" .
+                   "<input type=\"hidden\" name=\"user6\" value=\"\">" .
+                   "<input type=\"hidden\" name=\"user7\" value=\"\">" .
+                   "<input type=\"hidden\" name=\"user8\" value=\"\">" .
+                   "<input type=\"hidden\" name=\"user9\" value=\"\">" .
+                   "<input type=\"hidden\" name=\"user10\" value=\"ecom\">" .
+                   "<input type=\"hidden\" name=\"comment1\" value=\"f\">" .
+                   "<input type=\"hidden\" name=\"comment2\" value=\"" . $result->response->recordNumber . "\">" .
+                   "<input type=\"hidden\" name=\"parsedMoneyfmt\" value=\",.2\" id=\"moneyfmt\">" .
+                   "<input type=\"hidden\" name=\"currencySymbol\" value=\"$\" id=\"currencySymbol\">" .
+                   "<input type=\"hidden\" name=\"serviceCharge\" value=\"0\" id=\"serviceCharge\"><table style=\"border-collapse:separate;border-spacing:0 1em\">";
+            $user1 = "";
+            $total = 0;
+
+            if( isset($result->response->fines) ) {
+                $fines = is_array($result->response->fines) ? $result->response->fines : [$result->response->fines];
+            } else {
+                $fines = [];
+            }
+            foreach($fines as $i => $thisFine) {
+                $adjustedValue = $thisFine->itemCharge + $thisFine->processingFee + $thisFine->billingFee - $thisFine->amountPaid;
+                $msg .= "<tr><td style=\"padding:5px\"><input type=\"checkbox\" name=\"selectedFees\" value=\"" . $adjustedValue . "\" checked=\"checked\" onclick=\"checkFees()\" id=\"" . $thisFine->invoice . "\">" .
+                        "</td><td style=\"padding:5px\">" . sprintf("$%.2f", $adjustedValue * 0.01) . "</td><td style=\"padding:5px;line-height:1.23em\">";
+                if( $thisFine->itemTitle && $thisFine->chargeType == "Overdue" ) {
+                    $msg .= "<div class=\"bold\">Overdue Item Returned</div><div style=\"margin-left:20px;text-indent:-20px\">" . str_replace("'", "\'", $thisFine->itemTitle) . "</div>" .
+                            "<div><span class=\"bold\">Date Due:</span> " . strftime("%a %b %e, %Y", strtotime(substr($thisFine->itemDueDate, 0, 10))) . "</div>" .
+                            "<div><span class=\"bold\">Date Returned:</span> " . strftime("%a %b %e, %Y", strtotime(substr($thisFine->itemDateReturned, 0, 10))) . "</div>";
+                } else if( $thisFine->itemTitle && $thisFine->chargeType == "OverdueRenewal" ) {
+                    $msg .= "<div class=\"bold\">Overdue Item Renewed</div><div style=\"margin-left:20px;text-indent:-20px\">" . str_replace("'", "\'", $thisFine->itemTitle) . "</div>" .
+                            "<div><span class=\"bold\">Date Due:</span> " . strftime("%a %b %e, %Y", strtotime(substr($thisFine->itemDueDate, 0, 10))) . "</div>" .
+                            "<div><span class=\"bold\">Date Renewed:</span> " . strftime("%a %b %e, %Y", strtotime(substr($thisFine->itemDateReturned, 0, 10))) . "</div>";
+                } else if( $thisFine->description && $thisFine->chargeType == "Manual" ) {
+                    $msg .= "<div class=\"bold\">Manually added fine</div><div style=\"margin-left:20px;text-indent:-20px\">" . str_replace("'", "\'", $thisFine->description) . "</div>";
+                } else {
+                    $msg .= "<div class=\"bold\">" . $thisFine->chargeType . "</div><div style=\"margin-left:20px;text-indent:-20px\">" .
+                            ($thisFine->itemTitle ? str_replace("'", "\'", $thisFine->itemTitle) : str_replace("'", "\'", $thisFine->description)) . "</div>";
+                }
+                $msg .= "</td></tr>";
+                $user1 .= $thisFine->invoice . ":";
+                $total += $adjustedValue;
+            }
+
+            $msg .= "</table><input type=\"hidden\" name=\"amount\" value=\"" . sprintf("%.2f", $total * 0.01) . "\">" .
+                    "<input type=\"hidden\" name=\"user1\" value=\"" . $user1 . "\"><div class=\"center\"><div id=\"minimumPayment\" style=\"color:#f00;font-weight:700\">For payments less than $2.00, please see library staff.</div><br><span class=\"bold\">Total Selected:</span><span id=\"finesTotal\">" . sprintf("%.2f", $total * 0.01) . "</span>" .
+                    "<button class=\"btn-default btn-wide\" id=\"paypalButton\" style=\"margin:15px;cursor:default\">Pay Online</button></div><div>Clicking this button will take you to Paypal's secure server to enter your payment info.</div>" .
+                    "</form><script type=\"text/javascript\">function checkFees() { var total = 0; var user1 = \"\";" .
+                    " $('input[name=selectedFees]').each( function() { total += $(this).is(\":checked\") ? parseInt($(this).attr(\"value\")) : 0; user1 += $(this).is(\":checked\") ? ($(this).attr(\"id\") + \":\") : \"\" } ); " .
+                    "$(\"input[name=amount]\").attr(\"value\", total * 0.01); $(\"#finesTotal\").html(\"$\" + (total * 0.01).toFixed(2)); $(\"input[name=user1]\").attr(\"value\", user1); if( total >= parseInt($('input[name=payAmount]').attr(\"value\")) ) { " .
+                    "$('#paypalButton').prop(\"disabled\", false); $('#minimumPayment').css(\"display\", \"none\"); } else " .
+                    "{ $('#paypalButton').prop(\"disabled\", true); $('#minimumPayment').css(\"display\", \"initial\"); } } setTimeout(checkFees, 10)</script>";
+
+            // Echo the result
+            if( $total > 0 ) {
+                $notifications[] = ["subject" => "<span class=\"messageWarning\">You have fines.</span>",
+                                    "message" => $msg,
+                                    "extra" => " (Total: $" . number_format($profile["moneyOwed"],2) . ") Click here for details and to pay."];
+            } else {
+                $profile["moneyOwed"] = 0;
+            }
+        }
+        if( isset($profile["showTemporaryClosureMessage"]) && $profile["showTemporaryClosureMessage"] ) {
+            $notifications[] = ["attnSubject" => "<span class=\"messageWarning\">Temporary library closure.</span> Click here to learn more.",
+                                "subject" => "Temporary library closure",
+                                "message" => "Your home library or one of your preferred libraries is temporarily closed. It will not show up as an option for picking up your requests until it has reopened, and it will not be an option " .
+                                             "on the Preferred Libraries section of the <a class=\"messageLink\" href=\"/MyResearch/Profile\">profile page</a>. In the meantime, you can choose a different library location as a preferred " .
+                                             "library there. If you would rather not change it, you can simply wait until that location reopens and it will once again appear in your preferred libraries."];
+        }
+        if( ($profile["preferredlibrarycode"] == null || $profile["preferredlibrarycode"] == "none") && ($profile["alternatelibrarycode"] == null || $profile["alternatelibrarycode"] == "none") ) {
+            $notifications[] = ["attnSubject" => "<span class=\"messageWarning\">Please choose a preferred or alternate library.</span> Click here to learn how.",
+                                "subject" => "Choose a preferred or alternate library",
+                                "message" => "You have not yet chosen a preferred or alternate library. Doing so will make placing requests on physical items much easier, since your preferred libraries are used as the default pickup " .
+                                             "location. You can assign a preferred or alternate library on the <a class=\"messageLink\" href=\"/MyResearch/Profile\">profile page</a>."];
+        }
+        if( date_diff(date_create_from_format("m-d-Y", $profile["expiration_date"]), date_create(date("Y-m-d")))->invert == 0 ) {
+            $notifications[] = ["subject" => "<span class=\"messageWarning\">Card expired</span>",
+                                "message" => "Your library card is expired. Please visit your local library to renew your card to ensure access to all online services."];
+        } else if( date_diff(date_create_from_format("m-d-Y", $profile["expiration_date"]), date_create(date("Y-m-d")))->days <= 30 ) {
+            $notifications[] = ["subject" => "Card expiration approaching",
+                                "message" => "Your library card is due to expire within the next 30 days. Please visit your local library to renew your card to ensure access to all online services."];
+        }
+        return $notifications;
+    }
+
+    /**
      * Get announcements
      *
      * This is responsible for grabbing system-wide announcements that haven't been dismissed by the user.
@@ -1321,6 +1455,179 @@ class EINetwork extends SierraRest implements
         return json_decode($this->memcached->get($hash), true);
     }
 
+    /**
+     * Convenience function to get the reading history info for a set of Solr IDs
+     *
+     * @param  array $id a set of Solr ID values
+     *
+     * @return array map of the IDs to author, title, and format
+     */
+    protected function getReadingHistoryInfo($ids) {
+        $returnMap = [];
+
+        // weed out any we've already seen
+        foreach( $ids as $thisKey => $thisID ) {
+            if( $thisInfo = $this->memcached->get("readingHistoryInfo" . $thisID) ) {
+                $returnMap[$thisID] = $thisInfo;
+                unset($ids[$thisKey]);
+            }
+        }
+
+        // see if it's there
+        if( count($ids) ) {
+            // grab a bit more information from Solr
+            $solrBaseURL = $this->config['Solr']['url'];
+            $curl_url = $solrBaseURL . "/biblio/select?q=*%3A*&fq=";
+            $addOr = false;
+            foreach( $ids as $thisID ) {
+                $curl_url .= ($addOr ? "%20OR%20" : "") . "id%3A%22" . $thisID . "%22";
+                $addOr = true;
+            }
+            $curl_url .= "&fl=id,author,title,format&wt=csv&csv.separator=%07&csv.encapsulator=%15&rows=50";
+            $curl_connection = curl_init($curl_url);
+            curl_setopt($curl_connection, CURLOPT_CONNECTTIMEOUT, 30);
+            curl_setopt($curl_connection, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
+            curl_setopt($curl_connection, CURLOPT_RETURNTRANSFER, true);
+            $sresult = curl_exec($curl_connection);
+            $values = explode("\n", $sresult);
+
+            // parse this
+            $fieldMap = [];
+            foreach( $values as $index => $thisLine ) {
+                $pieces = explode(chr(7), $thisLine);
+                if( !$thisLine ) {
+                    continue;
+                }
+                if( $index == 0 ) {
+                    $fieldMap = array_flip($pieces);
+                    continue;
+                }
+
+                // we have to do some hocus pocus here since the values can also include the delimiter if they are multi-valued
+                for($i=0;$i<count($pieces);$i++) {
+                    while( substr($pieces[$i], 0, 1) == chr(21) && substr($pieces[$i], -1) != chr(21) ) {
+                        array_splice($pieces, $i, 2, $pieces[$i] . "\," . $pieces[$i+1]);
+                    }
+                    if( substr($pieces[$i], 0, 1) == chr(21) ) {
+                        $pieces[$i] = substr($pieces[$i], 1, -1);
+                    }
+                }
+
+                $newInfo = ["author" => $pieces[$fieldMap["author"]], "title" => $pieces[$fieldMap["title"]], "format" => $pieces[$fieldMap["format"]]];
+                $this->memcached->set("readingHistoryInfo" . $pieces[$fieldMap["id"]], $newInfo);
+                $returnMap[$pieces[$fieldMap["id"]]] = $newInfo;
+            }
+        }
+
+        // send it back
+        return $returnMap;
+    }
+
+    public function getReadingHistory($patron, $page = 1, $recordsPerPage = 50, $sortOption = "outDate") {
+        // if it isn't cached yet, grab it
+        if( !$this->memcached->get("readingHistory" . $patron["id"]) ) {
+            $readingHistoryTitles = [];
+            $enabled = true;
+            $done = false;
+
+            $result = $this->makeRequest(
+                ['v' . $this->apiVersion, 'patrons', $patron["id"], 'checkouts', 'history'], ['limit' => 50, 'offset' => count($readingHistoryTitles)], 'GET', $patron
+            );
+
+            if( (($result["httpStatus"] ?? 200) == 400) && (($result["code"] ?? 0) == 146) ) {
+                $enabled = false;
+            }
+
+            // fetch it by pages of 50
+            while( $enabled && count($readingHistoryTitles) < $result["total"] ) {
+                // grab the author and title
+                $ids = [];
+                foreach( $result["entries"] as $index => $thisEntry ) {
+                    $rsh = substr($thisEntry["id"], strrpos($thisEntry["id"], "/") + 1);
+                    $bibID = substr($thisEntry["bib"], strrpos($thisEntry["bib"], "/") + 1);
+                    $bibID = ".b" . $bibID . $this->getCheckDigit($bibID);
+                    $result["entries"][$index]["rsh"] = $rsh;
+                    $result["entries"][$index]["bibID"] = $bibID;
+                    $result["entries"][$index]["checkout"] = strftime("%m/%d/%y", strtotime($thisEntry["outDate"]));
+                    if( substr($result["entries"][$index]["checkout"], 3, 1) == "0" ) {
+                        $result["entries"][$index]["checkout"] = substr($result["entries"][$index]["checkout"], 0, 3) . substr($result["entries"][$index]["checkout"], 4);
+                    }
+                    if( substr($result["entries"][$index]["checkout"], 0, 1) == "0" ) {
+                        $result["entries"][$index]["checkout"] = substr($result["entries"][$index]["checkout"], 1);
+                    }
+                    $ids[] = $bibID;
+                }
+                $extraInfo = $this->getReadingHistoryInfo($ids);
+                foreach( $result["entries"] as $index => $thisEntry ) {
+                    if( isset($extraInfo[$thisEntry["bibID"]]) ) {
+                        $result["entries"][$index]["author"] = $extraInfo[$thisEntry["bibID"]]["author"];
+                        $result["entries"][$index]["title"] = $extraInfo[$thisEntry["bibID"]]["title"];
+                        $result["entries"][$index]["format"] = $extraInfo[$thisEntry["bibID"]]["format"];
+                    } else {
+                        $result["entries"][$index]["title"] = "Title no longer available";
+                        $result["entries"][$index]["skipLoad"] = true;
+                    }
+                }
+
+                // merge this info in
+                $readingHistoryTitles = array_merge($readingHistoryTitles, $result["entries"]);
+
+                // grab the next page
+                $result = $this->makeRequest(
+                    ['v5', 'patrons', $patron["id"], 'checkouts', 'history'], ['limit' => 50, 'offset' => count($readingHistoryTitles)], 'GET', $patron
+                );
+            }
+
+            $this->memcached->set("readingHistory" . $patron["id"], $enabled ? $readingHistoryTitles : false);
+        }
+        $readingHistory = $this->memcached->get("readingHistory" . $patron["id"]);
+
+        // do the desired sort
+        $sortedTitles = [];
+        if( $readingHistory !== false ) {
+            foreach( $readingHistory as $thisEntry ) {
+                $sortKey = (isset($thisEntry[$sortOption]) && $thisEntry[$sortOption] && ($thisEntry[$sortOption] != "Title no longer available")) ? $thisEntry[$sortOption] : "~~~~~";
+                $sortKey .= (isset($thisEntry["format"]) ? "" : "~~~") . $thisEntry["title"] . $thisEntry["outDate"] . $thisEntry["bibID"];
+                $sortedTitles[$sortKey] = $thisEntry;
+            }
+            ksort($sortedTitles);
+            if( $sortOption == "outDate" ) {
+                $sortedTitles = array_reverse($sortedTitles);
+            }
+            $sortedTitles = array_slice($sortedTitles, ($page - 1) * $recordsPerPage, $recordsPerPage);
+        }
+
+        return array('historyActive'=>($readingHistory !== false), 'titles'=>$sortedTitles, 'numTitles'=> count($sortedTitles), 'total_records' => ($readingHistory !== false) ? count($readingHistory) : 0, 'page' => $page);
+    }
+
+    public function deleteReadingHistoryItems($patron, $selectedIDs) {
+        $success = true;
+        foreach( $selectedIDs as $thisID ) {
+            $result = $this->makeRequest(
+                ['v' . $this->apiVersion, 'patrons', $patron["id"], 'checkouts', 'history', $thisID], '', 'DELETE', $patron
+            );
+
+            if (!empty($result['code'])) {
+                $success = false;
+            }
+        }
+
+        // invalidate the cache
+        $hierarchy = ['v' . $this->apiVersion, 'patrons', $patron['id'], 'checkouts', 'history'];
+        $offset = 0;
+        $params = ['limit' => 50, 'offset' => $offset];
+        $hash = md5(json_encode($hierarchy) . ($params ? ("###" . json_encode($params)) : ""));
+        while( $this->memcached->get($hash) ) {
+          $this->memcached->set($hash, null);
+          $params['offset'] += 50;
+          $hash = md5(json_encode($hierarchy) . ($params ? ("###" . json_encode($params)) : ""));
+        }
+        $this->memcached->delete("readingHistory" . $patron["id"]);
+
+        // return info
+        return $success;
+    }
+
 
 
 
@@ -1337,6 +1644,68 @@ class EINetwork extends SierraRest implements
 
 
 
+
+    /**
+     * Request PIN Reset
+     *
+     * This is responsible for sending the patron an email to reset their PIN.
+     *
+     * @param   string  $barcode    The barcode of the patron record
+     * @return  mixed               True if successful, false if unsuccessful
+     * @access  public
+     */
+    public function requestPINReset($barcode) {
+        if (isset($barcode) && strlen($barcode) > 0) {
+            //User has entered a barcode and requested a pin reset
+            $header=array();
+            $header[0] = "Accept: text/xml,application/xml,application/xhtml+xml,";
+            $header[0] .= "text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5";
+            $header[] = "Cache-Control: max-age=0";
+            $header[] = "Connection: keep-alive";
+            $header[] = "Accept-Charset: ISO-8859-1,utf-8;q=0.7,*;q=0.7";
+            $header[] = "Accept-Language: en-us,en;q=0.5";
+            $cookie = tempnam ("/tmp", "CURLCOOKIE");
+
+            $curl_connection = curl_init();
+            curl_setopt($curl_connection, CURLOPT_CONNECTTIMEOUT, 30);
+            curl_setopt($curl_connection, CURLOPT_HTTPHEADER, $header);
+            curl_setopt($curl_connection, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
+            curl_setopt($curl_connection, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($curl_connection, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($curl_connection, CURLOPT_FOLLOWLOCATION, true);
+            curl_setopt($curl_connection, CURLOPT_UNRESTRICTED_AUTH, true);
+            curl_setopt($curl_connection, CURLOPT_COOKIEJAR, $cookie);
+            curl_setopt($curl_connection, CURLOPT_COOKIESESSION, true);
+            curl_setopt($curl_connection, CURLOPT_FORBID_REUSE, false);
+            curl_setopt($curl_connection, CURLOPT_HEADER, false);
+
+            //Go to the pin reset page
+            $curl_url = $this->config['Catalog']['classic_url'] . "/pinreset";
+            curl_setopt($curl_connection, CURLOPT_URL, $curl_url);
+            curl_setopt($curl_connection, CURLOPT_HTTPGET, true);
+            $sresult = curl_exec($curl_connection);
+
+            //Post the barcode to request a PIN reset email
+            $post_data = array();
+            $post_data['submit.x']="35";
+            $post_data['submit.y']="21";
+            $post_data['code']= $barcode;
+            curl_setopt($curl_connection, CURLOPT_POST, true);
+            curl_setopt($curl_connection, CURLOPT_URL, $curl_url);
+            foreach ($post_data as $key => $value) {
+                $post_items[] = $key . '=' . $value;
+            }
+            $post_string = implode ('&', $post_items);
+            curl_setopt($curl_connection, CURLOPT_POSTFIELDS, $post_string);
+            $sresult = curl_exec($curl_connection);
+            if (!preg_match('/A message has been sent./i', $sresult)) {
+                //PEAR::raiseError('Unable to request PIN reset for this barcode');
+                return false;
+            } else {
+                return true;
+            }
+        }
+    }
 
     /**
      * Place Item Hold
@@ -1487,5 +1856,52 @@ class EINetwork extends SierraRest implements
             $hold_result['status'] = '<i class=\'fa fa-exclamation-triangle\'></i>There was an error placing your request';
         }
         return $hold_result;
+    }
+
+    /**
+     * Do an update or edit of reading history information.  Current actions are:
+     * deleteMarked
+     * deleteAll
+     * exportList
+     * optOut
+     *
+     * @param   array   $patron         The patron array
+     * @param   string  $action         The action to perform
+     * @param   array   $selectedTitles The titles to do the action on if applicable
+     */
+    function doReadingHistoryAction($patron, $action, $selectedTitles){
+        $curl_url = $this->config['Catalog']['classic_url'] . "/patroninfo~S1/" . $patron['id'] ."/readinghistory";
+
+        $cookie = tempnam ("/tmp", "CURLCOOKIE");
+        $curl_connection = curl_init($curl_url);
+        curl_setopt($curl_connection, CURLOPT_CONNECTTIMEOUT, 30);
+        curl_setopt($curl_connection, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
+        curl_setopt($curl_connection, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl_connection, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($curl_connection, CURLOPT_FOLLOWLOCATION, 1);
+        curl_setopt($curl_connection, CURLOPT_UNRESTRICTED_AUTH, true);
+        curl_setopt($curl_connection, CURLOPT_COOKIEJAR, $cookie);
+        curl_setopt($curl_connection, CURLOPT_COOKIESESSION, true);
+        curl_setopt($curl_connection, CURLOPT_POST, true);
+        $post_string = 'code=' . $patron['cat_username'] . '&pin=' . $patron['cat_password'] . '&submit=submit';//implode ('&', $post_items);
+        curl_setopt($curl_connection, CURLOPT_POSTFIELDS, $post_string);
+        $sresult = curl_exec($curl_connection);
+
+        if ($action == 'optOut'){
+            //load patron page readinghistory/OptOut
+            $curl_url = $this->config['Catalog']['classic_url'] . "/patroninfo~S1/" . $patron['id'] ."/readinghistory/OptOut";
+            curl_setopt($curl_connection, CURLOPT_URL, $curl_url);
+            curl_setopt($curl_connection, CURLOPT_HTTPGET, true);
+            $sresult = curl_exec($curl_connection);
+        }elseif ($action == 'optIn'){
+            //load patron page readinghistory/OptIn
+            $curl_url = $this->config['Catalog']['classic_url'] . "/patroninfo~S1}/" . $patron['id'] ."/readinghistory/OptIn";
+            curl_setopt($curl_connection, CURLOPT_URL, $curl_url);
+            curl_setopt($curl_connection, CURLOPT_HTTPGET, true);
+            $sresult = curl_exec($curl_connection);
+        }
+        curl_close($curl_connection);
+
+        return $sresult;
     }
 }

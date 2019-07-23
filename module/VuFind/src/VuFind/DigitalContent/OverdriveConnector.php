@@ -1135,6 +1135,11 @@ class OverdriveConnector implements LoggerAwareInterface,
             $result->data = $this->sessionContainer->checkouts;
         }
 
+        // we're expecting data to be an array
+        if( $result->data === false ) {
+            $result->data = [];
+        }
+
         return $result;
     }
 
@@ -1204,6 +1209,12 @@ class OverdriveConnector implements LoggerAwareInterface,
             $result->message = [];
             $result->data = $this->sessionContainer->holds;
         }
+
+        // we're expecting data to be an array
+        if( $result->data === false ) {
+            $result->data = [];
+        }
+
         return $result;
     }
 
@@ -1498,7 +1509,7 @@ class OverdriveConnector implements LoggerAwareInterface,
         $config = $this->getConfig();
         if ($forceNewConnection
             || $patronTokenData == null
-            || ($patronTokenData->expirationTime
+            || (isset($patronTokenData->expirationTime)
                 && time() >= $patronTokenData->expirationTime)
         ) {
             $this->debug("connecting to patron API for new token.");

@@ -352,4 +352,20 @@ class RecordController extends AbstractRecord
         $view->setTemplate('record/selectItem');
         return $view;
     }
+
+    /**
+     * Choose link action - Make patron choose a specific link (used for multi-link bibs)
+     *
+     * @return mixed
+     */
+    public function chooseLinkAction() {
+        // grab the holdings, then split them into holdable and not holdable
+        $driver = $this->loadRecord();
+        $urls = $driver->getUrls();
+        $view = $this->createViewModel();
+        $view->id = $driver->getUniqueID();
+        $view->urls = $urls;
+        $view->setTemplate('record/chooseLink');
+        return $view;
+    }
 }

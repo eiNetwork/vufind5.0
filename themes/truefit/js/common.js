@@ -260,7 +260,7 @@ function setupOffcanvas() {
 
 function setupAutocomplete() {
   // If .autocomplete class is missing, autocomplete is disabled and we should bail out.
-  var searchbox = $('#searchForm_lookfor.autocomplete');
+  var searchbox = $('#LCsearchForm .autocomplete');
   if (searchbox.length < 1) {
     return;
   }
@@ -282,7 +282,7 @@ function setupAutocomplete() {
           q: query,
           method: 'getACSuggestions',
           searcher: searcher.searcher,
-          type: searcher.type ? searcher.type : $('#searchForm_type').val(),
+          type: searcher.type ? searcher.type : $('#LCsearchForm .searchTypeInput').val(),
           hiddenFilters: hiddenFilters
         },
         dataType: 'json',
@@ -301,7 +301,7 @@ function setupAutocomplete() {
     }
   });
   // Update autocomplete on type change
-  $('#searchForm_type').change(function searchTypeChange() {
+  $('#LCsearchForm .searchTypeInput').change(function searchTypeChange() {
     searchbox.autocomplete().clearCache();
   });
 }
@@ -392,6 +392,25 @@ function setupIeSupport() {
 function setupJumpMenus(_container) {
   var container = _container || $('body');
   container.find('select.jumpMenu').change(function jumpMenu(){ $(this).parent('form').submit(); });
+}
+
+// autologout functionality
+var autoLogoutTimer1, autoLogoutTimer2;
+function autoLogoutResetTimer(){
+  clearTimeout(autoLogoutTimer1);
+  clearTimeout(autoLogoutTimer2);
+  var waitInMS=300000;
+  var delayInMS=60000;
+  autoLogoutTimer1=setTimeout("autoLogoutAlertUser()", waitInMS);
+  autoLogoutTimer2=setTimeout("autoLogout()", waitInMS + delayInMS);
+}
+
+function autoLogoutAlertUser(){
+  VuFind.lightbox.ajax({'url':'/MyResearch/LogoutWarning'});
+}
+function autoLogout(){
+  //Redirect to logout page
+  window.location = VuFind.path + "/MyResearch/Logout?target=home";
 }
 
 $(document).ready(function commonDocReady() {

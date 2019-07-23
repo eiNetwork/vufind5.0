@@ -122,4 +122,20 @@ abstract class AbstractSyndetics extends AbstractBase
         $dom = new DOMDocument();
         return $dom->loadXML($xml) ? $dom : false;
     }
+
+    /**
+     * Turn an HTML response into a DOMDocument object.
+     *
+     * @param string $html HTML to load.
+     *
+     * @return DOMDocument|bool Document on success, false on failure.
+     */
+    protected function htmlToDOMDocument($html)
+    {
+        $dom = new DOMDocument();
+        libxml_use_internal_errors(true);
+        $value = $dom->loadHTML($html) ? $dom : false;
+        libxml_clear_errors();
+        return $value;
+    }
 }

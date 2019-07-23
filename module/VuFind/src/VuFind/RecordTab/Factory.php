@@ -247,6 +247,26 @@ class Factory
     }
 
     /**
+     * Factory for Series tab plugin.
+     *
+     * @param ServiceManager $sm Service manager.
+     *
+     * @return Reviews
+     */
+    public static function getSeries(ServiceManager $sm)
+    {
+        $config = $sm->get('VuFind\Config\PluginManager')->get('config');
+        // Only instantiate the loader if the feature is enabled:
+        if (isset($config->Content->series)) {
+            $loader = $sm->get('VuFind\Content\PluginManager')
+                ->get('series');
+        } else {
+            $loader = null;
+        }
+        return new Series($loader, static::getHideSetting($config, 'series'));
+    }
+
+    /**
      * Factory for Summaries tab plugin.
      *
      * @param ServiceManager $sm Service manager.

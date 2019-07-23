@@ -122,9 +122,10 @@ JS;
     <?=$this->headScript()?>
     <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet" type="text/css">
     <link href="/themes/truefit/css/einetwork.css?cacheBuster=14" media="all" rel="stylesheet" type="text/css">
+    <link href="/themes/truefit/css/bootstrap-custom.css" media="all" rel="stylesheet" type="text/css">
     <script src="/themes/truefit/js/hmac-sha256.js"></script>
     <script src="/themes/truefit/js/enc-base64-min.js"></script>
-    <script src="/themes/truefit/js/backgroundLoader.js?cacheBuster=2"></script>
+    <script src="/themes/truefit/js/backgroundLoader.js?cacheBuster=3"></script>
   </head>
   <body class="template-dir-<?=$this->templateDir?> template-name-<?=$this->templateName?> <?=$this->layoutClass('offcanvas-row')?><?php if ($this->layout()->rtl): ?> rtl<?php endif; ?>">
     <!-- *google analytics* -->
@@ -188,16 +189,13 @@ JS;
           moveButtons();
           $(window).scroll(moveButtons);
           $(window).resize(moveButtons);
-
 <?    /* log them out if they're at a library location AND (they're logged in OR not on the home page) */ 
-  //VF5UPGRADEif( $this->ils()->getDriver()->getCurrentLocation() && ($account->isLoggedIn() || ($_SERVER["REQUEST_URI"] != "/")) ): 
+  if( $this->ils()->getDriver()->getCurrentLocation() && ($account->isLoggedIn() || ($_SERVER["REQUEST_URI"] != "/")) ): 
 ?>
-/*VF5UPGRADE
           if( self.window === self.top ) {
             autoLogoutResetTimer();
           }
-*/
-<? //VF5UPGRADEendif; ?>
+<? endif; ?>
         });
 
         function moveButtons() {
@@ -375,20 +373,18 @@ JS;
       var descTimeout;
       function ShowDescriptionToolTip(id,target) {
         descTimeout = setTimeout(function() {
-/*VF5UPGRADE*
           $.ajax({
             dataType: 'json',
-            url: VuFind.path + '/AJAX/JSON?method=getDescription',
+            url: VuFind.path + '/AJAX/JSON?method=EINgetDescription',
             data: {id:id},
             success: function(response) {
-              if(response.status == 'OK' && response.data.description) {
+              if(response.data.status == 'OK' && response.data.description) {
                 $('#descriptionToolTipContents').html(response.data.description);
                 var left = $(target).offset().left + ($(target).outerWidth() / 2) - ($('#descriptionToolTip').outerWidth() / 2);
                 $('#descriptionToolTip').css({"display":"initial", "left":((left > 0) ? left : 0), "top":($(target).offset().top + $(target).height())});
               }
             }
           });
-/**/
         }, 500);
       }
       function HideDescriptionToolTip() {

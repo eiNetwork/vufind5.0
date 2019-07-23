@@ -1,0 +1,11 @@
+<h2>Available Links</h2>
+<div class="hold-form">
+  <? foreach ($this->urls as $i => $url): ?>
+    <?=($i ? "<br><br>" : "")?><a href="<?=$url["url"]?>" target="_blank" class="helpLink" data-lightbox-ignore><?=$url["desc"]?></a>
+  <? endforeach; ?>
+</div>
+<div class="modal-footer">
+  <div id="holdFooter">
+    <button class="btn-alternate btn-wide" onclick="$('#modalClose').click()">Cancel</button>
+  </div>
+</div>

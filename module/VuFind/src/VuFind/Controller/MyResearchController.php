@@ -152,6 +152,13 @@ class MyResearchController extends AbstractBase
             try {
                 if (!$this->getAuthManager()->isLoggedIn()) {
                     $this->getAuthManager()->login($this->getRequest());
+                    if( $this->params()->fromPost('clearLightbox') ) {
+                        $view = $this->createViewModel();
+                        $view->setTemplate('blankModal');
+                        $view->title = "Logging in...";
+                        $view->reloadParent = true;
+                        return $view;
+                    }
                     // Return early to avoid unnecessary processing if we are being
                     // called from login lightbox and don't have a followup action.
                     if ($this->params()->fromPost('processLogin')
@@ -254,6 +261,25 @@ class MyResearchController extends AbstractBase
     }
 
     /**
+     * Reset PIN action
+     *
+     * @return mixed
+     */
+    public function resetPINAction()
+    {
+        $catalog = $this->getILS();
+        $result = $catalog->requestPINReset($this->params()->fromPost('username'));
+
+        $view = $this->createViewModel();
+        if( $result ) {
+            $this->flashMessenger()->setNamespace('info')->addMessage("reset_success");
+        } else {
+            $this->flashMessenger()->setNamespace('error')->addMessage("reset_failure");
+        }
+        return $view;
+    }
+
+    /**
      * Login Action
      *
      * @return mixed
@@ -281,7 +307,7 @@ class MyResearchController extends AbstractBase
         // Make request available to view for form updating:
         $view = $this->createViewModel();
         $view->inLightbox = $this->inLightbox();
-        $view->request = $this->getRequest()->getPost();
+        $view->request = $this->getRequest()->getQuery();
         return $view;
     }
 
@@ -314,11 +340,23 @@ class MyResearchController extends AbstractBase
      *
      * @return mixed
      */
+    public function logoutWarningAction()
+    {
+        return $this->createViewModel();
+    }
+
+    /**
+     * Logout Action
+     *
+     * @return mixed
+     */
     public function logoutAction()
     {
         $config = $this->getConfig();
         if (!empty($config->Site->logOutRoute)) {
             $logoutTarget = $this->getServerUrl($config->Site->logOutRoute);
+        } else if ($targetRoute = $this->params()->fromQuery('target', false)) {
+            $logoutTarget = $this->getServerUrl($targetRoute);
         } else {
             $logoutTarget = $this->getRequest()->getServer()->get('HTTP_REFERER');
             if (empty($logoutTarget)) {
@@ -343,6 +381,19 @@ class MyResearchController extends AbstractBase
                 $logoutTarget = $this->getServerUrl('home');
             }
         }
+
+        // clear out the patron info
+        $this->getILS()->clearSessionVar("patronLogin");
+        $this->getILS()->clearSessionVar("patron");
+        $this->getILS()->clearSessionVar("dismissedAnnouncements");
+        setcookie("einStoredBarcode", "", time() - 1209600, '/');
+        setcookie("einStoredPIN", "", time() - 1209600, '/');
+        setcookie("checkoutTab", "", time() - 1209600, '/');
+        setcookie("holdsTab", "", time() - 1209600, '/');
+        setcookie("mostRecentList", "", time() - 1209600, '/');
+        setcookie("lastProfileSection", "", time() - 1209600, '/');
+        setcookie("itemDetailsTab", "", time() - 1209600, '/');
+        setcookie("catalogCheckboxes", "", time() - 1209600, '/');
 
         return $this->redirect()
             ->toUrl($this->getAuthManager()->logout($logoutTarget));
@@ -1346,8 +1397,7 @@ class MyResearchController extends AbstractBase
             $current = $this->getDriverForILSRecord($current);
             $holdDetails = $current->getExtraDetail("ils_details");
             $group = $holdDetails["available"] ? 'ready' : ($holdDetails["in_transit"] ? 'transit' : ($holdDetails["frozen"] ? 'frozen' : 'hold'));
-            $key = $current->GetTitle() . $holdDetails["requestId"];
-//VF5UPGRADE - test for ILL titles            $key = ((isset($current["ILL"]) && $current["ILL"]) ? $current["title"] : $current["driver"]->GetTitle()).$current["hold_id"];
+            $key = ((isset($holdDetails["ILL"]) && $holdDetails["ILL"]) ? $holdDetails["title"] : $current->GetTitle()).$holdDetails["requestId"];
             $recordList[$group][$key] = $current;
         }
         $allList = [];
@@ -1579,9 +1629,9 @@ class MyResearchController extends AbstractBase
             // if they're splitting econtent, bubble those to the bottom
             if( $user['splitEcontent'] == "Y" ) {
                 usort($checkoutList[$key], function($co1, $co2) {
-                    if(!isset($co1["overDriveId"]) && isset($co2["overDriveId"])) {
+                    if(!isset($co1["reserveId"]) && isset($co2["reserveId"])) {
                         return -1;
-                    } else if(isset($co1["overDriveId"]) && !isset($co2["overDriveId"])) {
+                    } else if(isset($co1["reserveId"]) && !isset($co2["reserveId"])) {
                         return 1;
                     } else if($co1["duedate"] > $co2["duedate"]) {
                         return 1;
@@ -1623,9 +1673,9 @@ class MyResearchController extends AbstractBase
         // if they're splitting econtent, bubble those to the bottom
         if( $user['splitEcontent'] == "Y" ) {
             usort($allList, function($co1, $co2) {
-                if(!isset($co1["overDriveId"]) && isset($co2["overDriveId"])) {
+                if(!isset($co1["reserveId"]) && isset($co2["reserveId"])) {
                     return -1;
-                } else if(isset($co1["overDriveId"]) && !isset($co2["overDriveId"])) {
+                } else if(isset($co1["reserveId"]) && !isset($co2["reserveId"])) {
                     return 1;
                 } else if($co1["duedate"] > $co2["duedate"]) {
                     return 1;
@@ -2157,6 +2207,109 @@ class MyResearchController extends AbstractBase
         } elseif ($this->formWasSubmitted('reset')) {
             return $this->redirect()->toRoute('myresearch-profile');
         }
+        return $view;
+    }
+
+    /**
+     * Show patron a list of notifications
+     *
+     * @return view
+     */
+    public function notificationsAction()
+    {
+        // Stop now if the user does not have valid catalog credentials available:
+        if (!is_array($patron = $this->catalogLogin())) {
+            return $patron;
+        }
+
+        // see whether they want to see a single message or not
+        $catalog = $this->getILS();
+        $profile = $catalog->getMyProfile($patron);
+        $view = $this->createViewModel();
+        if( $this->params()->fromPost('showMessage') ) {
+            $view->setTemplate('myresearch/showMessage');
+            $view->subject = $this->params()->fromPost('subject');
+            $view->message = $this->params()->fromPost('message');
+        } else {
+            $view->notifications = $catalog->getNotifications($profile);
+        }
+        return $view;
+    }
+
+    /**
+     * Show patron their reading history
+     *
+     * @return view
+     */
+    public function readingHistoryAction()
+    {
+        // Stop now if the user does not have valid catalog credentials available:
+        if (!is_array($patron = $this->catalogLogin())) {
+            return $patron;
+        }
+
+        // see if they're trying to submit an action
+        $catalog = $this->getILS();
+        if( $action = $this->params()->fromPost('readingHistoryAction') ) {
+            $selectedIDs = $this->params()->fromPost('ids');
+            if( $action == "deleteMarked" && !$this->params()->fromPost('confirm') ) {
+                $replacement = ((count($selectedIDs) > 1) ? (count($selectedIDs) . " items") : "item") . " from your reading history?<br>";
+                foreach($this->params()->fromPost('holdTitles') as $title) {
+                    $replacement .= "<br><span class=\"bold\">Title: </span>" . urldecode($title);
+                }
+                $msg = [['msg' => 'confirm_history_delete_selected_text',
+                         'html' => true,
+                         'tokens' => ['%%deleteData%%' => $replacement]]];
+                return $this->confirm(
+                    'reading_history_delete_selected',
+                    $this->url()->fromRoute('myresearch-readinghistory'),
+                    $this->url()->fromRoute('myresearch-readinghistory'),
+                    $msg,
+                    [
+                        'history' => 'History',
+                        'readingHistoryAction' => 'deleteMarked',
+                        'ids' => $selectedIDs
+                    ]
+                );
+            }
+            if( $action == "deleteMarked" ) {
+                $success = $catalog->deleteReadingHistoryItems($patron, $selectedIDs);
+
+                $this->flashMessenger()->addMessage($success ? ((count($this->params()->fromPost('ids')) > 1) ? 'reading_history_delete_success_multiple' : 'reading_history_delete_success_single') : 'reading_history_delete_failure', 'info');
+                $view = $this->createViewModel();
+                $view->setTemplate('blankModal');
+                $view->suppressFlashMessages = true;
+                $view->reloadParent = true;
+                return $view;
+            }
+            $result = $catalog->doReadingHistoryAction($patron, $action, $selectedIDs);
+            if( $action == "optIn" ) {
+                $this->flashMessenger()->addMessage('reading_history_enabled_success', 'info');
+            } else if( $action == "optOut" ) {
+                if( strpos( $result, "You cannot optout while there is reading history" ) !== false ) {
+                    $this->flashMessenger()->addMessage('reading_history_disabled_failure_delete_all', 'error');
+                } else {
+                    $this->flashMessenger()->addMessage('reading_history_disabled_success', 'info');
+                }
+            }
+        }
+
+        $readingHistory = $catalog->getReadingHistory($patron, ($this->params()->fromQuery("pageNum") ? $this->params()->fromQuery("pageNum") : 1), 50, ($this->params()->fromQuery("sort") ? $this->params()->fromQuery("sort") : "outDate"));
+        // add in the drivers where needed
+        foreach( $readingHistory["titles"] as $key => $item ) {
+            if( !isset($item["skipLoad"]) ) {
+                try{
+                    $item["driver"] = $this->serviceLocator->get('VuFind\Record\Loader')->load($item['bibID'], DEFAULT_SEARCH_BACKEND);
+                } catch(RecordMissingException $e) {
+                }
+            }
+            $readingHistory["titles"][$key] = $item;
+        }
+
+        $view = $this->createViewModel();
+        $view->sort = $this->params()->fromQuery("sort");
+        $view->readingHistory = $readingHistory;
+        $view->indexOffset = ($this->params()->fromQuery("pageNum") ? (($this->params()->fromQuery("pageNum") - 1) * 50) : 0) + 1;
         return $view;
     }
 
