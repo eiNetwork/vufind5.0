@@ -227,7 +227,7 @@
         barcode.className += " textBoxError";
       }
       barcode.nextElementSibling.style.display = "block";
-    } else if( pword.value == "" || pword.value == "Enter your PIN" ) {
+    } else if( pword.value == "" || pword.value == "XXXX" ) {
       document.getElementById("login_passwordError").style.display = "block";
       document.getElementById("login_passwordError").innerHTML = "Please enter your PIN above.";
       $("#login_passwordError").attr("tabIndex", -1).focusout( function() { $("#login_password").focus(); } ).focus();

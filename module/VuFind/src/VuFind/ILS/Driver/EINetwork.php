@@ -1446,7 +1446,7 @@ class EINetwork extends SierraRest implements
         $patron = false
     ) {
         $hash = md5(json_encode($hierarchy) . ($params ? ("###" . json_encode($params)) : ""));
-        if( !$this->memcached->get($hash) ) {
+        if( !$this->memcached->get($hash) || in_array("token", $hierarchy) ) {
             $result = parent::makeRequest($hierarchy, $params, $method, $patron);
 
             $this->memcached->set($hash, json_encode($result), 30);

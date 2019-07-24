@@ -150,6 +150,7 @@ class MyResearchController extends AbstractBase
             || $this->params()->fromQuery('auth_method')
         ) {
             try {
+                $this->getILS()->clearSessionVar("patronLogin");
                 if (!$this->getAuthManager()->isLoggedIn()) {
                     $this->getAuthManager()->login($this->getRequest());
                     if( $this->params()->fromPost('clearLightbox') ) {
