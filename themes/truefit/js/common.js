@@ -493,6 +493,10 @@ function createCookie(name, value) {
   date.setTime(date.getTime() + (24*60*60*1000));
   document.cookie = name+"="+value+"; expires="+date.toGMTString()+"; path=/";
 }
+// delete cookie
+function deleteCookie(name) {
+  document.cookie = name+"=; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/";
+}
 // create cookie (adapted from https://stackoverflow.com/questions/10730362/get-cookie-by-name)
 function getCookie(name) {
   var value = "; " + document.cookie;

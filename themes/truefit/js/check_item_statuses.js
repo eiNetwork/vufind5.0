@@ -164,7 +164,6 @@ function handleItemStatusResponse(response) {
       }
       leftButton.empty().append('Request');
     } else if( result.learnMoreURL != null ) {
-//VF5UPGRADE - needs checked
       leftButton.empty().append('Learn More');
       leftButton.prop('disabled', false);
       leftButton.attr('onClick', "window.open('" + result.learnMoreURL + "', '_blank');");

@@ -37,6 +37,10 @@
     }
   }
   $showMatch = count($lookfor) > 0;
+
+  // get the grouping key
+  $groupingKey = "grouping" . $this->driver->getGroupingKey();
+  $expanded = isset($_COOKIE[$groupingKey]);
 ?>
 <div class="EIN-col-m-12">
   <div class="EIN-col-m-3">
@@ -106,7 +110,7 @@
     <div class="EIN-hide-m EIN-col-t-4 EIN-col-4" style="padding:5px 0px 10px">
       <div class="EIN-col-m-12">
         <a data-toggle="collapse" class="facetAccordionTitle collapsed" href="#grouping<?=$this->driver->getGroupingKey()?>" class="collapsed">
-          <button class="btn-default" onClick="ToggleCaret('<?=$this->driver->getGroupingKey()?>');">View Formats and Editions<i class="fa fa-caret-down"></i><i class="fa fa-caret-up facetToggleOff"></i></button>
+          <button class="btn-default" onClick="ToggleCaret('<?=$this->driver->getGroupingKey()?>');">Show Formats and Editions<i class="fa fa-caret-down"></i><i class="fa fa-caret-up facetToggleOff"></i></button>
         </a>
       </div>
     </div>
@@ -114,7 +118,7 @@
   <div class="EIN-col-m-12 EIN-hide-t EIN-hide" style="padding:5px 10px 10px">
     <div class="EIN-col-m-12">
       <a data-toggle="collapse" class="facetAccordionTitle collapsed" href="#grouping<?=$this->driver->getGroupingKey()?>" class="collapsed">
-        <button class="btn-default" onClick="ToggleCaret('<?=$this->driver->getGroupingKey()?>');" style="width:100%">View Formats and Editions<i class="fa fa-caret-down"></i><i class="fa fa-caret-up facetToggleOff"></i></button>
+        <button class="btn-default" onClick="ToggleCaret('<?=$this->driver->getGroupingKey()?>');" style="width:100%">Show Formats and Editions<i class="fa fa-caret-down"></i><i class="fa fa-caret-up facetToggleOff"></i></button>
       </a>
     </div>
     <div class="EIN-col-m-12">
@@ -142,6 +146,21 @@
     $('a[href="#grouping' + grouping + '"]').find('i').not('.facetToggleOff').addClass('tempToggle');
     $('a[href="#grouping' + grouping + '"]').find('i.facetToggleOff').removeClass('facetToggleOff');
     $('a[href="#grouping' + grouping + '"]').find('i.tempToggle').addClass('facetToggleOff').removeClass('tempToggle');
+    var html = $('a[href="#grouping' + grouping + '"]').find('button').html();
+    var expanded = (html.substring(0,4) == "Show");
+    $('a[href="#grouping' + grouping + '"]').find('button').html((expanded ? "Hide" : "Show") + html.substring(4));
+    if( expanded ) {
+      createCookie("grouping" + grouping, true);
+    } else {
+      deleteCookie("grouping" + grouping);
+    }
     $('#grouping' + grouping).find("hr").last().parent().css("display", "none");
   }
+
+  <?php if( $expanded ): ?>
+    $(document).ready(function() {
+      $('a[href="#grouping<?=$this->driver->getGroupingKey()?>"]').click();
+      ToggleCaret("<?=$this->driver->getGroupingKey()?>");
+    });
+  <?php endif; ?>
 </script>
