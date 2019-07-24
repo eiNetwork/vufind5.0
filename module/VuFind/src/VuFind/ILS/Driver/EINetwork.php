@@ -1524,9 +1524,11 @@ class EINetwork extends SierraRest implements
     }
 
     public function getReadingHistory($patron, $page = 1, $recordsPerPage = 50, $sortOption = "outDate") {
+        $this->testSession();
+
         // if it isn't cached yet, grab it
-        if( !$this->memcached->get("readingHistory" . $patron["id"]) ) {
-            $readingHistoryTitles = [];
+        if( !isset($this->sessionCache->readingHistory) ) {
+            $readingHistoryTitles = isset($this->sessionCache->readingHistoryPartial) ? $this->sessionCache->readingHistoryPartial : [];
             $enabled = true;
             $done = false;
 
@@ -1571,6 +1573,7 @@ class EINetwork extends SierraRest implements
 
                 // merge this info in
                 $readingHistoryTitles = array_merge($readingHistoryTitles, $result["entries"]);
+                $this->sessionCache->readingHistoryPartial = $readingHistoryTitles;
 
                 // grab the next page
                 $result = $this->makeRequest(
@@ -1578,9 +1581,9 @@ class EINetwork extends SierraRest implements
                 );
             }
 
-            $this->memcached->set("readingHistory" . $patron["id"], $enabled ? $readingHistoryTitles : false);
+            $this->sessionCache->readingHistory = $enabled ? $readingHistoryTitles : false;
         }
-        $readingHistory = $this->memcached->get("readingHistory" . $patron["id"]);
+        $readingHistory = $this->sessionCache->readingHistory;
 
         // do the desired sort
         $sortedTitles = [];

@@ -2,11 +2,29 @@ function checkPatronHolds() {
   $('#backgroundLoaderHolds').each( function() {
     $(this).attr("src", "/MyResearch/BackgroundLoader?content=holds");
   });
+
+  if( $('#backgroundLoaderHolds').length == 0 ) {
+    checkPatronCheckouts();
+  } else {
+    $('#backgroundLoaderHolds').load( checkPatronCheckouts );
+  }
 }
 
 function checkPatronCheckouts() {
   $('#backgroundLoaderCheckouts').each( function() {
     $(this).attr("src", "/MyResearch/BackgroundLoader?content=checkouts");
+  });
+
+  if( $('#backgroundLoaderCheckouts').length == 0 ) {
+    checkPatronHistory();
+  } else {
+    $('#backgroundLoaderCheckouts').load( checkPatronHistory );
+  }
+}
+
+function checkPatronHistory() {
+  $('#backgroundLoaderHistory').each( function() {
+    $(this).attr("src", "/MyResearch/BackgroundLoader?content=readingHistory");
   });
 }
 
@@ -79,10 +97,5 @@ $(document).ready(function() {
     }
 
     checkPatronHolds();
-    if( $('#backgroundLoaderHolds').length == 0 ) {
-      checkPatronCheckouts();
-    } else {
-      $('#backgroundLoaderHolds').load( checkPatronCheckouts );
-    }
   }
 });

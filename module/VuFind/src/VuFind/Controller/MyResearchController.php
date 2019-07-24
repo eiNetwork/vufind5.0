@@ -386,6 +386,9 @@ class MyResearchController extends AbstractBase
         // clear out the patron info
         $this->getILS()->clearSessionVar("patronLogin");
         $this->getILS()->clearSessionVar("patron");
+        $this->getILS()->clearSessionVar("checkouts");
+        $this->getILS()->clearSessionVar("holds");
+        $this->getILS()->clearSessionVar("readingHistory");
         $this->getILS()->clearSessionVar("dismissedAnnouncements");
         setcookie("einStoredBarcode", "", time() - 1209600, '/');
         setcookie("einStoredPIN", "", time() - 1209600, '/');
@@ -2332,6 +2335,11 @@ class MyResearchController extends AbstractBase
                 // Connect to the ILS:
                 $catalog = $this->getILS();
                 $holds = $catalog->getMyTransactions($patron);
+            // they want us to load history
+            } else if ( $this->params()->fromQuery('content') == "readingHistory" ) {
+                // Connect to the ILS:
+                $catalog = $this->getILS();
+                $holds = $catalog->getReadingHistory($patron);
             }
         }
         $view = $this->createViewModel();
