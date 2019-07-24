@@ -74,13 +74,17 @@
       <?php endif; ?>
 
       <table>
-        <?php $formats = $this->driver->getFormats(); $showDate = false; foreach( $this->grouping as $thisDoc ):
+        <?php $formats = $this->driver->getFormats(); $showDate = false; $categories = []; foreach( $this->grouping as $thisDoc ):
                 foreach( $thisDoc->getFormats() as $thisFormat ):
                   if( (substr($thisFormat, 0, 10) != "Category: ") && !in_array($thisFormat, $formats) ):
                     $formats[] = $thisFormat;
                   endif;
-                  $showDate |= ($thisDoc->getFormatCategory() == "Video");
                 endforeach;
+                $thisCategory = $thisDoc->getFormatCategory();
+                if( !in_array($thisCategory, $categories) ):
+                    $categories[] = $thisCategory;
+                endif;
+                $showDate |= ($thisCategory == "Video");
               endforeach;
               if (!empty($formats)): ?>
           <?php $firstTime = true; foreach( $formats as $thisFormat ): ?>
@@ -128,14 +132,39 @@
   <div class="EIN-col-m-12 panel panel-groupingAccordion">
     <div id="grouping<?=$this->driver->getGroupingKey()?>" class="facetAccordionContent panel-collapse collapse">
       <div class="panel-body" style="border:5px solid #3f51b5">
+        <? $thisCategory = $this->driver->getFormatCategory(); if( count($categories) > 1 ): ?>
+          <div class="row clearfix result">
+            <img class="formatIcon" src="../themes/truefit/images/icons/<?=str_replace(" ", "", $thisCategory)?>.png" alt="<?=$thisCategory?>" style="max-width:30px; padding-top:5px"/>
+            <span class="formatName"><?=$thisCategory?></span>
+            <div class="EIN-col-m-12"><hr style="margin:5px 0"></div>
+          </div>
+        <? endif; ?>
         <div id="result<?=$this->driver->getGroupingKey()?>0" class="row clearfix result<?=$this->driver->supportsAjaxStatus()?' ajaxItem':''?>">
           <?=$this->record($this->driver)->getSearchResult('list')?>
-        </div>          
+        </div>
         <?php $groupIndex = 1; foreach( $this->grouping as $thisRecord ): ?>
-          <div id="result<?=$this->driver->getGroupingKey() . $groupIndex++ ?>" class="row clearfix result<?=$thisRecord->supportsAjaxStatus()?' ajaxItem':''?>">
-            <?=$this->record($thisRecord)->getSearchResult('list')?>
-          </div>          
+          <? if( (count($categories) == 1) || ($thisRecord->getFormatCategory() == $thisCategory) ): ?>
+            <div id="result<?=$this->driver->getGroupingKey() . $groupIndex++ ?>" class="row clearfix result<?=$thisRecord->supportsAjaxStatus()?' ajaxItem':''?>">
+              <?=$this->record($thisRecord)->getSearchResult('list')?>
+            </div>
+          <? endif; ?>
         <?php endforeach; ?>
+        <? while( count($categories) > 1 ):
+             array_splice($categories, array_search($thisCategory, $categories), 1);
+             $thisCategory = $categories[0]; ?>
+             <div class="row clearfix result">
+               <img class="formatIcon" src="../themes/truefit/images/icons/<?=str_replace(" ", "", $thisCategory)?>.png" alt="<?=$thisCategory?>" style="max-width:30px; padding-top:5px"/>
+               <span class="formatName"><?=$thisCategory?></span>
+               <div class="EIN-col-m-12"><hr style="margin:5px 0"></div>
+             </div>
+             <? foreach( $this->grouping as $thisRecord ):
+              if( $thisRecord->getFormatCategory() == $thisCategory ): ?>
+              <div id="result<?=$this->driver->getGroupingKey() . $groupIndex++ ?>" class="row clearfix result<?=$thisRecord->supportsAjaxStatus()?' ajaxItem':''?>">
+                <?=$this->record($thisRecord)->getSearchResult('list')?>
+              </div>
+              <? endif;
+             endforeach;
+           endwhile; ?>
       </div>
     </div>
   </div>
