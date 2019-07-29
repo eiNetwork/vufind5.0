@@ -169,7 +169,7 @@ class SearchHandler
             }
             $startIndex += 13;
             $endIndex = strpos($query, ")", $startIndex);
-            $query = substr($query, 0, $startIndex) . /*$exactMatch*/ "EXACTSTARTstuffEXACTEND" . substr($query, $endIndex);
+            $query = substr($query, 0, $startIndex) . $exactMatch . substr($query, $endIndex);
         }
         while( ($startIndex = strpos($query, "title_exact_substring:(", $startIndex)) !== false ) {
             // generate the exact match if we havent yet

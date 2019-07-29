@@ -73,7 +73,7 @@
         <h4 property="author" class="itemAuthor">by <a href="<?=$record->getLink('author', $primaryAuthor)?>" class="authorLink"><?=$this->highlight(isset($deets["author"][0]) ? $deets["author"][0] : $primaryAuthor)?></a></h4>
       <?php endif; ?>
 
-      <table>
+      <table id="formatTable<?=$this->driver->getGroupingKey()?>">
         <?php $formats = $this->driver->getFormats(); $showDate = false; $categories = []; foreach( $this->grouping as $thisDoc ):
                 foreach( $thisDoc->getFormats() as $thisFormat ):
                   if( (substr($thisFormat, 0, 10) != "Category: ") && !in_array($thisFormat, $formats) ):
@@ -91,7 +91,7 @@
             <tr>
               <td class="EIN-hide-m itemDetailCategory"><?=($firstTime?"Format:":"&nbsp;")?></td>
               <td style="padding-bottom:5px">
-                <span class="formatTag"><?=$thisFormat?></span>
+                <span class="formatTag clickable" onclick="ToggleFormat(this, '<?=$this->driver->getGroupingKey()?>')" tabindex=0><?=$thisFormat?></span>
                 <?php if( $firstTime ): ?>
                   <?php $publications = $this->driver->getPublicationDetails(); if ($showDate && !empty($publications)): ?>
                     <?php foreach ($publications as $field): ?>
@@ -107,33 +107,63 @@
           <?php endforeach; ?>
         <?php endif; ?>
       </table>
-
-      <br>
-      <h4><strong><?=(count($this->grouping) + 1)?></strong> entries in this group</h4>
     </div>
     <div class="EIN-hide-m EIN-col-t-4 EIN-col-4" style="padding:5px 0px 10px">
       <div class="EIN-col-m-12">
-        <a data-toggle="collapse" class="facetAccordionTitle collapsed" href="#grouping<?=$this->driver->getGroupingKey()?>" class="collapsed">
-          <button class="btn-default" onClick="ToggleCaret('<?=$this->driver->getGroupingKey()?>');">Show Formats and Editions<i class="fa fa-caret-down"></i><i class="fa fa-caret-up facetToggleOff"></i></button>
+        <a data-toggle="collapse" class="facetAccordionTitle collapsed" href="#grouping<?=$this->driver->getGroupingKey()?>" class="collapsed" onClick="ToggleCaret('<?=$this->driver->getGroupingKey()?>');">
+          <button class="btn-default">Show Formats and Editions<i class="fa fa-caret-down"></i><i class="fa fa-caret-up facetToggleOff"></i></button>
         </a>
+      </div>
+      <div class="EIN-col-m-12"><br/>
+        Do you like our new interface for grouping similar titles?<br>
+        <form class="EIN-col-m-6" target="loginFrame" method="post" action="/insertGroupingFeedback.php">
+          <button class="btn-alternate leftButtonAlways" style="font-size:30px" onClick="ToggleThumbButton(this);"><i class="fa fa-thumbs-up"></i></button>
+          <input type="hidden" name="searchTerms" value="<?=$this->escapeHtmlAttr($this->params->getDisplayQuery());?>">
+          <input type="hidden" name="groupingKey" value="<?=$this->escapeHtmlAttr($this->driver->getGroupingKey());?>">
+          <input type="hidden" name="score" value="1">
+        </form>
+        <form class="EIN-col-m-6" target="loginFrame" method="post" action="/insertGroupingFeedback.php">
+          <button class="btn-alternate rightButtonAlways" style="font-size:30px" onClick="ToggleThumbButton(this);"><i class="fa fa-thumbs-down"></i></button>
+          <input type="hidden" name="searchTerms" value="<?=$this->escapeHtmlAttr($this->params->getDisplayQuery());?>">
+          <input type="hidden" name="groupingKey" value="<?=$this->escapeHtmlAttr($this->driver->getGroupingKey());?>">
+          <input type="hidden" name="score" value="-1">
+        </form>
+        You can <a href="https://www.surveymonkey.com/r/5SLSW8Y" target="_blank">leave more detailed feedback here.</a>
       </div>
     </div>
   </div>
   <div class="EIN-col-m-12 EIN-hide-t EIN-hide" style="padding:5px 10px 10px">
     <div class="EIN-col-m-12">
-      <a data-toggle="collapse" class="facetAccordionTitle collapsed" href="#grouping<?=$this->driver->getGroupingKey()?>" class="collapsed">
-        <button class="btn-default" onClick="ToggleCaret('<?=$this->driver->getGroupingKey()?>');" style="width:100%">Show Formats and Editions<i class="fa fa-caret-down"></i><i class="fa fa-caret-up facetToggleOff"></i></button>
+      <a data-toggle="collapse" class="facetAccordionTitle collapsed" href="#grouping<?=$this->driver->getGroupingKey()?>" class="collapsed" onClick="ToggleCaret('<?=$this->driver->getGroupingKey()?>');">
+        <button class="btn-default" style="width:100%">Show Formats and Editions<i class="fa fa-caret-down"></i><i class="fa fa-caret-up facetToggleOff"></i></button>
       </a>
+    </div>
+    <div class="EIN-col-m-12"><br/>
+      Do you like our new interface for grouping similar titles?<br>
+      <form class="EIN-col-m-6" target="loginFrame" method="post" action="/insertGroupingFeedback.php">
+        <button class="btn-alternate leftButtonAlways" style="font-size:30px" onClick="ToggleThumbButton(this);"><i class="fa fa-thumbs-up"></i></button>
+        <input type="hidden" name="searchTerms" value="<?=$this->escapeHtmlAttr($this->params->getDisplayQuery());?>">
+        <input type="hidden" name="groupingKey" value="<?=$this->escapeHtmlAttr($this->driver->getGroupingKey());?>">
+        <input type="hidden" name="score" value="1">
+      </form>
+      <form class="EIN-col-m-6" target="loginFrame" method="post" action="/insertGroupingFeedback.php">
+        <button class="btn-alternate rightButtonAlways" style="font-size:30px" onClick="ToggleThumbButton(this);"><i class="fa fa-thumbs-down"></i></button>
+        <input type="hidden" name="searchTerms" value="<?=$this->escapeHtmlAttr($this->params->getDisplayQuery());?>">
+        <input type="hidden" name="groupingKey" value="<?=$this->escapeHtmlAttr($this->driver->getGroupingKey());?>">
+        <input type="hidden" name="score" value="-1">
+      </form>
+      You can <a href="https://www.surveymonkey.com/r/5SLSW8Y" target="_blank">leave more detailed feedback here.</a>
     </div>
     <div class="EIN-col-m-12">
       <span></span>
     </div>
   </div>
+  <div class="EIN-col-m-12 center"><h4><strong><?=(count($this->grouping) + 1)?></strong> entries in this group<span id="groupingCount<?=$this->driver->getGroupingKey()?>"></span></h4></div>
   <div class="EIN-col-m-12 panel panel-groupingAccordion">
     <div id="grouping<?=$this->driver->getGroupingKey()?>" class="facetAccordionContent panel-collapse collapse">
       <div class="panel-body" style="border:5px solid #3f51b5">
         <? $thisCategory = $this->driver->getFormatCategory(); if( count($categories) > 1 ): ?>
-          <div class="row clearfix result">
+          <div class="row clearfix result formatIconRow">
             <img class="formatIcon" src="../themes/truefit/images/icons/<?=str_replace(" ", "", $thisCategory)?>.png" alt="<?=$thisCategory?>" style="max-width:30px; padding-top:5px"/>
             <span class="formatName"><?=$thisCategory?></span>
             <div class="EIN-col-m-12"><hr style="margin:5px 0"></div>
@@ -152,7 +182,7 @@
         <? while( count($categories) > 1 ):
              array_splice($categories, array_search($thisCategory, $categories), 1);
              $thisCategory = $categories[0]; ?>
-             <div class="row clearfix result">
+             <div class="row clearfix result formatIconRow">
                <img class="formatIcon" src="../themes/truefit/images/icons/<?=str_replace(" ", "", $thisCategory)?>.png" alt="<?=$thisCategory?>" style="max-width:30px; padding-top:5px"/>
                <span class="formatName"><?=$thisCategory?></span>
                <div class="EIN-col-m-12"><hr style="margin:5px 0"></div>
@@ -182,14 +212,82 @@
       createCookie("grouping" + grouping, true);
     } else {
       deleteCookie("grouping" + grouping);
+      table = $('#formatTable' + grouping).find('.formatTag').removeClass("fadedFormat");
     }
-    $('#grouping' + grouping).find("hr").last().parent().css("display", "none");
+
+    // show the correct elements
+    CleanGrouping(grouping);
   }
 
-  <?php if( $expanded ): ?>
-    $(document).ready(function() {
-      $('a[href="#grouping<?=$this->driver->getGroupingKey()?>"]').click();
-      ToggleCaret("<?=$this->driver->getGroupingKey()?>");
+  function ToggleFormat(formatType, grouping) {
+    // get the parent table
+    var table = $('#formatTable' + grouping);
+    var toggle = $(formatType).hasClass("fadedFormat");
+
+    // nobody is faded, so fade everyone else
+    if( table.find('.formatTag.fadedFormat').length == 0 ) {
+      table.find('.formatTag').addClass("fadedFormat");
+      $(formatType).removeClass("fadedFormat");
+    // i'm the last enabled guy, so unfade everyone
+    } else if( (table.find('.formatTag').not('.fadedFormat').length == 1) && table.find('.formatTag').not('.fadedFormat').is($(formatType)) ) {
+      table.find('.formatTag').removeClass("fadedFormat");
+    // otherwise, toggle me
+    } else if( toggle ) {
+      $(formatType).removeClass("fadedFormat");
+    } else {
+      $(formatType).addClass("fadedFormat");
+    }
+
+    // if they haven't expanded the group yet, do that now
+    if( $('#grouping' + grouping + '.collapse.in').length == 0 ) {
+      $('a[href="#grouping' + grouping + '"]').first().click();
+    } else {
+      // show the correct elements
+      CleanGrouping(grouping);
+    }
+  }
+
+  function CleanGrouping(grouping) {
+    // show the last HR
+    $('#grouping' + grouping).find('.formatIconRow,.ajaxItem').not('.hidden').last().find('hr').last().parent().css("display", "block");
+
+    // now do the actual showing/hiding of the grouped elements
+    var selector = "";
+    $('#formatTable' + grouping).find('.formatTag').not('.fadedFormat').each( function() { selector += (selector ? "," : "") + ".formatTag:contains(\"" + $(this).html() + "\")" } );
+    $('#grouping' + grouping).find('.ajaxItem').addClass("hidden");                       // hide all ajax items
+    $('#grouping' + grouping).find(selector).parents(".ajaxItem").removeClass("hidden");  // show the acceptable ones
+    $('#grouping' + grouping).find('.formatIconRow').addClass("hidden");                  // hide all format icon rows
+    $('#grouping' + grouping).find('.formatIconRow').each( function() {                   // show any format icon rows that have visible members
+      if( $(this).nextUntil('.formatIconRow').not('.hidden').length > 0 ) {
+        $(this).removeClass("hidden");
+      }
+    } );
+
+    // hide the last HR
+    $('#grouping' + grouping).find('.formatIconRow,.ajaxItem').not('.hidden').last().find('hr').last().parent().css("display", "none");
+
+    // update the count detail
+    if( $('#grouping' + grouping).find('.ajaxItem.hidden').length == 0 ) {
+      $('#groupingCount' + grouping).html("").resize();
+    } else {
+      $('#groupingCount' + grouping).html(" (showing <strong>" + $('#grouping' + grouping).find('.ajaxItem').not('.hidden').length + "</strong>)").resize();
+    }
+  }
+
+  function ToggleThumbButton(turnOn) {
+    $(turnOn).addClass("btn-default").removeClass("btn-alternate");
+    $(turnOn).parent().siblings("form").children("button").addClass("btn-alternate").removeClass("btn-default");
+  }
+
+  $(document).ready(function() {
+    $('#formatTable<?=$this->driver->getGroupingKey()?> .formatTag.clickable').keypress(function(e) {
+      if( e.which == 13 || e.which == 32 ) {
+        e.preventDefault();
+        $(this).click();
+      }
     });
-  <?php endif; ?>
+    <?php if( $expanded ): ?>
+      $('a[href="#grouping<?=$this->driver->getGroupingKey()?>"]').first().click();
+    <?php endif; ?>
+  });
 </script>

@@ -165,9 +165,10 @@ fa {
 .btn-pickupLocation:focus,.btn-pickupLocationPreferred:focus{outline:0}
 .singleButtonGap{width:50%}
 .singleButton{width:100%}
-.leftButton{width:100%;border-radius:5px 0px 0px 5px}
+.leftButton,.leftButtonAlways{width:100%;border-radius:5px 0px 0px 5px}
 .rightButton{width:100%;border-radius:0px 5px 5px 0px;border-left:1px solid #fff}
 .rightButton:hover,.rightButton:focus,.rightButton:active{border-left:1px solid #fff}
+.rightButtonAlways{width:100%;border-radius:0px 5px 5px 0px}
 @media only screen and (min-width: 600px) {
     /* For tablets and desktops: */
     .singleButtonGap{width:100%}
@@ -193,7 +194,7 @@ fa {
 .openAccordionTab{background-color: #fff;height:100%;width:1px;position:absolute;top:0px;right:0;}
 .collapsed + .openAccordionTab{background-color:#949494}
 
-.btn-default > .fa-caret-down,.btn-alternate > .fa-caret-down,.btn-default > .fa-caret-up{margin:0;padding-left:7px}
+.btn-default > .fa-caret-down,.btn-alternate > .fa-caret-down,.btn-default > .fa-caret-up,.btn-alternate > .fa-caret-up{margin:0;padding-left:7px}
 .form-inline{display:inline}
 
 .floatR{float:right}
@@ -309,7 +310,6 @@ input:-webkit-autofill {-webkit-box-shadow: 0 0 0 1000px white inset;}
   .panel-facetAccordion{border:0;border-radius:0;text-align:left;margin:0px}
   .resultsRightBar{border-left:1px solid #949494}
 }
-.panel-groupingAccordion{border:0;border-radius:0;text-align:left;margin:0px}
 .facetTitle{padding:10px;text-align:center;background-color:#3f51b5;color:#fff;font-weight:700}
 .ajax-availability{font-size:14px;color#3d3d3d}
 
@@ -425,3 +425,5 @@ a.checkinLocDetail {cursor:pointer}
 
 .subjectLine {padding-left:20px;text-indent:-20px;display:inline-block}
 .pseudoHover {color:#5c6dcc;text-decoration:underline;outline:0}
+
+.fadedFormat {opacity:0.33}
