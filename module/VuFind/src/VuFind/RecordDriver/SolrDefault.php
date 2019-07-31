@@ -466,7 +466,7 @@ class SolrDefault extends DefaultRecord
         }
         foreach( $json["orderRecords"] as $key => $thisJson ) {
             // find this location in the database
-            $row = $this->getDBTable('shelvinglocation')->getBySierraName($thisJson["locationID"]);
+            $row = $this->getDBTable('shelvinglocation')->getByCode($key);
             $row = $row ? $row->toArray() : [];
             // test to see if it's a branch name instead of shelving location
             if( count($row) == 0 ) {
@@ -489,7 +489,7 @@ class SolrDefault extends DefaultRecord
                     "returnDate" => false,
                     "number" => null,
                     "barcode" => null,
-                    "locationID" => $row[0]["code"],
+                    "locationID" => $row["code"],
                     "copiesOwned" => $thisJson["copies"]
                 ];
             } else {

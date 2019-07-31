@@ -367,7 +367,7 @@ class EINGetItemStatuses extends GetItemStatuses
                               ((isset($libraryOnly) && $libraryOnly) ? 'inlibrary' : 
                                ($available ? 'available' : 
                                 ($isOneClick ? 'oneclick' : 'unavailable')))))];
-            $cache = $this->ils->getMemcachedVar("holdingID" . $bib)["CACHED_INFO"];
+            $cache = $this->ils->getMemcachedVar("holdingID" . $fullID)["CACHED_INFO"];
             $numberOfHolds = ($cache && !$cache["doUpdate"]) ? $cache["numberOfHolds"] : ($isOverDrive ? $overDriveInfo["numberOfHolds"] : 0);
             $waitlistText = $numberOfHolds ? ("<br><i class=\"fa fa-clock-o\" style=\"padding-right:6px\"></i>" . (($numberOfHolds > 1) ? ($numberOfHolds . " people") : "1 person") . " on waitlist") : "";
             if ($checkinRecords) {

@@ -178,9 +178,10 @@ class EINetwork extends SierraRest implements
 
     public function getHolding($id, array $patron = null)
     {
+        $driver = $this->recordLoader->load($id);
+
         // see if it's there
         if( ($overDriveId = $this->getOverDriveID($id)) ) {
-            $driver = $this->recordLoader->load($id);
             $availability = $driver->getOverdriveAvailability();
             return [["id" => $id,
                      "location" => "OverDrive",
@@ -195,7 +196,6 @@ class EINetwork extends SierraRest implements
         }
 
         $cachedInfo = ($this->memcached->get("holdingID" . $id) && ($this->memcached->get("holdingID" . $id))["CACHED_INFO"]) ? ($this->memcached->get("holdingID" . $id))["CACHED_INFO"] : null;
-
         if( $cachedInfo && !$cachedInfo["doUpdate"] && isset($cachedInfo["holding"]) ) {
             $results = $cachedInfo["holding"];
 
@@ -232,6 +232,19 @@ class EINetwork extends SierraRest implements
             }
         } else {
             $results = parent::getHolding($id, $patron);
+
+            // add the cached order records
+            if( ($cachedInfo = $driver->getCachedItems()) !== null ) {
+                if( isset($cachedInfo["orderRecords"]) ) {
+                    foreach( $cachedInfo["orderRecords"] as $locationCode => $details ) {
+                        $details["id"] = substr($details["id"], 2, -1);
+                        $details["locationID"] = $locationCode;
+                        $details["callnumber"] = $details["callnumber"] ?? "";
+                        $details["number"] = $details["number"] ?? "";
+                        $results[] = $details;
+                    }
+                }
+            }
         }
 
         // make any status updates we are supposed to be making
@@ -311,7 +324,7 @@ class EINetwork extends SierraRest implements
             if( $cachedInfo && !$cachedInfo["doUpdate"] && isset($cachedInfo["checkinRecords"]) ) {
                 $checkinRecords = $cachedInfo["checkinRecords"];
             } else {
-                $checkinRecords = $this->recordLoader->load($id)->getCachedItems()["checkinRecords"] ?? [];
+                $checkinRecords = $driver->getCachedItems()["checkinRecords"] ?? [];
             }
 
             foreach( array_keys($checkinRecords) as $key ) {

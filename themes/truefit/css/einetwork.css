@@ -427,3 +427,5 @@ a.checkinLocDetail {cursor:pointer}
 .pseudoHover {color:#5c6dcc;text-decoration:underline;outline:0}
 
 .fadedFormat {opacity:0.33}
+a button.hideText,a.collapsed button.showText {display:inline-block}
+a.collapsed button.hideText,a button.showText {display:none}

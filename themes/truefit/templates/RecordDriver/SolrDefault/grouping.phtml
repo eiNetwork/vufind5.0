@@ -111,19 +111,20 @@
     <div class="EIN-hide-m EIN-col-t-4 EIN-col-4" style="padding:5px 0px 10px">
       <div class="EIN-col-m-12">
         <a data-toggle="collapse" class="facetAccordionTitle collapsed" href="#grouping<?=$this->driver->getGroupingKey()?>" class="collapsed" onClick="ToggleCaret('<?=$this->driver->getGroupingKey()?>');">
-          <button class="btn-default">Show Formats and Editions<i class="fa fa-caret-down"></i><i class="fa fa-caret-up facetToggleOff"></i></button>
+          <button class="btn-default showText" style="width:100%">Show Formats and Editions<i class="fa fa-caret-down"></i></button>
+          <button class="btn-default hideText" style="width:100%">Hide Formats and Editions<i class="fa fa-caret-up"></i></button>
         </a>
       </div>
-      <div class="EIN-col-m-12"><br/>
+      <div class="EIN-col-m-12" style="font-size:14px"><br/>
         Do you like our new interface for grouping similar titles?<br>
         <form class="EIN-col-m-6" target="loginFrame" method="post" action="/insertGroupingFeedback.php">
-          <button class="btn-alternate leftButtonAlways" style="font-size:30px" onClick="ToggleThumbButton(this);"><i class="fa fa-thumbs-up"></i></button>
+          <button class="btn-alternate leftButtonAlways" style="font-size:20px" onClick="ToggleThumbButton(this);"><i class="fa fa-thumbs-up"></i></button>
           <input type="hidden" name="searchTerms" value="<?=$this->escapeHtmlAttr($this->params->getDisplayQuery());?>">
           <input type="hidden" name="groupingKey" value="<?=$this->escapeHtmlAttr($this->driver->getGroupingKey());?>">
           <input type="hidden" name="score" value="1">
         </form>
         <form class="EIN-col-m-6" target="loginFrame" method="post" action="/insertGroupingFeedback.php">
-          <button class="btn-alternate rightButtonAlways" style="font-size:30px" onClick="ToggleThumbButton(this);"><i class="fa fa-thumbs-down"></i></button>
+          <button class="btn-alternate rightButtonAlways" style="font-size:20px" onClick="ToggleThumbButton(this);"><i class="fa fa-thumbs-down"></i></button>
           <input type="hidden" name="searchTerms" value="<?=$this->escapeHtmlAttr($this->params->getDisplayQuery());?>">
           <input type="hidden" name="groupingKey" value="<?=$this->escapeHtmlAttr($this->driver->getGroupingKey());?>">
           <input type="hidden" name="score" value="-1">
@@ -135,19 +136,20 @@
   <div class="EIN-col-m-12 EIN-hide-t EIN-hide" style="padding:5px 10px 10px">
     <div class="EIN-col-m-12">
       <a data-toggle="collapse" class="facetAccordionTitle collapsed" href="#grouping<?=$this->driver->getGroupingKey()?>" class="collapsed" onClick="ToggleCaret('<?=$this->driver->getGroupingKey()?>');">
-        <button class="btn-default" style="width:100%">Show Formats and Editions<i class="fa fa-caret-down"></i><i class="fa fa-caret-up facetToggleOff"></i></button>
+        <button class="btn-default showText" style="width:100%">Show Formats and Editions<i class="fa fa-caret-down"></i></button>
+        <button class="btn-default hideText" style="width:100%">Hide Formats and Editions<i class="fa fa-caret-up"></i></button>
       </a>
     </div>
-    <div class="EIN-col-m-12"><br/>
+    <div class="EIN-col-m-12" style="font-size:14px"><br/>
       Do you like our new interface for grouping similar titles?<br>
       <form class="EIN-col-m-6" target="loginFrame" method="post" action="/insertGroupingFeedback.php">
-        <button class="btn-alternate leftButtonAlways" style="font-size:30px" onClick="ToggleThumbButton(this);"><i class="fa fa-thumbs-up"></i></button>
+        <button class="btn-alternate leftButtonAlways" style="font-size:20px" onClick="ToggleThumbButton(this);"><i class="fa fa-thumbs-up"></i></button>
         <input type="hidden" name="searchTerms" value="<?=$this->escapeHtmlAttr($this->params->getDisplayQuery());?>">
         <input type="hidden" name="groupingKey" value="<?=$this->escapeHtmlAttr($this->driver->getGroupingKey());?>">
         <input type="hidden" name="score" value="1">
       </form>
       <form class="EIN-col-m-6" target="loginFrame" method="post" action="/insertGroupingFeedback.php">
-        <button class="btn-alternate rightButtonAlways" style="font-size:30px" onClick="ToggleThumbButton(this);"><i class="fa fa-thumbs-down"></i></button>
+        <button class="btn-alternate rightButtonAlways" style="font-size:20px" onClick="ToggleThumbButton(this);"><i class="fa fa-thumbs-down"></i></button>
         <input type="hidden" name="searchTerms" value="<?=$this->escapeHtmlAttr($this->params->getDisplayQuery());?>">
         <input type="hidden" name="groupingKey" value="<?=$this->escapeHtmlAttr($this->driver->getGroupingKey());?>">
         <input type="hidden" name="score" value="-1">
@@ -202,18 +204,15 @@
 </div>
 <script type="text/javascript">
   function ToggleCaret(grouping) {
-    $('a[href="#grouping' + grouping + '"]').find('i').not('.facetToggleOff').addClass('tempToggle');
-    $('a[href="#grouping' + grouping + '"]').find('i.facetToggleOff').removeClass('facetToggleOff');
-    $('a[href="#grouping' + grouping + '"]').find('i.tempToggle').addClass('facetToggleOff').removeClass('tempToggle');
-    var html = $('a[href="#grouping' + grouping + '"]').find('button').html();
-    var expanded = (html.substring(0,4) == "Show");
-    $('a[href="#grouping' + grouping + '"]').find('button').html((expanded ? "Hide" : "Show") + html.substring(4));
-    if( expanded ) {
-      createCookie("grouping" + grouping, true);
-    } else {
-      deleteCookie("grouping" + grouping);
-      table = $('#formatTable' + grouping).find('.formatTag').removeClass("fadedFormat");
-    }
+    setTimeout( function() {
+      var hidden = $('a[href="#grouping' + grouping + '"]').hasClass("collapsed");
+      if( hidden ) {
+        deleteCookie("grouping" + grouping);
+        table = $('#formatTable' + grouping).find('.formatTag').removeClass("fadedFormat");
+      } else {
+        createCookie("grouping" + grouping, true);
+      }
+    }, 100);
 
     // show the correct elements
     CleanGrouping(grouping);

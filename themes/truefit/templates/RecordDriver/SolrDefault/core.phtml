@@ -204,7 +204,7 @@
             <td style="padding-bottom:5px">
               <? if( $onOrder && ($ownedCopies == 0) ): ?>
                 <span class="availableTag" style="display:inline-table"><i class="fa fa-check" style="display:table-cell;padding-left:6px"></i><span style="display:table-cell;padding:3px 4px 3px 6px">On Order</span></span>
-                <span class="availableCopyText"> <?=($orderedCopies . " cop" . (($orderedCopies == 1) ? "y" : "ies"))?></span>
+                <span class="availableCopyText"> <?=($orderedCopies . " cop" . (($orderedCopies == 1) ? "y" : "ies")) . ($this->numberOfHolds ? ("<br><i class=\"fa fa-clock-o\" style=\"padding-right:6px\"></i>" . (($this->numberOfHolds > 1) ? ($this->numberOfHolds . " people") : "1 person") . " on waitlist") : "")?></span>
                 <?=((($ownedCopies > 0) || $accessOnline) ? "<br><div style=\"height:5px\"></div>" : "") ?>
               <? endif; ?>
               <? if( $accessOnline ): ?>
