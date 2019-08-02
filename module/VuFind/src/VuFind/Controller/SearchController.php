@@ -258,6 +258,7 @@ class SearchController extends AbstractSolrSearch
             $url = $view->results->getUrlQuery();
             $url->setDefaultParameter('range', $range);
             $url->setDefaultParameter('department', $dept);
+            $url->setDefaultParameter('hiddenFilters', []);
             $url->setSuppressQuery(true);
 
             // reset the sort type

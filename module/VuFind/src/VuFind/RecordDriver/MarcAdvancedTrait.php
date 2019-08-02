@@ -487,11 +487,13 @@ trait MarcAdvancedTrait
         foreach ($fields as $field) {
             $subfields = $field->getSubfields();
             foreach ($subfields as $subfield) {
+                // add breaks
+                $subfieldData = str_replace("--", "<br>--", $subfield->getData());
                 // Break the string into appropriate chunks, filtering empty strings,
                 // and merge them into return array:
                 $toc = array_merge(
                     $toc,
-                    array_filter(explode('--', $subfield->getData()), 'trim')
+                    array_filter(explode('--', $subfieldData), 'trim')
                 );
             }
         }

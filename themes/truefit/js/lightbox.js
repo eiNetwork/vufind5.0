@@ -197,7 +197,7 @@ VuFind.register('lightbox', function Lightbox() {
               VuFind.refreshPage();
             }
             return false;
-          } else {
+          } else if(!obj.url.match(/Notifications/)) {
             VuFind.lightbox.refreshOnClose = true;
           }
           _currentUrl = _originalUrl; // Now that we're logged in, where were we?
