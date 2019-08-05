@@ -23,7 +23,7 @@
         <td style="width:100%">
           <div style="padding:0 5px">
             <span class="sr-only">Search for:</span>
-            <input class="form-control search-query<? if($this->searchbox()->autocompleteEnabled($this->searchClassId)):?> autocomplete searcher:<?=$this->escapeHtmlAttr($this->searchClassId) ?><? endif ?><?=(($this->lookfor == "") ? " initialSearch" : "")?> searchBox" type="text" name="lookfor" value="<?=$this->escapeHtmlAttr(($this->lookfor == "") ? "Search For..." : $this->lookfor)?>" onfocus="SearchFocus(this);" onblur="SearchFocusOut(this);"/>
+            <input class="form-control search-query<? if($this->searchbox()->autocompleteEnabled($this->searchClassId)):?> autocomplete searcher:<?=$this->escapeHtmlAttr($this->searchClassId) ?><? endif ?><?=(($this->lookfor == "") ? " initialSearch" : "")?> searchBox" type="text" name="lookfor" value="<?=$this->escapeHtmlAttr(($this->lookfor == "") ? "Search For..." : $this->lookfor)?>" onfocus="SearchFocus(this);" onblur="SearchFocusOut(this);" data-lpignore="true"/>
           </div>
         </td>
         <td>
