@@ -210,7 +210,7 @@ class UserList extends RowGateway implements \VuFind\Db\Table\DbTableAwareInterf
 
         // Retrieve a list of resource IDs:
         $resourceTable = $this->getDbTable('Resource');
-        $resources = $resourceTable->findResources($ids, $source);
+        $resources = $resourceTable->findResources($ids, /*SOURCE_OVERRIDE*$source/*SOURCE_OVERRIDE*/'VuFind'/*SOURCE_OVERRIDE*/);
 
         $resourceIDs = [];
         foreach ($resources as $current) {
