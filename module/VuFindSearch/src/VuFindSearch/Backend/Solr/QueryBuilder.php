@@ -176,10 +176,10 @@ class QueryBuilder implements QueryBuilderInterface
         // Set an appropriate highlight field list when applicable:
         if ($highlight) {
             $filter = $handler ? $handler->getAllFields() : [];
-            $params->add('hl.fl', $this->getFieldsToHighlight($filter));
+            //$params->add('hl.fl', $this->getFieldsToHighlight($filter));
         }
         // add boost
-        $params->add('bf', "sum(product(language_boost,0.04),product(num_holdings,0.06,div(format_boost,250)),15)");
+        $params->add('bf', "sum(language_boost,product(num_holdings,15,div(format_boost,50)),15)");
 
         $params->set('q', $string);
 

@@ -137,13 +137,6 @@ class SearchHandler
         $mungeRules  = $this->mungeRules();
         // Do not munge w/o rules
         if ($mungeRules) {
-            // zero out these weights
-            foreach($mungeRules as $key => $value) {
-                foreach($value as $vKey => $row) {
-                    $value[$vKey][1] = null;
-                }
-                $mungeRules[$key] = $value;
-            }
             $mungeValues = $this->mungeValues($search);
             $query       = $this->munge($mungeRules, $mungeValues);
         } else {

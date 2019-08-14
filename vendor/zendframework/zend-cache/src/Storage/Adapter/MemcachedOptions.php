@@ -223,7 +223,7 @@ class MemcachedOptions extends AdapterOptions
      * @return MemcachedOptions Provides a fluent interface
      * @deprecated Please use the resource manager instead
      */
-    public function addServer($host, $port = 11211, $weight = 0)
+    public function addServer($host, $port = 11212, $weight = 0)
     {
         trigger_error(
             'This method is deprecated and will be removed in the feature'

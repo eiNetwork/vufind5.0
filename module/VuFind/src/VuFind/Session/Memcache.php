@@ -61,7 +61,7 @@ class Memcache extends AbstractBase
             $host = isset($this->config->memcache_host)
                 ? $this->config->memcache_host : 'localhost';
             $port = isset($this->config->memcache_port)
-                ? $this->config->memcache_port : 11211;
+                ? $this->config->memcache_port : 11212;
             $timeout = isset($this->config->memcache_connection_timeout)
                 ? $this->config->memcache_connection_timeout : 1;
 

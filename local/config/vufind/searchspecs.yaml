@@ -197,6 +197,10 @@ Subject:
     - genre^50
     - era
   QueryFields:
+    topic_unstemmed:
+      - [onephrase, 1500]
+      - [and, 500]
+      - [or, 100]
     topic:
       - [onephrase, 300]
       - [and, 100]
@@ -301,7 +305,7 @@ Title:
     title_exact_substring:
       - [onephrase, 10000]
     title_unstemmed:
-      - [onephrase, 600]
+      - [onephrase, 6000]
     title_full:
       - [onephrase, 600]
     title_short:
@@ -361,6 +365,8 @@ Keyword:
   QueryFields:
     title_exact:
       - [onephrase, 10000]
+    title_unstemmed:
+      - [onephrase, 1500]
     title_short:
       - [onephrase, 50]
     title_auth:
@@ -530,6 +536,9 @@ toc:
 #  DismaxFields:
 #    - contents^100
   QueryFields:
+    contents_unstemmed:
+      - [and, 600]
+      - [or, 10]
     contents:
       - [and, 100]
       - [or, ~]
