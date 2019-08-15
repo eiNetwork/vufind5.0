@@ -599,4 +599,22 @@ class Params extends \VuFind\Search\Base\Params
 
         return $filter;
     }
+
+    /**
+     * Pull the search parameters
+     *
+     * @param \Zend\StdLib\Parameters $request Parameter object representing user
+     * request.
+     *
+     * @return void
+     */
+    public function initFromRequest($request)
+    {
+        parent::initFromRequest($request);
+
+        // look for field list
+        if( $fl = $request->get('fl', null) ) {
+            $this->getOptions()->setFieldList($fl);
+        }
+    }
 }

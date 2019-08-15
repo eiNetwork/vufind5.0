@@ -116,6 +116,9 @@ class Results extends \VuFind\Search\Base\Results
         $offset = $this->getStartRecord() - 1;
         $params = $this->getParams()->getBackendParameters();
         $searchService = $this->getSearchService();
+        if( $fieldList = $this->getParams()->getOptions()->getFieldList() ) {
+            $params->set('fl', $fieldList);
+        }
 
         try {
             $collection = $searchService

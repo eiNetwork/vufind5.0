@@ -32,6 +32,7 @@ namespace VuFind\Record;
 use VuFind\Exception\RecordMissing as RecordMissingException;
 use VuFind\Record\FallbackLoader\PluginManager as FallbackLoader;
 use VuFind\RecordDriver\PluginManager as RecordFactory;
+use VuFindSearch\ParamBag as ParamBag;
 use VuFindSearch\Service as SearchService;
 
 /**
@@ -47,6 +48,9 @@ use VuFindSearch\Service as SearchService;
 class Loader implements \Zend\Log\LoggerAwareInterface
 {
     use \VuFind\Log\LoggerAwareTrait;
+
+    // field limiters
+    private $longFieldList;
 
     /**
      * Record factory
@@ -83,15 +87,17 @@ class Loader implements \Zend\Log\LoggerAwareInterface
      * @param RecordFactory  $recordFactory  Record loader
      * @param Cache          $recordCache    Record Cache
      * @param FallbackLoader $fallbackLoader Fallback record loader
+     * @param string         $longList       Fields to limit response to in single requests
      */
     public function __construct(SearchService $searchService,
         RecordFactory $recordFactory, Cache $recordCache = null,
-        FallbackLoader $fallbackLoader = null
+        FallbackLoader $fallbackLoader = null, $longList = null
     ) {
         $this->searchService = $searchService;
         $this->recordFactory = $recordFactory;
         $this->recordCache = $recordCache;
         $this->fallbackLoader = $fallbackLoader;
+        $this->longFieldList = $longList;
     }
 
     /**
@@ -116,7 +122,13 @@ class Loader implements \Zend\Log\LoggerAwareInterface
                 $results = $this->recordCache->lookup($id, $source);
             }
             if (empty($results)) {
-                $results = $this->searchService->retrieve($source, $id)
+                // limit to only needed fields
+                $params = new ParamBag();
+                if( $this->longFieldList !== null ) {
+                    $params->set('fl', $this->longFieldList);
+                }
+
+                $results = $this->searchService->retrieve($source, $id, $params)
                     ->getRecords();
             }
             if (empty($results) && null !== $this->recordCache
@@ -171,8 +183,14 @@ class Loader implements \Zend\Log\LoggerAwareInterface
         $genuineRecords = [];
         if ($list->hasUnchecked()) {
             try {
+                // limit to only needed fields
+                $params = new ParamBag();
+                if( $this->longFieldList !== null ) {
+                    $params->set('fl', $this->longFieldList);
+                }
+
                 $genuineRecords = $this->searchService
-                    ->retrieveBatch($source, $list->getUnchecked())->getRecords();
+                    ->retrieveBatch($source, $list->getUnchecked(), $params)->getRecords();
             } catch (\VuFindSearch\Backend\Exception\BackendException $e) {
                 if (!$tolerateBackendExceptions) {
                     throw $e;
