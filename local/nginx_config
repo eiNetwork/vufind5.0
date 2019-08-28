@@ -1,0 +1,70 @@
+# You may add here your
+# server {
+#	...
+# }
+# statements for each of your virtual hosts to this file
+
+##
+# You should look at the following URL's in order to grasp a solid understanding
+# of Nginx configuration files in order to fully unleash the power of Nginx.
+# http://wiki.nginx.org/Pitfalls
+# http://wiki.nginx.org/QuickStart
+# http://wiki.nginx.org/Configuration
+#
+# Generally, you will want to move this file somewhere, and start with a clean
+# file but keep this around for reference. Or just disable in sites-enabled.
+#
+# Please see /usr/share/doc/nginx-doc/examples/ for more detailed examples.
+##
+
+server {
+	listen 80;
+	listen [::]:80;
+	server_name vfour.catalogtest.einetwork.net;
+
+	return 301 https://$host$request_uri;
+}
+
+server {
+	listen 443 ssl;
+
+	#root /usr/local/vufind-5.0/public;
+	index index.php;
+	root /usr/local/vufind-5.0;
+	#index public/index.php;
+
+	server_name vfour.catalogtest.einetwork.net;
+	ssl_certificate /usr/local/vufind-5.0/local/bundled.crt;
+	ssl_certificate_key /usr/local/vufind-5.0/local/wildcard.key;
+	ssl_protocols TLSv1.2;
+	ssl_ciphers HIGH:!aNULL:!MD5;
+
+	location / {
+               proxy_set_header X-Real-IP $remote_addr;
+               proxy_set_header X-Forwarded-For $remote_addr;
+               proxy_set_header Host $host;
+               proxy_pass https://127.0.0.1:8043;
+	}
+	location ~* \.(js|css|jpg|jpeg|gif|png|svg|ico|pdf|html|htm)$ {
+		expires 30d;
+	}
+        location @proxy {
+               proxy_set_header X-Real-IP $remote_addr;
+               proxy_set_header X-Forwarded-For $remote_addr;
+               proxy_set_header Host $host;
+               proxy_pass https://127.0.0.1:8043;
+        }
+        location ~* \.php$ {
+               proxy_set_header X-Real-IP $remote_addr;
+               proxy_set_header X-Forwarded-For $remote_addr;
+               proxy_set_header Host $host;
+               proxy_pass https://127.0.0.1:8043;
+               set_real_ip_from 127.0.0.1/32;
+               real_ip_header X-Forwarded-For;
+        }
+
+
+	location ~ /\.ht {
+		deny all;
+	}
+}
