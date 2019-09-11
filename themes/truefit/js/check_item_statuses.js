@@ -33,19 +33,32 @@ function handleHoldStatusResponse(response) {
 function checkItemStatuses() {
   $(".ajax-availability").removeClass('hidden');
 
-  // grab all of the bibIDs
+  // grab all of the bibIDs inside a grouping
+  var groupedBibIDs = [];
+  $('.panel-groupingAccordion .hiddenLoadThisStatus').each( function() {
+    groupedBibIDs.push($(this).siblings('.hiddenId')[0].value);
+    $(this).remove();
+  } );
+  // grab the remaining (non-grouped) bibIDs
   var bibIDs = [];
   $('.hiddenLoadThisStatus').each( function() {
     bibIDs.push($(this).siblings('.hiddenId')[0].value);
     $(this).remove();
   } );
+  // put the grouped ones at the end of the list
+  bibIDs = bibIDs.concat(groupedBibIDs);
 
-  $.ajax({
-    dataType: 'json',
-    url: VuFind.path + '/AJAX/JSON?method=EINgetItemStatuses',
-    data: {id:bibIDs},
-    success: handleItemStatusResponse
-  });
+  var pageSize = 20;
+  while (bibIDs.length) {
+    $.ajax({
+      dataType: 'json',
+      url: VuFind.path + '/AJAX/JSON?method=EINgetItemStatuses',
+      data: {id:bibIDs.splice(0,pageSize)},
+      method: 'POST',
+      success: handleItemStatusResponse
+    });
+    pageSize = 100;
+  }
 }
 
 function handleItemStatusResponse(response) { 
