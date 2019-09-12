@@ -1008,17 +1008,6 @@ class EINetwork extends SierraRest implements
     public function getNotifications($profile){
         $notifications = [];
         if( $profile["moneyOwed"] > 0 ) {
-            $domain = substr($this->config['SIERRAAPI']['url'], 0, strrpos($this->config['SIERRAAPI']['url'], "/"));
-            $sc = new SoapClient($domain . "/wspatroninfo/patroninfo.wsdl", array("trace" => 1, "exception" => 0));
-            $sc->__setLocation($domain . "/wspatroninfo/");
-            // Call wsdl function
-            $result = $sc->patronInfo(array("request" => array(
-                "index"    => 'barcode',
-                "query"    => $profile["cat_username"],
-                "username" => "milwspin",
-                "password" => "milwspin"
-            )));
-
             // build the message
             $msg = "<form name=\"creditForm\" method=\"post\" onsubmit=\"return checkFees()\" target=\"_blank\" action=\"https://payflowlink.paypal.com\" data-lightbox-ignore>" .
                    "<input type=\"hidden\" name=\"action\" value=\"confirmInfo\">" .
@@ -1033,7 +1022,7 @@ class EINetwork extends SierraRest implements
                    "<input type=\"hidden\" name=\"showConfirm\" value=\"TRUE\">" .
                    "<input type=\"hidden\" name=\"method\" value=\"CC\">" .
                    "<input type=\"hidden\" name=\"login\" value=\"einetworklink\">" .
-                   "<input type=\"hidden\" name=\"custId\" value=\"" . substr($result->response->recordNumber, 1) . "\">" .
+                   "<input type=\"hidden\" name=\"custId\" value=\"" . $profile["id"] . "\">" .
                    "<input type=\"hidden\" name=\"description\" value=\"\">" .
                    "<input type=\"hidden\" name=\"emailCustomer\" value=\"TRUE\">" .
                    "<input type=\"hidden\" name=\"address\" value=\"\">" .
@@ -1053,39 +1042,33 @@ class EINetwork extends SierraRest implements
                    "<input type=\"hidden\" name=\"user9\" value=\"\">" .
                    "<input type=\"hidden\" name=\"user10\" value=\"ecom\">" .
                    "<input type=\"hidden\" name=\"comment1\" value=\"f\">" .
-                   "<input type=\"hidden\" name=\"comment2\" value=\"" . $result->response->recordNumber . "\">" .
+                   "<input type=\"hidden\" name=\"comment2\" value=\"p" . $profile["id"] . "\">" .
                    "<input type=\"hidden\" name=\"parsedMoneyfmt\" value=\",.2\" id=\"moneyfmt\">" .
                    "<input type=\"hidden\" name=\"currencySymbol\" value=\"$\" id=\"currencySymbol\">" .
                    "<input type=\"hidden\" name=\"serviceCharge\" value=\"0\" id=\"serviceCharge\"><table style=\"border-collapse:separate;border-spacing:0 1em\">";
             $user1 = "";
             $total = 0;
 
-            if( isset($result->response->fines) ) {
-                $fines = is_array($result->response->fines) ? $result->response->fines : [$result->response->fines];
-            } else {
-                $fines = [];
-            }
+            $fines = $this->getMyFines($this->sessionCache->patronLogin);
             foreach($fines as $i => $thisFine) {
-                $adjustedValue = $thisFine->itemCharge + $thisFine->processingFee + $thisFine->billingFee - $thisFine->amountPaid;
-                $msg .= "<tr><td style=\"padding:5px\"><input type=\"checkbox\" name=\"selectedFees\" value=\"" . $adjustedValue . "\" checked=\"checked\" onclick=\"checkFees()\" id=\"" . $thisFine->invoice . "\">" .
-                        "</td><td style=\"padding:5px\">" . sprintf("$%.2f", $adjustedValue * 0.01) . "</td><td style=\"padding:5px;line-height:1.23em\">";
-                if( $thisFine->itemTitle && $thisFine->chargeType == "Overdue" ) {
-                    $msg .= "<div class=\"bold\">Overdue Item Returned</div><div style=\"margin-left:20px;text-indent:-20px\">" . str_replace("'", "\'", $thisFine->itemTitle) . "</div>" .
-                            "<div><span class=\"bold\">Date Due:</span> " . strftime("%a %b %e, %Y", strtotime(substr($thisFine->itemDueDate, 0, 10))) . "</div>" .
-                            "<div><span class=\"bold\">Date Returned:</span> " . strftime("%a %b %e, %Y", strtotime(substr($thisFine->itemDateReturned, 0, 10))) . "</div>";
-                } else if( $thisFine->itemTitle && $thisFine->chargeType == "OverdueRenewal" ) {
-                    $msg .= "<div class=\"bold\">Overdue Item Renewed</div><div style=\"margin-left:20px;text-indent:-20px\">" . str_replace("'", "\'", $thisFine->itemTitle) . "</div>" .
-                            "<div><span class=\"bold\">Date Due:</span> " . strftime("%a %b %e, %Y", strtotime(substr($thisFine->itemDueDate, 0, 10))) . "</div>" .
-                            "<div><span class=\"bold\">Date Renewed:</span> " . strftime("%a %b %e, %Y", strtotime(substr($thisFine->itemDateReturned, 0, 10))) . "</div>";
-                } else if( $thisFine->description && $thisFine->chargeType == "Manual" ) {
-                    $msg .= "<div class=\"bold\">Manually added fine</div><div style=\"margin-left:20px;text-indent:-20px\">" . str_replace("'", "\'", $thisFine->description) . "</div>";
+                //$adjustedValue = $thisFine->itemCharge + $thisFine->processingFee + $thisFine->billingFee - $thisFine->amountPaid;
+                $msg .= "<tr><td style=\"padding:5px\"><input type=\"checkbox\" name=\"selectedFees\" value=\"" . $thisFine["balance"] . "\" checked=\"checked\" onclick=\"checkFees()\" id=\"" . $thisFine["invoice"] . "\">" .
+                        "</td><td style=\"padding:5px\">" . sprintf("$%.2f", $thisFine["balance"] * 0.01) . "</td><td style=\"padding:5px;line-height:1.23em\">";
+                if( $thisFine["title"] && $thisFine["type"] == "Overdue" ) {
+                    $msg .= "<div class=\"bold\">Overdue Item Returned</div><div style=\"margin-left:20px;text-indent:-20px\">" . str_replace("'", "\'", $thisFine["title"]) . "</div>" .
+                            "<div><span class=\"bold\">Date Assessed:</span> " . strftime("%a %b %e, %Y", strtotime($thisFine["createdate"])) . "</div>";
+                } else if( $thisFine["title"] && $thisFine["type"] == "Overdue Renewal" ) {
+                    $msg .= "<div class=\"bold\">Overdue Item Renewed</div><div style=\"margin-left:20px;text-indent:-20px\">" . str_replace("'", "\'", $thisFine["title"]) . "</div>" .
+                            "<div><span class=\"bold\">Date Assessed:</span> " . $thisFine["createdate"] . "</div>";
+                } else if( $thisFine["description"] && $thisFine["type"] == "Manual" ) {
+                    $msg .= "<div class=\"bold\">Manually added fine</div><div style=\"margin-left:20px;text-indent:-20px\">" . str_replace("'", "\'", $thisFine["description"]) . "</div>";
                 } else {
-                    $msg .= "<div class=\"bold\">" . $thisFine->chargeType . "</div><div style=\"margin-left:20px;text-indent:-20px\">" .
-                            ($thisFine->itemTitle ? str_replace("'", "\'", $thisFine->itemTitle) : str_replace("'", "\'", $thisFine->description)) . "</div>";
+                    $msg .= "<div class=\"bold\">" . $thisFine["type"] . "</div><div style=\"margin-left:20px;text-indent:-20px\">" .
+                            ($thisFine["title"] ? str_replace("'", "\'", $thisFine["title"]) : str_replace("'", "\'", $thisFine["description"])) . "</div>";
                 }
                 $msg .= "</td></tr>";
-                $user1 .= $thisFine->invoice . ":";
-                $total += $adjustedValue;
+                $user1 .= $thisFine["invoice"] . ":";
+                $total += $thisFine["balance"];
             }
 
             $msg .= "</table><input type=\"hidden\" name=\"amount\" value=\"" . sprintf("%.2f", $total * 0.01) . "\">" .

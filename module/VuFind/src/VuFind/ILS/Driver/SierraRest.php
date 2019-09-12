@@ -1116,7 +1116,7 @@ class SierraRest extends AbstractBase implements TranslatorAwareInterface,
             ['v' . $this->apiVersion, 'patrons', $patron['id'], 'fines'],
             [
                 'fields' => 'item,assessedDate,description,chargeType,itemCharge'
-                    . ',processingFee,billingFee,paidAmount'
+                    . ',processingFee,billingFee,paidAmount,invoiceNumber'
             ],
             'GET',
             $patron
@@ -1171,12 +1171,13 @@ class SierraRest extends AbstractBase implements TranslatorAwareInterface,
                 'amount' => $amount * 100,
                 'fine' => $description,
                 'balance' => $balance * 100,
-                'createdate' => $this->dateConverter->convertToDisplayDate(
-                    'Y-m-d', $entry['assessedDate']
-                ),
+                'createdate' => strftime("%a %b %e, %Y", strtotime($entry['assessedDate'])),
                 'checkout' => '',
                 'id' => $bibId,
-                'title' => $title
+                'title' => $title,
+                'type' => $entry["chargeType"]["display"],
+                'description' => $entry["description"],
+                'invoice' => $entry["invoiceNumber"]
             ];
         }
         return $fines;
