@@ -48,7 +48,7 @@
       <?php /* Display thumbnail if appropriate: */ ?>
       <?php $largeThumb = $record->getThumbnail('large'); ?>
       <?php if ($largeThumb): ?>
-        <a href="<?=$this->recordLink()->getUrl($this->driver)?>">
+        <a href="#" onClick="$('#button_<?=$this->driver->getGroupingKey()?>').click(); return false;" tabindex=-1>
           <img alt="<?=$this->transEsc('Cover Image')?>" class="recordcover" src="<?=$this->escapeHtmlAttr($largeThumb);?>"/>
         </a>
       <?php else: ?>
@@ -58,7 +58,7 @@
   </div>
   <div class="EIN-col-m-9" style="padding-right:10px">
     <div class="highlightContainer EIN-col-m-12 EIN-col-t-8 EIN-col-8">
-      <h1 property="name" class="itemTitle"><a href="<?=$this->recordLink()->getUrl($this->driver)?>">
+      <h1 property="name" class="itemTitle"><a href="#" onClick="$('#button_<?=$this->driver->getGroupingKey()?>').click(); return false;" tabindex=-1>
         <?=$this->highlight(($this->driver->getShortTitle() == "") 
              ? trim((isset($deets["title"][0]) ? $deets["title"][0] : $this->driver->getTitle()),"\0\t\n\x0B\r /") 
              : (trim((isset($deets["title_short"][0]) ? $deets["title_short"][0] : $this->driver->getShortTitle()),"\0\t\n\x0B\r /") . ' ' . 
@@ -110,7 +110,7 @@
     </div>
     <div class="EIN-hide-m EIN-col-t-4 EIN-col-4" style="padding:5px 0px 10px">
       <div class="EIN-col-m-12">
-        <a data-toggle="collapse" class="facetAccordionTitle collapsed" href="#grouping<?=$this->driver->getGroupingKey()?>" class="collapsed" onClick="ToggleCaret('<?=$this->driver->getGroupingKey()?>');">
+        <a data-toggle="collapse" class="facetAccordionTitle collapsed" id="button_<?=$this->driver->getGroupingKey()?>" href="#grouping<?=$this->driver->getGroupingKey()?>" class="collapsed" onClick="ToggleCaret('<?=$this->driver->getGroupingKey()?>');">
           <button class="btn-default showText" style="width:100%">Show Formats and Editions<i class="fa fa-caret-down"></i></button>
           <button class="btn-default hideText" style="width:100%">Hide Formats and Editions<i class="fa fa-caret-up"></i></button>
         </a>
