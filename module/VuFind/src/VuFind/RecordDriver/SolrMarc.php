@@ -68,6 +68,16 @@ class SolrMarc extends SolrDefault
     }
 
     /**
+     * Get the text of the part/section portion of the title.
+     *
+     * @return string
+     */
+    public function getTitleSection()
+    {
+        return isset($this->fields['title_section']) ? $this->fields['title_section'] : parent::getTitleSection();
+    }
+
+    /**
      * Return an array of associative URL arrays with one or more of the following
      * keys:
      *
