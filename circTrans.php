@@ -53,7 +53,7 @@
   }
 
   // find connection details
-  $configFile = fopen("/usr/local/vufind2/local/config/vufind/config.ini", "r");
+  $configFile = fopen("/usr/local/vufind-5.0/local/config/vufind/config.ini", "r");
   $section = null;
   $postgresProperties = [];
   $mysqlProperties = [];

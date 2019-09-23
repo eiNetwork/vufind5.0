@@ -60,6 +60,11 @@ trait MarcReaderTrait
         if (null === $this->lazyMarcRecord) {
             $marc = trim(isset($this->fields['fullrecord']) ? $this->fields['fullrecord'] : "<record xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"http://www.loc.gov/MARC21/slim\" xsi:schemalocation=\"http://www.loc.gov/MARC21/slim http://www.loc.gov/standards/marcxml/schema/MARC21slim.xsd\" type=\"Bibliographic\"><datafield tag=\"907\" ind1=\" \" ind2=\" \"><subfield code=\"a\">" . $this->fields['id'] . "</subfield></datafield></record>");
 
+            // get rid of the bonus marc tags
+            $marc = str_replace("<marc:","<",$marc);
+            $marc = str_replace("</marc:","</",$marc);
+            $marc = str_replace(":marc=","=",$marc);
+
             // check if we are dealing with MARCXML
             if (substr($marc, 0, 1) == '<') {
                 $marc = new \File_MARCXML($marc, \File_MARCXML::SOURCE_STRING);
