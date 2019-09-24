@@ -635,7 +635,7 @@ class EINGetItemStatuses extends GetItemStatuses
                 'id'                   => $missingId,
                 'fullID'               => $missingId,
                 'availability'         => 'false',
-                'availability_message' => $messages['unavailable'],
+                'availability_message' => str_replace("<countText>", "0 copies", $messages[$isOneClick ? 'oneclick' : ($accessOnline ? 'online' : 'unavailable')]),
                 'availability_details' => false,
                 'location'             => $this->translate('Unknown'),
                 'locationList'         => false,
