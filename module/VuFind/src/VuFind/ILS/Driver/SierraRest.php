@@ -371,6 +371,7 @@ class SierraRest extends AbstractBase implements TranslatorAwareInterface,
      */
     public function patronLogin($username, $password)
     {
+/******************** BP: III has advised us against using a patron-specific token methodology. ********************\
         // We could get the access token and use the token info API, but since we
         // already know the barcode, we can avoid one API call and get the patron
         // information right away (makeRequest renews the access token as necessary
@@ -385,6 +386,7 @@ class SierraRest extends AbstractBase implements TranslatorAwareInterface,
         if (null === $result) {
             return null;
         }
+
         if (empty($result['patronId'])) {
             throw new ILSException('No patronId in token response');
         }
@@ -396,6 +398,23 @@ class SierraRest extends AbstractBase implements TranslatorAwareInterface,
             'GET',
             ['cat_username' => $username, 'cat_password' => $password]
         );
+\******************** REMOVED CODE IS ABOVE, REPLACEMENT CODE IS BELOW *********************************************/
+        $result = $this->makeRequest(
+            ['v' . $this->apiVersion, 'patrons', 'validate'],
+            json_encode(['barcode' => $username, 'pin' => $password]),
+            'POST'
+        );
+        if (null !== $result) {
+            return null;
+        }
+
+        $result = $this->makeRequest(
+            ['v' . $this->apiVersion, 'patrons', 'find'],
+            ['barcode' => $username, 'fields' => 'names,emails'],
+            'GET',
+            ['cat_username' => $username, 'cat_password' => $password]
+        );
+/******************** REPLACEMENT CODE IS ABOVE ********************************************************************/
 
         if (null === $result || !empty($result['code'])) {
             return null;
@@ -1176,7 +1195,7 @@ class SierraRest extends AbstractBase implements TranslatorAwareInterface,
                 'id' => $bibId,
                 'title' => $title,
                 'type' => $entry["chargeType"]["display"],
-                'description' => $entry["description"],
+                'description' => $entry["description"] ?? '',
                 'invoice' => $entry["invoiceNumber"]
             ];
         }
@@ -1340,12 +1359,14 @@ class SierraRest extends AbstractBase implements TranslatorAwareInterface,
     protected function makeRequest($hierarchy, $params = false, $method = 'GET',
         $patron = false
     ) {
+/******************** BP: III has advised us against using a patron-specific token methodology. ********************\
         // Clear current access token if it's not specific to the given patron
         if ($patron
             && $this->sessionCache->accessTokenPatron != $patron['cat_username']
         ) {
             $this->sessionCache->accessToken = null;
         }
+\******************** REMOVED CODE IS ABOVE ************************************************************************/
 
         // Renew authentication token as necessary
         if (null === $this->sessionCache->accessToken) {
@@ -1396,7 +1417,11 @@ class SierraRest extends AbstractBase implements TranslatorAwareInterface,
         $response = $client->setMethod($method)->send();
         // If we get a 401, we need to renew the access token and try again
         if ($response->getStatusCode() == 401) {
+/******************** BP: III has advised us against using a patron-specific token methodology. ********************\
             if (!$this->renewAccessToken($patron)) {
+\******************** REMOVED CODE IS ABOVE, REPLACEMENT CODE IS BELOW *********************************************/
+            if (!$this->renewAccessToken(true)) {
+/******************** REPLACEMENT CODE IS ABOVE ********************************************************************/
                 return null;
             }
             $client->getRequest()->getHeaders()->addHeaderLine(
@@ -1443,6 +1468,7 @@ class SierraRest extends AbstractBase implements TranslatorAwareInterface,
     protected function renewAccessToken($patron = false)
     {
         $patronCode = false;
+/******************** BP: III has advised us against using a patron-specific token methodology. ********************\
         if ($patron) {
             // Do a patron login and then perform an authorization grant request
             if (empty($this->config['Catalog']['redirect_uri'])) {
@@ -1517,6 +1543,7 @@ class SierraRest extends AbstractBase implements TranslatorAwareInterface,
                 return false;
             }
         }
+\******************** REMOVED CODE IS ABOVE ************************************************************************/
 
         // Set up the request
         $apiUrl = $this->config['Catalog']['host'] . '/token';

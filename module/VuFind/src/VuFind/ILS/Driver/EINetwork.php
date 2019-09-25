@@ -259,7 +259,7 @@ class EINetwork extends SierraRest implements
                             }
                             if( isset($thisChange["duedate"]) ) {
                                 $thisHolding["duedate"] = ($thisChange["duedate"] != "NULL") ? strftime("%m-%d-%y", strtotime($thisChange["duedate"])) : null;
-                                $thisHolding["availability"] = (($thisChange["statusCode"] == "-") && !$thisHolding["duedate"]);
+                                $thisHolding["availability"] = ((($thisChange["statusCode"] ?? "") == "-") && !$thisHolding["duedate"]);
                             }
                             $results[$hKey] = $thisHolding;
                         }
@@ -1453,6 +1453,34 @@ class EINetwork extends SierraRest implements
         }
 
         return json_decode($this->memcached->get($hash), true);
+    }
+
+
+    /**
+     * Renew the API access token and store it in the cache.
+     * Throw an exception if there is an error.
+     *
+     * @param array $patron Patron information, if available
+     *
+     * @return bool True on success, false on patron login failure
+     * @throws ILSException
+     */
+    protected function renewAccessToken($patron = false)
+    {
+        // force the renewal if requested
+        if( $patron === true ) {
+            $this->memcached->delete("sharedAccessToken");
+            $patron = false;
+        }
+
+        if( $sharedToken = $this->memcached->get("sharedAccessToken") ) {
+            $this->sessionCache->accessToken = $sharedToken;
+            return true;
+        } else if( parent::renewAccessToken($patron) ) {
+            $this->memcached->set("sharedAccessToken", $this->sessionCache->accessToken, 3600);
+            return true;
+        }
+        return false;
     }
 
     /**
