@@ -129,10 +129,10 @@
                 Pick up at: <span class="bold"><?=$this->hold["location"]?></span>
               </td>
             </tr>
-            <? if( isset($this->hold["available"]) && $this->hold["available"] && isset($this->hold["released"]) ): ?>
+            <? if( isset($this->hold["available"]) && $this->hold["available"] && isset($this->hold["last_pickup_date"]) ): ?>
               <tr>
                 <td colspan="2">
-                  Pick up by: <span class="bold"><?=$this->hold["released"]?></span>
+                  Pick up by: <span class="bold"><?=strftime("%b %e, %Y", strtotime(str_replace("-", "/", $this->hold["last_pickup_date"])))?></span>
                 </td>
               </tr>
             <? endif; ?>
