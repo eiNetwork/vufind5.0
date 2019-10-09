@@ -20,6 +20,10 @@ table.footer {
   margin-left:20px
 }
 
+mark {
+  white-space:nowrap
+}
+
 .EINLogo {
   width:103px;
   height:63px;
