@@ -162,13 +162,16 @@ class QueryBuilder implements QueryBuilderInterface
                 $params->set('qf', implode(' ', $handler->getDismaxFields()));
                 $params->set('qt', $handler->getDismaxHandler());
                 foreach ($handler->getDismaxParams() as $param) {
-                    $params->add(reset($param), next($param));
+                    $arg = reset($param);
+                    $value = next($param);
+                    if( strpos($value, "EXACTTITLE") !== false ) {
+                        $value = str_replace("EXACTTITLE", $handler->createEINExactTitleString($string), $value);
+                    }
+                    $params->add($arg, $value);
                 }
                 if ($handler->hasFilterQuery()) {
                     $params->add('fq', $handler->getFilterQuery());
                 }
-                $params->add('q.alt', $handler->createEINBoostString($string));
-                $string = "";
             } else {
                 $string = $handler->createSimpleQueryString($string);
             }
@@ -178,8 +181,6 @@ class QueryBuilder implements QueryBuilderInterface
             $filter = $handler ? $handler->getAllFields() : [];
             //$params->add('hl.fl', $this->getFieldsToHighlight($filter));
         }
-        // add boost
-        $params->add('bf', "sum(language_boost,product(num_holdings,15,div(format_boost,50)),15)");
 
         $params->set('q', $string);
 

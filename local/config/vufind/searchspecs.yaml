@@ -153,21 +153,25 @@
 # These searches use Dismax when possible:
 Author:
   DismaxParams:
-    - [bf, 'language_boost^300']
-  QueryFields:
-    author:
-      - [and, 400]
+    - [bf, 'product(num_holdings,15)']
+  DismaxFields:
+    - author^300
+    - author_unstemmed^600
+  DismaxHandler: edismax
+
 
 Contributor:
   DismaxParams:
-    - [bf, 'language_boost^300']
-  QueryFields:
-    author:
-      - [and, 400]
-    author2:
-      - [and, 100]
-    author_additional:
-      - [and, 100]
+    - [bf, 'product(num_holdings,30)']
+    - [pf, 'author^300']
+    - [pf, 'author2^100']
+    - [pf, 'author_additional^100']
+  DismaxFields:
+    - author^400
+    - author2^100
+    - author_additional^100
+    - author_unstemmed
+  DismaxHandler: edismax
 
 ISN:
   DismaxParams:
@@ -176,58 +180,22 @@ ISN:
     - isbn
     - issn
     - upc
-  QueryFields:
-    issn:
-      - [and, 100]
-      - [or, ~]
-    isbn:
-      - [and, 100]
-      - [or, ~]
-    upc:
-      - [and, 100]
-      - [or, ~]
+  DismaxHandler: edismax
 
 Subject:
   DismaxParams:
     - [bf, 'language_boost^300']
+    - [bf, 'product(num_holdings,15)']
+    - [pf, 'topic^300']
+    - [pf, 'geographic^300']
+    - [pf, 'genre^300']
+    - [pf, 'era^100']
   DismaxFields:
-    - topic^100
-#    - word_think_heading^100
-    - geographic^50
-    - genre^50
+    - topic^300
+    - geographic^100
+    - genre^100
     - era
-  QueryFields:
-    topic_unstemmed:
-      - [onephrase, 1500]
-      - [and, 500]
-      - [or, 100]
-    topic:
-      - [onephrase, 300]
-      - [and, 100]
-      - [or, ~]
-#    word_think_heading:
-#      - [onephrase, 300]
-#      - [and, 100]
-#      - [or, ~]
-    geographic:
-      - [onephrase, 300]
-      - [and, 100]
-      - [or, ~]
-    genre:
-      - [onephrase, 300]
-      - [and, 100]
-      - [or, ~]
-    era:
-      - [and, 100]
-      - [or, ~]
-#  ExactSettings:
-#    DismaxFields:
-#      - topic_unstemmed^150
-#    QueryFields:
-#      - topic_unstemmed:
-#        - [onephrase, 350]
-#        - [and, 150]
-#        - [or, ~]
+  DismaxHandler: edismax
 
 # This field definition is a compromise that supports both journal-level and
 # article-level data.  The disadvantage is that hits in article titles will
@@ -237,9 +205,12 @@ Subject:
 JournalTitle:
   DismaxParams:
     - [bf, 'language_boost^300']
+    - [pf, 'title_unstemmed^1000']
+    - [pf, 'title_short^500']
+    - [pf, 'title^100']
   DismaxFields:
     - title_short^500
-    - title_full_unstemmed^450
+    - title_unstemmed^450
     - title_full^400
     - title^300
     - container_title^250
@@ -248,195 +219,78 @@ JournalTitle:
     - title_old
     - series^100
     - series2
-  QueryFields:
-    title_full:
-      - [onephrase, 600]
-    title_short:
-      - [onephrase, 500]
-    title_full_unstemmed:
-     - [onephrase, 450]
-     - [and, 400]
-    title:
-      - [onephrase, 400]
-      - [and, 250]
-    container_title:
-      - [onephrase, 275]
-      - [and, 225]
-    title_alt:
-      - [and, 200]
-    title_new:
-      - [and, 100]
-    title_old:
-      - [and, ~]
-    series:
-      - [onephrase, 100]
-      - [and, 50]
-    series2:
-      - [onephrase, 50]
-      - [and , ~]
-  FilterQuery: "format:Journal"
-#  ExactSettings:
-#    DismaxFields:
-#      - title_full_unstemmed^450
-#    QueryFields:
-#      - title_full_unstemmed:
-#        - [onephrase, 450]
-#        - [and, 400]
-#    FilterQuery: "format:Journal OR format:Article"
+  DismaxHandler: edismax
 
 Title:
+  DismaxParams:
+    - [bf, 'product(num_holdings,20)']
+    - [bq, 'title_exact:EXACTTITLE^1000']
+    - [pf, 'title_unstemmed^450']
+    - [pf, 'title_short^250']
+    - [pf, 'title^100']
   DismaxFields:
+    - title_short^250
+    - title_unstemmed^450
+    - title_full^400
     - title^100
-    - title_full_unstemmed^600
-    - title_short^500
+    - title_alt^200
     - title_new^100
     - title_old
-    - title_alt
-    - title_auth
     - series^100
     - series2
-  DismaxParams:
-    - [pf, "title_short^600"]
-  DismaxParams:
-    - [bf, 'language_boost^300']
-  QueryFields:
-    title_exact:
-      - [onephrase, 20000]
-    title_exact_substring:
-      - [onephrase, 10000]
-    title_unstemmed:
-      - [onephrase, 6000]
-    title_full:
-      - [onephrase, 600]
-    title_short:
-      - [onephrase, 500]
-    title:
-      - [onephrase, 400]
-      - [and, 250]
-    title_new:
-      - [and, 200]
-    title_old:
-      - [and, 100]
-    title_alt:
-      - [and, ~]
-    series:
-      - [onephrase, 100]
-      - [and, 50]
-    series2:
-      - [onephrase, 50]
-      - [and , ~]
-  ExactSettings:
-    DismaxFields:
-      - title_unstemmed^450
-    QueryFields:
-      title_unstemmed:
-        - [onephrase, 450]
-        - [and, 400]
+  DismaxHandler: edismax
 
 Series:
-  DismaxFields:
-    - series^100
-    - series2
   DismaxParams:
-    - [bf, 'language_boost^300']
-  QueryFields:
-    series:
-      - [onephrase, 500]
-      - [and, 200]
-      - [or, 100]
-    series2:
-      - [onephrase, 50]
-      - [and, 50]
-      - [or, ~]
+    - [bf, 'product(num_holdings,20)']
+    - [pf, 'series2^500']
+    - [pf, 'series2^5']
+  DismaxFields:
+    - series
+    - series2
+  DismaxHandler: edismax
+
 Keyword:
-  DismaxFields:
-    - title_unstemmed^850
-    - title^100
-    - title_short^600
-    - title_alt^100
-    - title_new
-    - title_old
-    - title_auth
-    - series^100
-    - series2
-    - keywords
   DismaxParams:
-    - [pf, 'title_short^600']
-  QueryFields:
-    title_exact:
-      - [onephrase, 10000]
-    title_unstemmed:
-      - [onephrase, 1500]
-    title_short:
-      - [onephrase, 50]
-    title_auth:
-      - [onephrase, 50]
-    title_alt:
-      - [onephrase, 20]
-    title_new:
-      - [onephrase, 20]
-    series:
-      - [onephrase, 20]
-    series2:
-      - [onephrase, 20]
-    author:
-      - [and, 20]
-    author2:
-      - [and, 10]
-    author_additional:
-      - [and, 10]
-    contents:
-      - [and, 5]
-    topic:
-      - [onephrase, 50]
-    geographic:
-      - [onephrase, 25]
-    genre:
-      - [onephrase, 25]
-    keywords:
-      - [onephrase, 20]
-      - [and, 10]
-    issn:
-      - [and, 100]
-      - [or, ~]
-    isbn:
-      - [and, 100]
-      - [or, ~]
-    upc:
-      - [and, 100]
-      - [or, ~]
+    - [mm, 100%]
+    - [ps, 1]
+    - [bf, 'product(num_holdings,20)']
+    - [bq, 'title_exact:EXACTTITLE^10000']
+    - [pf, 'title_unstemmed^1500']
+    - [pf, 'title_auth^50']
+    - [pf, 'title_alt^20']
+    - [pf, 'title_new^20']
+    - [pf, 'series^20']
+    - [pf, 'series2^20']
+    - [pf, 'topic^700']
+    - [pf, 'geographic^25']
+    - [pf, 'genre^25']
+    - [pf, 'keywords^20']
+  DismaxFields:
+    - title_unstemmed^1500
+    - title_auth^50
+    - title_alt^20
+    - title_new^20
+    - series^20
+    - series2^20
+    - author^20
+    - author2^10
+    - author_additional^10
+    - contents
+    - topic^100
+    - geographic^25
+    - genre^25
+    - keywords
+    - isbn^100
+    - issn^100
+  DismaxHandler: edismax
+
 AllFields:
   DismaxFields:
     - allfields
   DismaxParams:
     - [bf, 'language_boost^300']
-  QueryFields:
-    allfields:
-      - [or, ~]
-
-#  ExactSettings:
-#    DismaxFields:
-#      - title_full_unstemmed^600
-#      - topic_unstemmed^550
-#      - allfields_unstemmed^10
-#      - fulltext_unstemmed^10
-#      - isbn
-#      - issn
-#    QueryFields:
-#      title_full_unstemmed:
-#        - [onephrase, 600]
-#        - [and, 500]
-#      topic_unstemmed:
-#        - [onephrase, 550]
-#        - [and, 500]
-#      allfields_unstemmed:
-#        - [or, 10]
-#      fulltext_unstemmed:
-#        - [or, 10]
-#      isbn:
-#        - [onephrase, ~]
-#      issn:
-#        - [onephrase, ~]
+  DismaxHandler: edismax
 
 
 # These are advanced searches that never use Dismax:
@@ -512,16 +366,14 @@ CallNumber:
       - [callnumber_fuzzy, ~]
 
 publisher:
-#  DismaxFields:
-#    - publisher^100
-  QueryFields:
-    publisher:
-      - [and, 100]
-      - [or, ~]
+  DismaxParams:
+    - [mm, 50%]
+    - [bf, 'product(num_holdings,15)']
+  DismaxFields:
+    - publisher^100
+  DismaxHandler: edismax
 
 year:
-#  DismaxFields:
-#    - publishDate^100
   QueryFields:
     publishDate:
       - [and, 100]
@@ -533,8 +385,6 @@ language:
       - [and, ~]
 
 toc:
-#  DismaxFields:
-#    - contents^100
   QueryFields:
     contents_unstemmed:
       - [and, 600]
