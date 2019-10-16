@@ -551,7 +551,7 @@ class MemcacheResourceManager
         // Append new options, do not insert or you will break BC.
         $sTmp = [
             'host'           => null,
-            'port'           => 11212,
+            'port'           => 11211,
             'weight'         => null,
             'status'         => true,
             'persistent'     => null,

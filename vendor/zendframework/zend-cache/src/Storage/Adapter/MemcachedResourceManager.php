@@ -57,7 +57,7 @@ class MemcachedResourceManager
     protected function normalizeServer(&$server)
     {
         $host   = null;
-        $port   = 11212;
+        $port   = 11211;
         $weight = 0;
 
         // convert a single server into an array

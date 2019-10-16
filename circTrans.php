@@ -1,7 +1,7 @@
 <?php
   // start memcached
   $memcached = new Memcached();
-  $memcached->addServer('localhost', 11212);
+  $memcached->addServer('localhost', 11211);
 
   // grab the start time for our circ_trans query (the time the last extract ran - 8:00PM yesterday)
   $circTransTime = strftime("%Y-%m-%d %T", strtotime("yesterday 20:00:00")); 
