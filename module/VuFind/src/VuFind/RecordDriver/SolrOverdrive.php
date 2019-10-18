@@ -573,7 +573,7 @@ class SolrOverdrive extends SolrMarc implements LoggerAwareInterface
     public function getIsMarc()
     {
         $this->debug("ismarc: " . $this->config->isMarc);
-        return $this->config->isMarc;
+        return $this->config->isMarc || (substr($this->fields["id"], 0, 2) == ".b");
     }
 
     /**
