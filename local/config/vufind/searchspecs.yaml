@@ -153,29 +153,37 @@
 # These searches use Dismax when possible:
 Author:
   DismaxParams:
+    - [mm, 100%]
     - [bf, 'product(num_holdings,15)']
+    - [pf, 'author^400']
   DismaxFields:
-    - author^300
-    - author_unstemmed^600
+    # anything in the pf also needs to be here, so give it a weight of 1
+    - author
   DismaxHandler: edismax
 
 
 Contributor:
   DismaxParams:
-    - [bf, 'product(num_holdings,30)']
-    - [pf, 'author^300']
+    - [mm, 100%]
+    - [bf, 'product(num_holdings,15)']
+    - [pf, 'author^400']
     - [pf, 'author2^100']
     - [pf, 'author_additional^100']
   DismaxFields:
-    - author^400
-    - author2^100
-    - author_additional^100
-    - author_unstemmed
+    # anything in the pf also needs to be here, so give it a weight of 1
+    - author
+    - author2
+    - author_additional
   DismaxHandler: edismax
 
 ISN:
   DismaxParams:
+    - [mm, 100%]
     - [bf, 'language_boost^300']
+    - [bf, 'product(num_holdings,15)']
+    - [pf, 'issn^100']
+    - [pf, 'isbn^100']
+    - [pf, 'upc^100']
   DismaxFields:
     - isbn
     - issn
@@ -184,17 +192,20 @@ ISN:
 
 Subject:
   DismaxParams:
+    - [mm, 100%]
     - [bf, 'language_boost^300']
     - [bf, 'product(num_holdings,15)']
+    - [pf, 'topic_unstemmed^1500']
     - [pf, 'topic^300']
     - [pf, 'geographic^300']
     - [pf, 'genre^300']
-    - [pf, 'era^100']
   DismaxFields:
-    - topic^300
+    - topic_unstemmed^500
+    - topic^100
     - geographic^100
     - genre^100
-    - era
+    - era^100
+    # anything in the pf also needs to be here, so give it a weight of 1
   DismaxHandler: edismax
 
 # This field definition is a compromise that supports both journal-level and
@@ -204,91 +215,112 @@ Subject:
 # container_title field.
 JournalTitle:
   DismaxParams:
+    - [mm, 100%]
     - [bf, 'language_boost^300']
-    - [pf, 'title_unstemmed^1000']
+    - [bf, 'product(num_holdings,15)']
+    - [pf, 'title_full^600']
     - [pf, 'title_short^500']
-    - [pf, 'title^100']
+    - [pf, 'title_unstemmed^450']
+    - [pf, 'title^400']
+    - [pf, 'container_title^275']
+    - [pf, 'series^100']
+    - [pf, 'series2^50']
   DismaxFields:
-    - title_short^500
-    - title_unstemmed^450
-    - title_full^400
-    - title^300
-    - container_title^250
+    - title_unstemmed^400
+    - title^250
+    - container_title^225
     - title_alt^200
     - title_new^100
     - title_old
-    - series^100
+    - series^50
     - series2
+    # anything in the pf also needs to be here, so give it a weight of 1
+    - title_full
+    - title_short
   DismaxHandler: edismax
 
 Title:
   DismaxParams:
-    - [bf, 'product(num_holdings,20)']
-    - [bq, 'title_exact:EXACTTITLE^1000']
-    - [pf, 'title_unstemmed^450']
-    - [pf, 'title_short^250']
-    - [pf, 'title^100']
+    - [mm, 100%]
+    - [bf, 'language_boost^300']
+    - [bf, 'product(num_holdings,15)']
+    - [bq, 'title_exact:EXACTTITLE^20000']
+    - [pf, 'title_unstemmed^6000']
+    - [pf, 'title_full^600']
+    - [pf, 'title_short^500']
+    - [pf, 'title^400']
+    - [pf, 'series^100']
+    - [pf, 'series2^50']
   DismaxFields:
-    - title_short^250
-    - title_unstemmed^450
-    - title_full^400
-    - title^100
-    - title_alt^200
-    - title_new^100
-    - title_old
-    - series^100
+    - title^250
+    - title_new^200
+    - title_old^100
+    - title_alt
+    - series^50
     - series2
+    # anything in the pf also needs to be here, so give it a weight of 1
+    - title_exact
+    - title_unstemmed
+    - title_short
+    - title_full
   DismaxHandler: edismax
 
 Series:
   DismaxParams:
-    - [bf, 'product(num_holdings,20)']
+    - [mm, 100%]
+    - [bf, 'product(num_holdings,15)']
     - [pf, 'series2^500']
-    - [pf, 'series2^5']
+    - [pf, 'series2^50']
   DismaxFields:
-    - series
-    - series2
+    - series^200
+    - series2^50
   DismaxHandler: edismax
 
 Keyword:
   DismaxParams:
     - [mm, 100%]
-    - [ps, 1]
-    - [bf, 'product(num_holdings,20)']
+    - [bf, 'product(num_holdings,15)']
     - [bq, 'title_exact:EXACTTITLE^10000']
     - [pf, 'title_unstemmed^1500']
+    - [pf, 'title_short^50']
     - [pf, 'title_auth^50']
     - [pf, 'title_alt^20']
     - [pf, 'title_new^20']
     - [pf, 'series^20']
     - [pf, 'series2^20']
-    - [pf, 'topic^700']
+    - [pf, 'topic^50']
     - [pf, 'geographic^25']
     - [pf, 'genre^25']
     - [pf, 'keywords^20']
   DismaxFields:
-    - title_unstemmed^1500
-    - title_auth^50
-    - title_alt^20
-    - title_new^20
-    - series^20
-    - series2^20
     - author^20
     - author2^10
     - author_additional^10
-    - contents
-    - topic^100
-    - geographic^25
-    - genre^25
-    - keywords
+    - contents^5
+    - keywords^10
     - isbn^100
     - issn^100
+    - upc^100
+    # anything in the pf also needs to be here, so give it a weight of 1
+    - title_exact
+    - title_unstemmed
+    - title_short
+    - title_auth
+    - title_alt
+    - title_new
+    - series
+    - series2
+    - topic
+    - genre
+    - geographic
   DismaxHandler: edismax
 
 AllFields:
   DismaxFields:
     - allfields
   DismaxParams:
+    - [mm, 100%]
+    - [bf, 'product(num_holdings,15)']
     - [bf, 'language_boost^300']
   DismaxHandler: edismax
 

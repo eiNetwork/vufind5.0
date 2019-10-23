@@ -159,7 +159,10 @@ class QueryBuilder implements QueryBuilderInterface
                     }
                 }
             } elseif ($handler->hasDismax()) {
-                $params->set('qf', implode(' ', $handler->getDismaxFields()));
+                // set this flag to determine whether or not we have a single word query
+                $overrideQf = (strpos(trim($string), " ") === false);
+                $qfArray = $handler->getDismaxFields();
+
                 $params->set('qt', $handler->getDismaxHandler());
                 foreach ($handler->getDismaxParams() as $param) {
                     $arg = reset($param);
@@ -168,10 +171,20 @@ class QueryBuilder implements QueryBuilderInterface
                         $value = str_replace("EXACTTITLE", $handler->createEINExactTitleString($string), $value);
                     }
                     $params->add($arg, $value);
+                    // if this is a single word query, override the value in qf with the pf boost instead
+                    if( $overrideQf && ($arg == "pf") ) {
+                        foreach ($qfArray as $index => $qf) {
+                            $qf = explode("^", $qf)[0];
+                            if( substr($value, 0, strlen($qf)) == $qf ) {
+                                $qfArray[$index] = $value;
+                            }
+                        }
+                    }
                 }
                 if ($handler->hasFilterQuery()) {
                     $params->add('fq', $handler->getFilterQuery());
                 }
+                $params->set('qf', implode(' ', $qfArray));
             } else {
                 $string = $handler->createSimpleQueryString($string);
             }

@@ -8,6 +8,7 @@
       <? endif; ?>
       <div class="EIN-col-m-12">
         <? foreach ($this->facetList as $field => $list): ?>
+          <? if ($field == "publishDate"): continue; endif; ?>
           <table style="width:100%"><tr>
             <td class="EIN-hide-m EIN-col-t-2">&nbsp;</td>
             <td class="EIN-col-m-12 EIN-col-t-8">
