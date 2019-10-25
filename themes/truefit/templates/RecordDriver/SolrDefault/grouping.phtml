@@ -74,7 +74,7 @@
       <?php endif; ?>
 
       <table id="formatTable<?=$this->driver->getGroupingKey()?>">
-        <?php $formats = $this->driver->getFormats(); $showDate = false; $categories = []; foreach( $this->grouping as $thisDoc ):
+        <?php $formats = $this->driver->getFormats(); $showDate = false; $categories = [$this->driver->getFormatCategory()]; foreach( $this->grouping as $thisDoc ):
                 foreach( $thisDoc->getFormats() as $thisFormat ):
                   if( (substr($thisFormat, 0, 10) != "Category: ") && !in_array($thisFormat, $formats) ):
                     $formats[] = $thisFormat;
