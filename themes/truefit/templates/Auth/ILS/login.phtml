@@ -20,112 +20,49 @@
   </button>
 </div>
 <div id="loginModalRegisterBody" class="registerBody" style="color:#3f51b5;display:none">
-  <div class="forgotText">
-    Submitting this form will register you for a new library card. If you already have a library card and just want to sign into your account, please use the link below to go back to the login window.
-  </div><br>
-  <div class="forgotText">
-    Please be advised that individuals residing outside of Allegheny County who do not have a current Access PA library card from their home library may be assessed a fee when completing their registration at the library.
-  </div><br><br>
-  <form role="register" method="post" action="<?=$this->url('myresearch-account')?>" name="registerForm" id="registerForm" autocomplete="off" target="loginFrame">
-    <div class="EIN-col-m-12">
-      <div class="EIN-col-m-12 fieldTitle">Name</div>
-      <div class="textBoxContainer EIN-col-m-12 EIN-col-t-6 EIN-col-6">
-        <span class="sr-only">First Name</span>
-        <input type="text" name="firstname" id="register_firstname" value="First Name" onfocus="ClearFormError(this); if (this.value=='First Name') {this.value = '';this.style.color='#3d3d3d';}" onblur="if (this.value=='') {this.value = 'First Name';this.style.color='#949494';}" class="form-control textBox"/>
-        <i class="fa fa-exclamation-circle formErrorIcon"></i>
-        <span id="register_firstnameError" class="formError"></span>
-      </div>
-      <div class="textBoxContainer EIN-col-m-12 EIN-col-t-6 EIN-col-6">
-        <span class="sr-only">Last Name</span>
-        <input type="text" name="lastname" id="register_lastname" value="Last Name" onfocus="ClearFormError(this); if (this.value=='Last Name') {this.value = '';this.style.color='#3d3d3d';}" onblur="if (this.value=='') {this.value = 'Last Name';this.style.color='#949494';}" class="form-control textBox"/>
-        <i class="fa fa-exclamation-circle formErrorIcon"></i>
-        <span id="register_lastnameError" class="formError"></span>
+  <div class="EIN-col-m-12" id="eCARDIntroText">
+    <div class="forgotText">
+      Submitting this form will register you for a new library card. If you already have a library card and just want to sign into your account, please use the link below to go back to the login window.
+    </div><br>
+    <div class="forgotText">
+      Please be advised that individuals residing outside of Allegheny County who do not have a current Access PA library card from their home library may be assessed a fee when completing their registration at the library.
+    </div><br>
+    <button style="margin-top:10px" class="btn-noBorderAlternate" id="loginModalLogin" onclick="ToggleLoginModal(this);">
+      <span class="headerLink">I already have a library card and want to sign in</span>
+    </button>
+    <br><br>
+    <div class="EIN-col-m-12 forgotText">
+      <div class="EIN-col-m-12" style="font-weight:800">Adult Library Card Application (for new library patrons age 18 and older)</div><br><br>
+      <div class="EIN-col-m-12">Residents of Allegheny County can register for a card here and receive instant access to a wide array of eBooks, downloadable materials, and other electronic resources. After you've registered, you can start placing holds online, or visit a library in-person to check out books, DVDs, music, and a wide variety of other resources. This card is eligible for accessing materials from any Allegheny County Library Association Library.<br>
+        <ul>
+          <li>Currently this service is only for adult patrons over 18. If seeking a juvenile card, business card, or other special-use library card, please visit your local library in person.</li>
+          <li>If the system is unable to validate your information, you will be issued a temporary eCard that allows you access to electronic resources for 30 days. To upgrade to a card with full borrowing privileges, visit any County library with proof of ID and current address.</li>
+        </ul>
       </div>
     </div>
-    <div class="EIN-col-m-12 EIN-col-t-6 EIN-col-6">
-      <div class="EIN-col-m-12 fieldTitle">Email</div>
-      <div class="textBoxContainer EIN-col-m-12">
-        <input type="text" name="email" id="register_email" value="Enter your email address" onfocus="ClearFormError(this); if (this.value=='Enter your email address') {this.value = '';this.style.color='#3d3d3d';}" onblur="if (this.value=='') {this.value = 'Enter your email address';this.style.color='#949494';}" class="form-control textBox"/>
-        <i class="fa fa-exclamation-circle formErrorIcon"></i>
-        <span id="register_emailError" class="formError"></span>
-      </div>
+    <br><br>
+  </div>
+
+  <div class="EIN-col-m-12" style="color:#000;text-align:left">
+    <div id="eCARDFiles">
+      <link href="https://ecard.quipugroup.net/css/eCARD.css" rel="stylesheet">
+      <link href="https://ecard.quipugroup.net/js/jqueryUI/css/ui-lightness/jquery-ui-1.10.4.custom.min.css" rel="stylesheet">
+      <script type="text/javascript" src="https://ecard.quipugroup.net/js/jqueryUI/js/jquery-ui-1.10.4.custom.min.js"></script>
+      <script type="text/javascript" src="https://ecard.quipugroup.net/js/jquery.xdomainrequest.min.js"></script>
+      <script type="text/javascript" src="https://ecard.quipugroup.net/js/jquery.PrintArea.js"></script>
+      <script type="text/javascript" src="https://ecard.quipugroup.net/js/eCARDMain.js"></script>
+      <script type="text/javascript" src="https://ecard.quipugroup.net/Libraries/35/eCARDLibrary.js"></script>
     </div>
-    <div class="EIN-col-m-12 EIN-col-t-6 EIN-col-6">
-      <div class="EIN-col-m-12 fieldTitle">Phone</div>
-      <div class="textBoxContainer EIN-col-m-12">
-        <input type="text" name="phone" id="register_phone" value="123-456-7890" onfocus="ClearFormError(this); if (this.value=='123-456-7890') {this.value = '';this.style.color='#3d3d3d';}" onblur="if (this.value=='') {this.value = '123-456-7890';this.style.color='#949494';}" class="form-control textBox"/>
-        <i class="fa fa-exclamation-circle formErrorIcon"></i>
-        <span id="register_phoneError" class="formError"></span>
-      </div>
+
+    <div id="eCARD" data-language="en" data-branchid="">
+      <!-- eCARD requires JavaScript in order to display the registration form -->
+      <!-- The following will detect if JavaScript is enabled on the patron's browser -->
+      <noscript>
+        <h2 style="color:red;">Warning - JavaScript Required</h2>
+        <p>For full functionality of this web page it is necessary to enable JavaScript in your browser. For more information on most browsers, try <a href="http://www.enable-javascript.com/" target="_blank">How to enable JavaScript</a> OR <a href="http://activatejavascript.org/en/instructions" target="_blank">activatejavascript.org</a><</p>
+      </noscript>
     </div>
-    <div class="EIN-col-m-12 EIN-col-t-6 EIN-col-6">
-      <div class="EIN-col-m-12 fieldTitle">Address</div>
-      <div class="textBoxContainer EIN-col-m-12">
-        <span class="sr-only">Street or PO Box</span>
-        <input type="text" name="address1" id="register_address1" value="Street or PO Box" onfocus="ClearFormError(this); if (this.value=='Street or PO Box') {this.value = '';this.style.color='#3d3d3d';}" onblur="if (this.value=='') {this.value = 'Street or PO Box';this.style.color='#949494';}" class="form-control textBox"/>
-        <i class="fa fa-exclamation-circle formErrorIcon"></i>
-        <span id="register_address1Error" class="formError"></span>
-      </div>
-    </div>
-    <div class="EIN-col-m-12 EIN-col-t-6 EIN-col-6">
-      <div class="EIN-hide-m EIN-col-t-12 EIN-col-12 fieldTitle">&nbsp;</div>
-      <div class="textBoxContainer EIN-col-m-12">
-        <span class="sr-only">Apartment Number or Suite</span>
-        <input type="text" name="address2" id="register_address2" value="Apt # or Suite" onfocus="ClearFormError(this); if (this.value=='Apt # or Suite') {this.value = '';this.style.color='#3d3d3d';}" onblur="if (this.value=='') {this.value = 'Apt # or Suite';this.style.color='#949494';}" class="form-control textBox"/>
-        <i class="fa fa-exclamation-circle formErrorIcon"></i>
-        <span id="register_address2Error" class="formError"></span>
-      </div>
-    </div>
-    <div class="EIN-col-m-12">
-      <div class="EIN-col-m-6 EIN-col-t-6 EIN-col-6">
-        <div class="textBoxContainer EIN-col-m-12">
-          <span class="sr-only">City</span>
-          <input type="text" name="city" id="register_city" value="City" onfocus="ClearFormError(this); if (this.value=='City') {this.value = '';this.style.color='#3d3d3d';}" onblur="if (this.value=='') {this.value = 'City';this.style.color='#949494';}" class="form-control textBox"/>
-          <i class="fa fa-exclamation-circle formErrorIcon"></i>
-          <span id="regsister_cityError" class="formError"></span>
-        </div>
-      </div>
-      <div class="EIN-col-m-3 EIN-col-t-3 EIN-col-3">
-        <div class="textBoxContainer EIN-col-m-12">
-          <span class="sr-only">State</span>
-          <input type="text" name="state" id="register_state" value="State" onfocus="ClearFormError(this); if (this.value=='State') {this.value = '';this.style.color='#3d3d3d';}" onblur="if (this.value=='') {this.value = 'State';this.style.color='#949494';}" class="form-control textBox"/>
-          <i class="fa fa-exclamation-circle formErrorIcon"></i>
-        </div>
-      </div>
-      <div class="EIN-col-m-3 EIN-col-t-3 EIN-col-3">
-        <div class="textBoxContainer EIN-col-m-12">
-          <span class="sr-only">Zip</span>
-          <input type="text" name="zip" id="register_zip" value="Zip" onfocus="ClearFormError(this); if (this.value=='Zip') {this.value = '';this.style.color='#3d3d3d';}" onblur="if (this.value=='') {this.value = 'Zip';this.style.color='#949494';}" class="form-control textBox"/>
-          <i class="fa fa-exclamation-circle formErrorIcon"></i>
-        </div>
-      </div>
-      <span id="register_cityError" class="formError"></span>
-    </div>
-    <div class="EIN-col-m-12 EIN-col-t-6 EIN-col-6">
-      <div class="EIN-col-m-12 fieldTitle">Security</div>
-      <div class="textBoxContainer EIN-col-m-12">
-        <span class="sr-only">4 digit PIN</span>
-        <input type="text" name="pin" id="register_pin" value="4-digit PIN #" onfocus="ClearFormError(this); if (this.value=='4-digit PIN #') {this.value = '';this.style.color='#3d3d3d';this.type='password';}" onblur="if (this.value=='') {this.value = '4-digit PIN #';this.style.color='#949494';this.type='text';}" class="form-control textBox"/>
-        <i class="fa fa-exclamation-circle formErrorIcon"></i>
-        <span id="register_pinError" class="formError"></span>
-      </div>
-    </div>
-    <div class="EIN-col-m-12 EIN-col-t-6 EIN-col-6">
-      <div class="EIN-hide-m EIN-col-t-12 EIN-col-12 fieldTitle">&nbsp;</div>
-      <div class="textBoxContainer EIN-col-m-12">
-        <span class="sr-only">Confirm 4 digit PIN</span>
-        <input type="text" name="confirmpin" id="register_confirmpin" value="Confirm 4-digit PIN #" onfocus="ClearFormError(this); if (this.value=='Confirm 4-digit PIN #') {this.value = '';this.style.color='#3d3d3d';this.type='password';}" onblur="if (this.value=='') {this.value = 'Confirm 4-digit PIN #';this.style.color='#949494';this.type='text';}" class="form-control textBox"/>
-        <i class="fa fa-exclamation-circle formErrorIcon"></i>
-        <span id="register_confirmpinError" class="formError"></span>
-      </div>
-    </div>
-    <input type="hidden" name="auth_method" value="<?=$this->auth()->getManager()->getAuthMethod()?>">
-    <input type="hidden" name="confirm" value="true">
-    <input type="hidden" name="registerAttempt" value="true">
-  </form>
-  <button style="margin-top:10px" class="btn-noBorderAlternate" id="loginModalLogin" onclick="ToggleLoginModal(this);">
-    <span class="headerLink">I already have a library card and want to sign in</span>
-  </button>
+  </div>
 </div>
 <div class="modal-footer">
   <div id="loginModalLoginFooter">
