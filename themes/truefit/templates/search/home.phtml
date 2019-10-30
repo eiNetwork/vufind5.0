@@ -113,6 +113,11 @@
         }
       } ); 
     } );
+
+    // if they're trying to register, bring up the modal
+    <? if( $this->register ): ?>
+      Lightbox.get('MyResearch', 'Login', false, {'showRegistration':true});
+    <? endif; ?>
   } );
 
   $(window).on("load", function() { 

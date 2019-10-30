@@ -135,7 +135,9 @@ class SolrMarc extends SolrDefault
             }
         }
         if( !$retVal ) {
-            return parent::getURLs();
+            $urls = parent::getURLs();
+            // should be an array, but sometimes it comes back with an extra wrapper layer
+            $retVal = $urls[0]["url"] ?? $urls;
         }
         return $retVal;
     }
