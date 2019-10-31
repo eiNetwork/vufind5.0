@@ -112,7 +112,7 @@
           <? endforeach; ?>
         <? endif; ?>
         <span id="holdLocationError" class="formError">You must select a pickup location for your <?=$this->transEsc("hold_lowercase")?>.</span>
-        <button class="btn-default btn-wide"<?=(isset($this->preferredLibrary)?"":" disabled")?> onclick="ProcessHoldForm()">Okay</button>
+        <button class="btn-default btn-wide"<?=(isset($this->preferredLibrary)?"":" disabled")?> onclick="return ProcessHoldForm();">Okay</button>
       </form>
     <? endif; ?>
   </div>
