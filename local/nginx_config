@@ -20,7 +20,7 @@
 server {
 	listen 80;
 	listen [::]:80;
-	server_name vfour.catalogtest.einetwork.net;
+	server_name librarycatalog.einetwork.net;
 
 	return 301 https://$host$request_uri;
 }
@@ -33,7 +33,7 @@ server {
 	root /usr/local/vufind-5.0;
 	#index public/index.php;
 
-	server_name vfour.catalogtest.einetwork.net;
+	server_name librarycatalog.einetwork.net;
 	ssl_certificate /usr/local/vufind-5.0/local/bundled.crt;
 	ssl_certificate_key /usr/local/vufind-5.0/local/wildcard.key;
 	ssl_protocols TLSv1.2;
