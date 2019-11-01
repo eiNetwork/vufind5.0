@@ -74,29 +74,21 @@
   }
 
   jQuery(document).ready(function() {
-/* OLD FUNCTIONALITY. Do we want to remove this? - BJP 11-1-19
     // if they're trying to show the text notices help, give it to them
     if( window.location.href.toLowerCase().indexOf("/myresearch/smshelp") != -1 ) {
-      Lightbox.addOpenAction( function() { 
-        $('#modal').on('shown.bs.modal', function() { location.hash = "#section3-6" });
-      } );
-      Lightbox.get('Help','Home');
+      $('a[href$="/Help/Home"]:first').click();
+      $('#modal').on('shown.bs.modal', function() { setTimeout( function() { location.hash = "#section4-11"; }, 33); } );
     }
     // if they're trying to show the pin reset dialog, give it to them
     else if( window.location.href.toLowerCase().indexOf("/myresearch/pinreset") != -1 ) {
-      Lightbox.addOpenAction( function() { 
-        $('#modal').on('shown.bs.modal', function() { ToggleLoginModal(document.getElementById('loginModalReset')); });
-      } );
-      Lightbox.get('MyResearch','Login');
+      $('a[href$="/MyResearch/Login"]:first').click();
+      $('#modal').on('shown.bs.modal', function() { ToggleLoginModal(document.getElementById('loginModalReset')); });
     }
     // if they're trying to show the register dialog, give it to them
     else if( window.location.href.toLowerCase().indexOf("/myresearch/getcard") != -1 ) {
-      Lightbox.addOpenAction( function() { 
-        $('#modal').on('shown.bs.modal', function() { ToggleLoginModal(document.getElementById('loginModalRegister')); });
-      } );
-      Lightbox.get('MyResearch','Login');
+      $('a[href$="/MyResearch/Login"]:first').click();
+      $('#modal').on('shown.bs.modal', function() { ToggleLoginModal(document.getElementById('loginModalRegister')); });
     }
-*/
 
     // bind events to the buttons
     $(".neSliderButton").each( function() { 
