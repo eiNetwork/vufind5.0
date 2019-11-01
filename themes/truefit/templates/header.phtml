@@ -73,8 +73,8 @@
         <li><a href="<?=$this->url('myresearch-profile')?>"><button class="btn-dropdown btn-whiteDropdown">Profile</button></a></li>
         <li><a href="<?=$this->url('myresearch-notifications')?>"><button class="btn-dropdown btn-whiteDropdown">Message Center<? if(count($notifications)>0): ?><span class="badge notificationsCount"><?=count($notifications)?></span><? endif; ?></button></a></li>
         <hr class="stretchHR">
-        <li><button class="btn-dropdown btn-whiteDropdown EIN-hide" onclick="Lightbox.get('Help','Home')">Help</button></li>
-        <li><button class="btn-dropdown btn-whiteDropdown EIN-hide" onclick="Lightbox.get('MyResearch','comingsoon'); return false;" style="display:none">Locations</button></li>
+        <li><a href="<?=$this->url('help-home')?>" data-lightbox><button class="btn-dropdown btn-whiteDropdown EIN-hide">Help</button></a></li>
+        <li><button class="btn-dropdown btn-whiteDropdown EIN-hide" style="display:none">Locations</button></li>
         <li><a href="<?=$this->url('myresearch-logout')?>"><button class="btn-dropdown btn-whiteDropdown"><i class="fa fa-sign-out"></i>Log Out</button></a></li>
 <? else: ?>
         <li><a href="/Help/Home" data-lightbox><button class="btn-dropdown btn-whiteDropdown">Help</button></a></li>

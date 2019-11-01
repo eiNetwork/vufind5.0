@@ -153,10 +153,10 @@
             $holdClick = " data-toggle=\"dropdown\" data-target=\"#holdButtonDropdown" . str_replace(".", "", $id) . (($this->checkoutType == "checkout_all") ? "All" : "") . "\"";
           else:
             $thisType = (($this->checkout["dateDiff"]->invert == 0) && ($this->checkout["dateDiff"]->days != 0)) ? 'overdue' : (($this->checkout["dateDiff"]->days <= 7) ? 'due_this_week' : 'other');
-            $holdClick = " onClick=\"Lightbox.get('MyResearch','CheckedOut', false, {'renew':'true','renewSelected':'true','confirm':'0','renewSelectedIDS[]':'" . $this->checkout["checkout_id"] . "','checkoutType':'" . $thisType . "'})\"";
+            $holdClick = "";
           endif;
         else:
-          $holdClick = " onClick=\"Lightbox.get('MyResearch','Login',false,{'clearLightbox':true})\"";
+          $holdClick = "";
         endif;
       ?>
       <div class="EIN-col-m-12 EIN-col-t-4 EIN-col-4" style="padding:5px 0px 10px">

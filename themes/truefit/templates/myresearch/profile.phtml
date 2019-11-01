@@ -82,7 +82,9 @@
             <div class="EIN-col-m-12"><hr style="margin:5px 0"></div>
             <? if( isset($this->profile["phone2"]) ): ?>
               <div class="EIN-col-m-12 EIN-col-t-4 EIN-col-4 fieldTitle">Alternate Phone Number</div>
-              <div class="EIN-col-m-12 EIN-col-t-8 EIN-col-8 fieldValue clickable" onclick="Lightbox.get('Confirm', 'EditProperty', {'data':{'path':'myresearch-profile','referringSection':'aboutMe','property':'Alternate Phone Number','propertyName':'phone2','currentValue':'<?=$this->profile["phone2"]?>'}})"><?=$this->profile["phone2"]?><span class="sr-only">Edit</span><i class="fa fa-pencil floatR"></i></div>
+              <a href="/Confirm/EditProperty?<?=htmlspecialchars("data[path]=myresearch-profile&data[referringSection]=aboutMe&data[property]=Alternate Phone Number&data[propertyName]=phone2&data[currentValue]=" . $this->profile["phone2"]) ?>" data-lightbox>
+                <div class="EIN-col-m-12 EIN-col-t-8 EIN-col-8 fieldValue"><?=$this->profile["phone2"]?><span class="sr-only">Edit</span><i class="fa fa-pencil floatR"></i></div>
+              </a>
               <div class="EIN-col-m-12"><hr style="margin:5px 0"></div>
             <? endif; ?>
             <div class="EIN-col-m-12 EIN-col-t-4 EIN-col-4 fieldTitle">Notification Preference</div>

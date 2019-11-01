@@ -150,21 +150,25 @@
           $saveClick = " data-toggle=\"dropdown\" data-target=\"#saveButtonDropdown\" onclick=\"moveSaveDropdown(this, '" . $itemData . "');\"";
           $mobileSaveClick = " data-toggle=\"dropdown\" data-target=\"#saveButtonDropdown\" onclick=\"moveSaveDropdown($(this).parent().next().children('span'), '" . $itemData . "');\"";
         else:
-          $holdClick = " onClick=\"Lightbox.get('MyResearch','Login',false,{'clearLightbox':true})\"";
-          $saveClick = " onClick=\"Lightbox.get('MyResearch','Login',false,{'clearLightbox':true})\"";
-          $mobileSaveClick = " onClick=\"Lightbox.get('MyResearch','Login',false,{'clearLightbox':true})\"";
+          $holdClick = " href=\"/MyResearch/Login?clearLightbox=true\"";
+          $saveClick = " href=\"/MyResearch/Login?clearLightbox=true\"";
+          $mobileSaveClick = " href=\"/MyResearch/Login?clearLightbox=true\"";
         endif;
       ?>
       <div class="EIN-hide-m EIN-col-t-4 EIN-col-4" style="padding:5px 0px 10px">
         <div class="EIN-col-m-12">
-          <button class="btn-default leftButton"<?=$holdClick?> disabled><i class="fa fa-spinner"></i>&nbsp;Loading...</button>
+          <a<?=$user?"":$holdClick?> data-lightbox>
+            <button class="btn-default leftButton"<?=$user?$holdClick:""?> disabled><i class="fa fa-spinner"></i>&nbsp;Loading...</button>
+          </a>
           <div class="dropdown EIN-hide-m" id="holdButtonDropdown<?=str_replace(".", "", $this->driver->getUniqueID())?>">
             <ul role="navigation" class="dropdown-menu standardDropdown manageListDropdown">
             </ul>
           </div>
         </div>
         <div class="EIN-col-m-12">
-          <button class="btn-default rightButton"<?=$saveClick?>><?=$this->transEsc("list_manage")?><?=($user?"<i class=\"fa fa-caret-down\"></i>":"")?></button>
+          <a<?=$user?"":$saveClick?> data-lightbox>
+            <button class="btn-default rightButton"<?=$user?$saveClick:""?>><?=$this->transEsc("list_manage")?><?=($user?"<i class=\"fa fa-caret-down\"></i>":"")?></button>
+          </a>
         </div>
       </div>
     </td>
@@ -172,14 +176,18 @@
     <td class="EIN-col-m-12 EIN-hide-t EIN-hide" colspan=3>
       <div class="EIN-col-m-12" style="padding:5px 0px 10px">
         <div class="EIN-col-m-6">
-          <button class="btn-default leftButton"<?=$holdClick?> disabled><i class="fa fa-spinner"></i>&nbsp;Loading...</button>
+          <a<?=$user?"":$holdClick?> data-lightbox>
+            <button class="btn-default leftButton"<?=$user?$holdClick:""?> disabled><i class="fa fa-spinner"></i>&nbsp;Loading...</button>
+          </a>
           <div class="dropdown EIN-hide-m" id="holdButtonDropdownMobile<?=str_replace(".", "", $this->driver->getUniqueID())?>">
             <ul role="navigation" class="dropdown-menu standardDropdown manageListDropdown">
             </ul>
           </div>
         </div>
         <div class="EIN-col-m-6">
-          <button class="btn-default rightButton"<?=$mobileSaveClick?>><?=$this->transEsc("list_manage")?><?=($user?"<i class=\"fa fa-caret-down\"></i>":"")?></button>
+          <a<?=$user?"":$mobileSaveClick?> data-lightbox>
+            <button class="btn-default rightButton"<?=$user?$mobileSaveClick:""?>><?=$this->transEsc("list_manage")?><?=($user?"<i class=\"fa fa-caret-down\"></i>":"")?></button>
+          </a>
         </div>
         <div class="EIN-col-m-12">
           <span></span>

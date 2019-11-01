@@ -153,6 +153,10 @@ class MyResearchController extends AbstractBase
                 $this->getILS()->clearSessionVar("patronLogin");
                 if (!$this->getAuthManager()->isLoggedIn()) {
                     $this->getAuthManager()->login($this->getRequest());
+                    // if they successfully logged in, make sure they have a book cart
+                    if( $user = $this->getUser() ) {
+                        $user->getBookCart();
+                    }
                     if( $this->params()->fromPost('clearLightbox') ) {
                         $view = $this->createViewModel();
                         $view->setTemplate('blankModal');

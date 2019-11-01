@@ -285,7 +285,7 @@
             }
             $targetStr = " data-lightbox";
           }
-          $saveClick = ($user ? " data-toggle=\"dropdown\" data-target=\"#saveButtonDropdown,#saveButtonDropdownMobile\"" : " onClick=\"Lightbox.get('MyResearch','Login',false,{'clearLightbox':true})\"");
+          $saveClick = ($user ? " data-toggle=\"dropdown\" data-target=\"#saveButtonDropdown,#saveButtonDropdownMobile\"" : " href=\"/MyResearch/Login?clearLightbox=true\"");
         endif;
 
         $checkinRecords = isset($this->holdings["CHECKIN_RECORDS"]);
@@ -376,7 +376,9 @@
         </div>
       </div>
       <div class="EIN-col-m-6 EIN-col-t-12 EIN-col-12">
-        <button class="btn-default rightButton"<?=$saveClick?>><?=$this->transEsc("list_manage")?><?=($user?"<i class=\"fa fa-caret-down\"></i>":"")?></button>
+        <a<?=$user?"":$saveClick?> data-lightbox>
+          <button class="btn-default rightButton"<?=$user?$saveClick:""?>><?=$this->transEsc("list_manage")?><?=($user?"<i class=\"fa fa-caret-down\"></i>":"")?></button>
+        </a>
         <div class="dropdown EIN-hide-m" id="saveButtonDropdown">
           <ul role="navigation" class="dropdown-menu standardDropdown manageListDropdown">
             <? if($this->myLists): ?>
@@ -403,7 +405,7 @@
                 </li>
               <? endforeach; ?>
             <? endif; ?>
-            <li><button class="btn-dropdown btn-standardDropdown" onclick="Lightbox.get('MyResearch','EditList',{'id':'NEW','recordId':'<?=$this->driver->getUniqueID()?>'})">New list...</button></li>
+            <li><a href="/MyResearch/EditList?id=NEW&recordId=<?=$this->driver->getUniqueID()?>" data-lightbox><button class="btn-dropdown btn-standardDropdown">New list...</button></a></li>
             <? if ($this->hasOnList): ?>
               <hr class="stretchHR">
               <li><span class="modalNote">Click a non-checked list to add this title.  Click a checked list to remove this title.</span></li>
@@ -482,7 +484,7 @@
                 </li>
               <? endforeach; ?>
             <? endif; ?>
-            <li><button class="btn-dropdown btn-standardDropdown" onclick="Lightbox.get('MyResearch','EditList',{'id':'NEW','recordId':'<?=$this->driver->getUniqueID()?>'})">New list...</button></li>
+            <li><a href="/MyResearch/EditList?id=NEW&recordId=<?=$this->driver->getUniqueID()?>" data-lightbox><button class="btn-dropdown btn-standardDropdown">New list...</button></a></li>
             <? if ($this->hasOnList): ?>
               <hr class="stretchHR">
               <li><span class="modalNote">Click a non-checked list to add this title.  Click a checked list to remove this title.</span></li>
