@@ -98,18 +98,18 @@
     }
 
     // build this change
-    $thisChange = ["status" => $thisRow["item_status_code"], "duedate" => ($thisRow["due_gmt"] ?? "NULL"), "dateOnly" => ($thisRow["due_gmt"] ? strftime("%m-%d-%y", strtotime($thisRow["due_gmt"])) : null), "inum" => $thisRow["item_num"], "bnum" => $thisRow["bib_num"], "time" => $thisRow["record_last_updated_gmt"], "suppressed" => ($thisRow["is_suppressed"] == "t"), "handled" => false];
+    $thisChange = ["statusCode" => $thisRow["item_status_code"], "duedate" => ($thisRow["due_gmt"] ?? "NULL"), "dateOnly" => ($thisRow["due_gmt"] ? strftime("%m-%d-%y", strtotime($thisRow["due_gmt"])) : null), "inum" => $thisRow["item_num"], "bnum" => $thisRow["bib_num"], "time" => $thisRow["record_last_updated_gmt"], "suppressed" => ($thisRow["is_suppressed"] == "t"), "handled" => false];
 
     // get this item if it exists
     $thisCachedItem = null;
     foreach( ($cache["value"]["CACHED_INFO"]["holding"] ?? []) as $thisItem ) {
-      if( $thisItem["itemId"] == $thisChange["inum"] ) {
+      if( ($thisItem["itemId"] ?? "??") == $thisChange["inum"] ) {
         $thisCachedItem = $thisItem;
       }
     }
 
     // see if we already handled it
-    if( isset($thisCachedItem) && ($thisCachedItem["status"] == $thisChange["status"]) && ($thisCachedItem["duedate"] != $thisChange["dateOnly"]) ) {
+    if( isset($thisCachedItem) && (($thisCachedItem["statusCode"] ?? "??") == $thisChange["statusCode"]) && ($thisCachedItem["duedate"] != $thisChange["dateOnly"]) ) {
       $thisChange["handled"] = true;
     }
 
