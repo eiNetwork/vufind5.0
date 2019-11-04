@@ -745,7 +745,7 @@ class EINetwork extends SierraRest implements
      */
     public function getCancelHoldDetails($holdDetails)
     {
-        return $holdDetails['available'] || $holdDetails['in_transit'] ? ''
+        return $holdDetails['available'] ? ''
             : $holdDetails['requestId'];
     }
 
