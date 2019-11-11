@@ -36,27 +36,46 @@ function checkItemStatuses() {
   // grab all of the bibIDs inside a grouping
   var groupedBibIDs = [];
   $('.panel-groupingAccordion .hiddenLoadThisStatus').each( function() {
-    groupedBibIDs.push($(this).siblings('.hiddenId')[0].value);
+    groupedBibIDs.push({ID: $(this).siblings('.hiddenId')[0].value, itemCount: parseInt($(this).siblings('.hiddenItemCount')[0].value)});
     $(this).remove();
   } );
+  // sort them by item count
+  groupedBibIDs.sort((a,b) => (a.itemCount > b.itemCount) ? 1 : -1);
+
   // grab the remaining (non-grouped) bibIDs
   var bibIDs = [];
   $('.hiddenLoadThisStatus').each( function() {
-    bibIDs.push($(this).siblings('.hiddenId')[0].value);
+    bibIDs.push({ID: $(this).siblings('.hiddenId')[0].value, itemCount: parseInt($(this).siblings('.hiddenItemCount')[0].value)});
     $(this).remove();
   } );
+  // sort them by item count
+  bibIDs.sort((a,b) => (a.itemCount > b.itemCount) ? 1 : -1);
+
   // put the grouped ones at the end of the list
   bibIDs = bibIDs.concat(groupedBibIDs);
 
+  // we'll time out if we try to fetch much more than 5K items in one shot
+  var maxItemCount = 5000;
+  // the first page of ungrouped bibs should go together
   var pageSize = 20;
   while (bibIDs.length) {
+    var idsToGrab = [ bibIDs[0].ID ];
+    var currItemCount = bibIDs[0].itemCount;
+    bibIDs.splice(0,1);
+    while (bibIDs.length && idsToGrab.length < pageSize && currItemCount < maxItemCount ) {
+      idsToGrab.push( bibIDs[0].ID );
+      currItemCount += bibIDs[0].itemCount;
+      bibIDs.splice(0,1);
+    }
+
     $.ajax({
       dataType: 'json',
       url: VuFind.path + '/AJAX/JSON?method=EINgetItemStatuses',
-      data: {id:bibIDs.splice(0,pageSize)},
+      data: {id:idsToGrab},
       method: 'POST',
       success: handleItemStatusResponse
     });
+    // we can increase the page size now, since it should be grouped bibs that require a click to see
     pageSize = 100;
   }
 }
