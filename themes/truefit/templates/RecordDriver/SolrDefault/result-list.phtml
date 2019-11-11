@@ -39,6 +39,7 @@
   $showMatch = count($lookfor) > 0;
 ?>
 <div class="EIN-col-m-12">
+  <input type="hidden" value="<?=$this->escapeHtmlAttr(count($this->driver->getItems()))?>" class="hiddenItemCount" />
   <input type="hidden" value="<?=$this->escapeHtmlAttr($this->driver->getUniqueID())?>" class="hiddenId" />
   <input type="hidden" value="<?=$this->escapeHtmlAttr($this->driver->getResourceSource())?>" class="hiddenSource" />
   <input type="hidden" value="true" class="hiddenLoadThisStatus">
