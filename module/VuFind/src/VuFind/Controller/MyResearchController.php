@@ -2383,6 +2383,20 @@ class MyResearchController extends AbstractBase
     }
 
     /**
+     * Flag this announcement to not appear anymore until they log out
+     */
+    public function dismissAnnouncementAction()
+    {
+        // Connect to the ILS:
+        $this->getILS()->dismissAnnouncement($this->params()->fromQuery('hash'));
+        // return a blank
+        $view = $this->createViewModel();
+        $view->setTemplate('blankModal');
+        $view->suppressFlashMessages = true;
+        return $view;
+    }
+
+    /**
      * Action for moving the facets information to a modal
      *
      * @return mixed
