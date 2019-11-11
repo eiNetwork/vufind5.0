@@ -287,6 +287,11 @@ class EINetwork extends SierraRest implements
             foreach( $pieces as $piece ) {
                 $results[$i]['callnumber'] .= (($results[$i]['callnumber'] == "") ? "" : "<br>") . trim($piece);
             }
+            if( isset($results[$i]['item_notes']) ) {
+                foreach( $results[$i]['item_notes'] as $note ) {
+                    $results[$i]['callnumber'] .= (($results[$i]['callnumber'] == "") ? "" : "<br>") . $note;
+                }
+            }
 
             // get shelving details
             if( !$this->memcached->get("shelvingLocationByCode" . $results[$i]['locationID']) ) {
