@@ -40,7 +40,7 @@ function checkItemStatuses() {
     $(this).remove();
   } );
   // sort them by item count
-  groupedBibIDs.sort((a,b) => (a.itemCount > b.itemCount) ? 1 : -1);
+  groupedBibIDs.sort(function(a,b) { return (a.itemCount > b.itemCount) ? 1 : -1});
 
   // grab the remaining (non-grouped) bibIDs
   var bibIDs = [];
@@ -49,7 +49,7 @@ function checkItemStatuses() {
     $(this).remove();
   } );
   // sort them by item count
-  bibIDs.sort((a,b) => (a.itemCount > b.itemCount) ? 1 : -1);
+  bibIDs.sort(function(a,b) { return (a.itemCount > b.itemCount) ? 1 : -1});
 
   // put the grouped ones at the end of the list
   bibIDs = bibIDs.concat(groupedBibIDs);
