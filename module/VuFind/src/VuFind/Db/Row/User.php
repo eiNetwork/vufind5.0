@@ -347,7 +347,7 @@ class User extends RowGateway implements \VuFind\Db\Table\DbTableAwareInterface,
                     ['r' => 'resource'], 'r.id = ur.resource_id',
                     [], $select::JOIN_LEFT
                 );
-                $select->where->equalTo('r.source', /*SOURCE_OVERRIDE*explode("|", $itemId)[0]/*SOURCE_OVERRIDE*/'VuFind'/*SOURCE_OVERRIDE*/)
+                $select->where->equalTo('r.source', explode("|", $itemId)[0])
                               ->equalTo('r.record_id', explode("|", $itemId)[1]);
             }
             $select->group(

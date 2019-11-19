@@ -99,14 +99,14 @@ class Resource extends Gateway
         if (empty($id)) {
             throw new \Exception('Resource ID cannot be empty');
         }
-        $select = $this->select(['record_id' => $id, 'source' => /*SOURCE_OVERRIDE*$source/*SOURCE_OVERRIDE*/'VuFind'/*SOURCE_OVERRIDE*/]);
+        $select = $this->select(['record_id' => $id, 'source' => $source]);
         $result = $select->current();
 
         // Create row if it does not already exist and creation is enabled:
         if (empty($result) && $create) {
             $result = $this->createRow();
             $result->record_id = $id;
-            $result->source = /*SOURCE_OVERRIDE*$source/*SOURCE_OVERRIDE*/'VuFind'/*SOURCE_OVERRIDE*/;
+            $result->source = $source;
             if( substr($id, 0, 2) == ".b" && strlen($id) == 10 ) {
                 $result->shortid = substr($id, 1, 8);
             }
