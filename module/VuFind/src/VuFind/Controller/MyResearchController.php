@@ -1653,7 +1653,7 @@ class MyResearchController extends AbstractBase
         $result = $catalog->getMyTransactions($patron, $this->params()->fromPost('reloadCheckouts'));
         $checkoutList = ['overdue' => [], 'due_this_week' => [], 'other' => []];
         foreach ($result as $current) {
-            $current["dateDiff"] = date_diff(date_create_from_format("m-d-Y", $current["duedate"]), date_create(date("Y-m-d")));
+            $current["dateDiff"] = date_diff(date_create_from_format("!m-d-Y", $current["duedate"]), date_create(date("Y-m-d")));
 
             // Build record driver:
             $current["driver"] = $this->getDriverForILSRecord($current);
