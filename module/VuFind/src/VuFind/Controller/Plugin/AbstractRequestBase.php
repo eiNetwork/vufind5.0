@@ -270,7 +270,7 @@ abstract class AbstractRequestBase extends AbstractPlugin
         // Load config:
         $dateArray = isset($checkHolds['defaultRequiredDate'])
              ? explode(":", $checkHolds['defaultRequiredDate'])
-             : [0, 1, 0];
+             : [0, 0, 1];
 
         // Process special "driver" prefix and adjust default date
         // settings accordingly:
@@ -278,7 +278,7 @@ abstract class AbstractRequestBase extends AbstractPlugin
             $useDriver = true;
             array_shift($dateArray);
             if (count($dateArray) < 3) {
-                $dateArray = [0, 1, 0];
+                $dateArray = [0, 0, 1];
             }
         } else {
             $useDriver = false;
