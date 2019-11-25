@@ -1516,7 +1516,7 @@ class EINetwork extends SierraRest implements
                 $curl_url .= ($addOr ? "%20OR%20" : "") . "id%3A%22" . $thisID . "%22";
                 $addOr = true;
             }
-            $curl_url .= "&fl=id,author,title,format,building&wt=csv&csv.separator=%07&csv.encapsulator=%15&rows=50";
+            $curl_url .= "&fl=id,author,title,format&wt=csv&csv.separator=%07&csv.encapsulator=%15&rows=50";
             $curl_connection = curl_init($curl_url);
             curl_setopt($curl_connection, CURLOPT_CONNECTTIMEOUT, 30);
             curl_setopt($curl_connection, CURLOPT_USERAGENT,"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)");
@@ -1546,7 +1546,8 @@ class EINetwork extends SierraRest implements
                     }
                 }
 
-                $newInfo = ["author" => $pieces[$fieldMap["author"]], "title" => $pieces[$fieldMap["title"]], "format" => $pieces[$fieldMap["format"]], "ILL" => $pieces[$fieldMap["building"]] == "CLP - ILL"];
+                $isILL = (substr($pieces[$fieldMap["title"]], 0 , 17) == "InterLibrary Loan") && (intval(substr($pieces[$fieldMap["title"]], 17)) > 0);
+                $newInfo = ["author" => $pieces[$fieldMap["author"]], "title" => $pieces[$fieldMap["title"]], "format" => $pieces[$fieldMap["format"]], "ILL" => $isILL];
                 $this->memcached->set("readingHistoryInfo" . $pieces[$fieldMap["id"]], $newInfo);
                 $returnMap[$pieces[$fieldMap["id"]]] = $newInfo;
             }
