@@ -1233,7 +1233,8 @@ class EINetwork extends SierraRest implements
 
         $results = parent::getItemStatusesForBib($id);
 
-        // add in the status code
+        // add in the status code (and check if anybody needs an item-level link)
+        $addAllLinks = false;
         foreach( $results as $hKey => $thisHolding ) {
             $thisHolding["statusCode"] = $this->itemStatusReverseMappings[$thisHolding["status"]];
             if( !$thisHolding["availability"] && in_array($thisHolding["statusCode"], ["-","o","p","v","y"]) && !$thisHolding["duedate"] ) {
@@ -1243,6 +1244,17 @@ class EINetwork extends SierraRest implements
                 $thisHolding["copiesOwned"] = 1;
             }
             $results[$hKey] = $thisHolding;
+
+            $addAllLinks |= $thisHolding["addLink"];
+        }
+        // if one guy gets a item-level link, they all need one
+        if( $addAllLinks ) {
+            foreach( $results as $hKey => $thisHolding ) {
+                $thisHolding['addLink'] = true;
+                $thisHolding['is_holdable'] = true;
+                $thisHolding['level'] = 'copy';
+                $results[$hKey] = $thisHolding;
+            }
         }
 
         return $results;
@@ -1381,6 +1393,25 @@ class EINetwork extends SierraRest implements
     protected function translateLocation($location)
     {
         return $location['code'];
+    }
+
+    /**
+     * Check if an item is holdable
+     *
+     * @param array $item Item from Sierra
+     * @param array $bib  Bib record from Sierra
+     *
+     * @return bool
+     */
+    protected function itemHoldAllowed($item, $bib)
+    {
+        // if this item has volume info, we're allowed to place a hold on it
+        foreach( ($item["varFields"] ?? []) as $thisVarField ) {
+            if( ($thisVarField["fieldTag"] ?? "") == "v" && isset($thisVarField["content"]) ) {
+                return true;
+            }
+        }
+        return parent::itemHoldAllowed($item, $bib);
     }
 
     /**
