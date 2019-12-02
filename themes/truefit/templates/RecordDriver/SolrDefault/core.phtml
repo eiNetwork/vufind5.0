@@ -384,7 +384,7 @@
             <? if($this->myLists): ?>
               <? foreach($this->myLists as $list): ?>
                 <li>
-                  <? if($list->contains($this->driver->getResourceSource()."|".$this->driver->getUniqueID())/*SOURCE_OVERRIDE*/||$list->contains("VuFind|".$this->driver->getUniqueID())/*SOURCE_OVERRIDE*/): ?>
+                  <? if($list->contains($this->driver->getResourceSource()."|".$this->driver->getUniqueID())): ?>
                     <form method="post" action="<?=$this->url('userList', array('id' => $list->id))?>">
                       <input type="hidden" name="confirm" value="1">
                       <input type="hidden" name="delete" value="<?=$this->driver->getUniqueID()?>">
