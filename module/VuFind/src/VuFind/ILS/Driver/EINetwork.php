@@ -1546,7 +1546,8 @@ class EINetwork extends SierraRest implements
                     }
                 }
 
-                $newInfo = ["author" => $pieces[$fieldMap["author"]], "title" => $pieces[$fieldMap["title"]], "format" => $pieces[$fieldMap["format"]]];
+                $isILL = (substr($pieces[$fieldMap["title"]], 0 , 17) == "InterLibrary Loan") && (intval(substr($pieces[$fieldMap["title"]], 17)) > 0);
+                $newInfo = ["author" => $pieces[$fieldMap["author"]], "title" => $pieces[$fieldMap["title"]], "format" => $pieces[$fieldMap["format"]], "ILL" => $isILL];
                 $this->memcached->set("readingHistoryInfo" . $pieces[$fieldMap["id"]], $newInfo);
                 $returnMap[$pieces[$fieldMap["id"]]] = $newInfo;
             }
@@ -1598,6 +1599,10 @@ class EINetwork extends SierraRest implements
                         $result["entries"][$index]["author"] = $extraInfo[$thisEntry["bibID"]]["author"];
                         $result["entries"][$index]["title"] = $extraInfo[$thisEntry["bibID"]]["title"];
                         $result["entries"][$index]["format"] = $extraInfo[$thisEntry["bibID"]]["format"];
+                        if( $extraInfo[$thisEntry["bibID"]]["ILL"] ?? false ) {
+                            $result["entries"][$index]["title"] = "InterLibrary Loan";
+                            $result["entries"][$index]["skipLoad"] = true;
+                        }
                     } else {
                         $result["entries"][$index]["title"] = "Title no longer available";
                         $result["entries"][$index]["skipLoad"] = true;
