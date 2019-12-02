@@ -12,10 +12,12 @@
   </div><br>
   <div class="privacyText">
     <div class="privacySubtitle">Recent Changes:</div><br>
-    <div class="privacyHeader">Library Catalog v3.1.1 (November 22, 2019)</div><br>
+    <div class="privacyHeader">Library Catalog v3.2.0 (December 2, 2019)</div><br>
     <div>
       <ul>
-        <li>Bug fix for checked out items showing as "Due today" when they were due the day before.</li>
+        <li>Some materials with volume information were unable to be requested. These should now behave as expected.</li>
+        <li>Patrons who had previously checked out InterLibrary Loan items were unable to access their reading history. Those patrons should now be able to view/edit their reading history with no problems.</li>
+        <li>Some requests were being incorrectly given an expiration date of only one month in the future. All requests should now last for one year before expiring.</li>
       </ul>
     </div>
     <div>
@@ -24,6 +26,12 @@
         <a class="moreLink" onClick="ToggleAccordion('Changes',1)">Show Earlier Changes</a>
       </span>
       <span id="accordionMoreChanges" style="display:none">
+        <br><div class="privacyHeader">Library Catalog v3.1.1 (November 22, 2019)</div><br>
+        <div>
+          <ul>
+            <li>Bug fix for checked out items showing as "Due today" when they were due the day before.</li>
+          </ul>
+        </div>
         <br><div class="privacyHeader">Library Catalog v3.1.0 (November 20, 2019)</div><br>
         <div>
           <ul>
