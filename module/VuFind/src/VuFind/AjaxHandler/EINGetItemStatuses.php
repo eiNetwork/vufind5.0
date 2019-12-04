@@ -384,7 +384,7 @@ class EINGetItemStatuses extends GetItemStatuses
                     $inLibMessage = [$inLibMessage, str_replace("<countText>", (($ownedItems > 0) ? ($availableItems . " of ") : "") . $ownedItems . " cop" . (($ownedItems == 1) ? "y" : "ies") . $waitlistText, $availability_message)];
                 }
                 $availability_message = $inLibMessage;
-            } else if( $isOverDrive && $overDriveInfo["copiesOwned"] == 999999 ) {
+            } else if( $isOverDrive && $overDriveInfo["copiesOwned"] >= 100000 ) {
                 $availability_message = str_replace("<countText>", "Always Available", $availability_message);
             } else if( $ownedItems == 0 && $orderedItems > 0 ) {
                 $availability_message = str_replace("<countText>", $orderedItems . " cop" . (($orderedItems == 1) ? "y" : "ies") . $waitlistText, $availability_message);
