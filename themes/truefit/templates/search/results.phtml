@@ -289,14 +289,14 @@
           <input type="hidden" name="delete" value="">
           <input type="hidden" name="source" value="">
           <input type="hidden" name="list" value="<?=$list->id?>">
-          <button class="btn-dropdown btn-standardDropdown" onClick="$(this).parents('.dropdown').siblings('.rightButton').html('<i class=\'fa fa-spinner bwSpinner\'></i>&nbsp;Loading...')"><span class="sr-only">Checked</span><i class="fa fa-check greenCheck"></i><?=$list->title?></button>
+          <button class="btn-dropdown btn-standardDropdown" onClick="$(this).parents('.dropdown').siblings('.rightButton').html('<i class=\'fa fa-spinner bwSpinner\'></i>&nbsp;Loading...'); return verifyLogin();"><span class="sr-only">Checked</span><i class="fa fa-check greenCheck"></i><?=$list->title?></button>
         </form>
         <form class="addToList" method="post" action="">
           <input type="hidden" name="submit" value="1">
           <input type="hidden" name="id" value="">
           <input type="hidden" name="source" value="">
           <input type="hidden" name="list" value="<?=$list->id?>">
-          <button class="btn-dropdown btn-standardDropdown" onClick="$(this).parents('.dropdown').siblings('.rightButton').html('<i class=\'fa fa-spinner bwSpinner\'></i>&nbsp;Loading...')"><?=$list->title?></button>
+          <button class="btn-dropdown btn-standardDropdown" onClick="$(this).parents('.dropdown').siblings('.rightButton').html('<i class=\'fa fa-spinner bwSpinner\'></i>&nbsp;Loading...'); return verifyLogin();"><?=$list->title?></button>
         </form>
       </li>
     <?php endforeach;  endif; ?>
