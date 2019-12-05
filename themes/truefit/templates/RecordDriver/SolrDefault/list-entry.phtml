@@ -149,7 +149,7 @@
 
           $holdClick = "";
           $saveClick = " data-toggle=\"dropdown\" data-target=\"#saveButtonDropdown\" onclick=\"moveSaveDropdown(this, '" . $itemData . "');\"";
-          $mobileSaveClick = " data-toggle=\"dropdown\" data-target=\"#saveButtonDropdown\" onclick=\"moveSaveDropdown($(this).parent().next().children('span'), '" . $itemData . "');\"";
+          $mobileSaveClick = " data-toggle=\"dropdown\" data-target=\"#saveButtonDropdown\" onclick=\"moveSaveDropdown($(this).parent().parent().next().children('span'), '" . $itemData . "');\"";
         else:
           $holdClick = " href=\"/MyResearch/Login?clearLightbox=true\"";
           $saveClick = " href=\"/MyResearch/Login?clearLightbox=true\"";
