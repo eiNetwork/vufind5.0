@@ -46,7 +46,7 @@ function handleListContentResponse(response) {
   if(response.data.status == 'OK') {
     $('.ajaxListID' + response.data.id).each( function() {
       $(this).find(".ajaxListContents").append(response.data.html);
-      $("span.pull-left").css({"display":"none"});
+      $(this).find(".ajaxListContents span.pull-left").css({"display":"none"});
 
       // clean up the overlap for long format names
       $(".highlightContainer").each( function() {
@@ -65,7 +65,7 @@ function handleListContentResponse(response) {
       // stop loading, enable the sort/bulk buttons and grab item statuses
       } else {
         $(this).find(".ajaxListContents .loadingWall").remove();
-        $("span.pull-left").css({"display":"block"});
+        $(this).find(".ajaxListContents span.pull-left").css({"display":"block"});
 
         // sort buttons
         $(this).find(".ajaxListSortControls").html(response.data.sortHtml).parents("tr").css({"display":"inherit"});
