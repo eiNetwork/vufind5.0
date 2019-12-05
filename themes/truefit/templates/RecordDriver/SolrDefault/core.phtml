@@ -391,7 +391,7 @@
                       <input type="hidden" name="returnBibID" value="<?=$this->driver->getUniqueID()?>">
                       <input type="hidden" name="source" value="<?=$this->driver->getResourceSource()?>">
                       <input type="hidden" name="list" value="<?=$list->id?>">
-                      <button class="btn-dropdown btn-standardDropdown" onClick="$('.rightButton').html('<i class=\'fa fa-spinner bwSpinner\'></i>&nbsp;Loading...')"><span class="sr-only">Checked</span><i class="fa fa-check greenCheck"></i><?=$list->title?></button>
+                      <button class="btn-dropdown btn-standardDropdown" onClick="$('.rightButton').html('<i class=\'fa fa-spinner bwSpinner\'></i>&nbsp;Loading...'); return verifyLogin();"><span class="sr-only">Checked</span><i class="fa fa-check greenCheck"></i><?=$list->title?></button>
                     </form>
                   <? else: ?>
                     <form method="post" action="<?=$this->recordLink()->getActionUrl($this->driver, 'Save')?>">
@@ -399,7 +399,7 @@
                       <input type="hidden" name="id" value="<?=$this->driver->getUniqueID()?>">
                       <input type="hidden" name="source" value="<?=$this->driver->getResourceSource()?>">
                       <input type="hidden" name="list" value="<?=$list->id?>">
-                      <button class="btn-dropdown btn-standardDropdown" onClick="$('.rightButton').html('<i class=\'fa fa-spinner bwSpinner\'></i>&nbsp;Loading...')"><?=$list->title?></button>
+                      <button class="btn-dropdown btn-standardDropdown" onClick="$('.rightButton').html('<i class=\'fa fa-spinner bwSpinner\'></i>&nbsp;Loading...'); return verifyLogin();"><?=$list->title?></button>
                     </form>
                   <? endif; ?>
                 </li>
@@ -470,7 +470,7 @@
                       <input type="hidden" name="returnBibID" value="<?=$this->driver->getUniqueID()?>">
                       <input type="hidden" name="source" value="<?=$this->driver->getResourceSource()?>">
                       <input type="hidden" name="list" value="<?=$list->id?>">
-                      <button class="btn-dropdown btn-standardDropdown" onClick="$('.rightButton').html('<i class=\'fa fa-spinner bwSpinner\'></i>&nbsp;Loading...')"><span class="sr-only">Checked</span><i class="fa fa-check greenCheck"></i><?=$list->title?></button>
+                      <button class="btn-dropdown btn-standardDropdown" onClick="$('.rightButton').html('<i class=\'fa fa-spinner bwSpinner\'></i>&nbsp;Loading...'); return verifyLogin();"><span class="sr-only">Checked</span><i class="fa fa-check greenCheck"></i><?=$list->title?></button>
                     </form>
                   <? else: ?>
                     <form method="post" action="<?=$this->recordLink()->getActionUrl($this->driver, 'Save')?>">
@@ -478,7 +478,7 @@
                       <input type="hidden" name="id" value="<?=$this->driver->getUniqueID()?>">
                       <input type="hidden" name="source" value="<?=$this->driver->getResourceSource()?>">
                       <input type="hidden" name="list" value="<?=$list->id?>">
-                      <button class="btn-dropdown btn-standardDropdown" onClick="$('.rightButton').html('<i class=\'fa fa-spinner bwSpinner\'></i>&nbsp;Loading...')"><?=$list->title?></button>
+                      <button class="btn-dropdown btn-standardDropdown" onClick="$('.rightButton').html('<i class=\'fa fa-spinner bwSpinner\'></i>&nbsp;Loading...'); return verifyLogin();"><?=$list->title?></button>
                     </form>
                   <? endif; ?>
                 </li>
