@@ -393,7 +393,10 @@ class MyResearchController extends AbstractBase
         $this->getILS()->clearSessionVar("checkouts");
         $this->getILS()->clearSessionVar("holds");
         $this->getILS()->clearSessionVar("readingHistory");
+        $this->getILS()->clearSessionVar("readingHistoryPartial");
         $this->getILS()->clearSessionVar("dismissedAnnouncements");
+        $this->getILS()->clearSessionVar("memCacheRefreshTimer");
+        $this->getILS()->clearSessionVar("sessionExpiration");
         setcookie("einStoredBarcode", "", time() - 1209600, '/');
         setcookie("einStoredPIN", "", time() - 1209600, '/');
         setcookie("checkoutTab", "", time() - 1209600, '/');

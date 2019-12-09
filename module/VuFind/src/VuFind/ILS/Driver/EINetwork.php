@@ -121,6 +121,8 @@ class EINetwork extends SierraRest implements
             unset($this->sessionCache->checkouts);
             unset($this->sessionCache->holds);
             unset($this->sessionCache->patron);
+            unset($this->sessionCache->readingHistory);
+            unset($this->sessionCache->readingHistoryPartial);
             unset($this->sessionCache->memCacheRefreshTimer);
             unset($this->sessionCache->sessionExpiration);
         }
