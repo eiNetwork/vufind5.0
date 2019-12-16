@@ -412,6 +412,14 @@ function autoLogout(){
   //Redirect to logout page
   window.location = VuFind.path + "/MyResearch/Logout?target=home";
 }
+function verifyLogin(){
+  if( getCookie('libraryCatalogLoggedIn') ) {
+    return true;
+  } else {
+    VuFind.lightbox.ajax({'url':'/MyResearch/Login?clearLightbox=true'});
+    return false;
+  }
+}
 
 $(document).ready(function commonDocReady() {
   // Start up all of our submodules

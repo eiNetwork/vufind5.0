@@ -201,6 +201,14 @@ JS;
             autoLogoutResetTimer();
           }
 <? endif; ?>
+<?    /* store a cookie to tell whether or not we're signed in */
+  if( $this->auth()->getManager()->isLoggedIn() ):
+?>
+          createCookie('libraryCatalogLoggedIn', true);
+<? else: ?>
+          deleteCookie('libraryCatalogLoggedIn');
+<? endif; ?>
+
         });
 
         function moveButtons() {
