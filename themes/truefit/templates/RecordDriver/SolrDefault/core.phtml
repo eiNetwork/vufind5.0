@@ -196,7 +196,7 @@
           <? endforeach; ?>
         <? endforeach; ?>
         <? $totalCopies = $ownedCopies + $orderedCopies; ?>
-        <? $alwaysAvailable = $isOverDrive && ($ownedCopies == 999999); ?>
+        <? $alwaysAvailable = $isOverDrive && ($ownedCopies >= 100000); ?>
         <? $green = $isOneClick || (($ownedCopies > 0) && (($availableCopies > 0))); ?>
         <? if( !isset($this->holdings["CHECKIN_RECORDS"]) || ($totalCopies > 0) ): ?>
           <tr>
