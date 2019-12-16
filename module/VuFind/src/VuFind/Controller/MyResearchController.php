@@ -1353,12 +1353,16 @@ class MyResearchController extends AbstractBase
                 $view->alternateLibrary = $this->getUser()->alternate_library;
                 $rawIds = $this->params()->fromPost('ids');
                 $ids = [];
+                $checkHolds = null;
                 foreach($rawIds as $id) {
                     $ids[] = explode("|", $id)[1];
+                    if( !isset($checkHolds["defaultRequiredDate"]) ) {
+                        $checkHolds = $catalog->checkFunction('Holds', ['id' => $ids[-1],'patron' => $patron]);
+                    }
                 }
                 $view->ids = $ids;
                 $defaultRequired = $this->holds()->getDefaultRequiredDate(
-                    null, $catalog, $patron, null
+                    $checkHolds, $catalog, $patron, null
                 );
                 $defaultRequired = $this->serviceLocator->get('VuFind\Date\Converter')
                     ->convertToDisplayDate("U", $defaultRequired);
