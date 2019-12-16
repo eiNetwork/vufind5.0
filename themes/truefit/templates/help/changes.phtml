@@ -12,12 +12,14 @@
   </div><br>
   <div class="privacyText">
     <div class="privacySubtitle">Recent Changes:</div><br>
-    <div class="privacyHeader">Library Catalog v3.2.0 (December 2, 2019)</div><br>
+    <div class="privacyHeader">Library Catalog v3.3.0 (December 16, 2019)</div><br>
     <div>
       <ul>
-        <li>Some materials with volume information were unable to be requested. These should now behave as expected.</li>
-        <li>Patrons who had previously checked out InterLibrary Loan items were unable to access their reading history. Those patrons should now be able to view/edit their reading history with no problems.</li>
-        <li>Some requests were being incorrectly given an expiration date of only one month in the future. All requests should now last for one year before expiring.</li>
+        <li>Fixed a bug causing excessive delays before displaying checkboxes in Book Cart and Lists in some instances.</li>
+        <li>On the mobile interface, the Cart/Lists dropdown was appearing at the very top of the screen.  This dropdown is now correctly appearing under the Cart/Lists button.</li>
+        <li>Patron reading history was not being updated unless the patron logged out of their account and back in.  The reading history will now be automatically updated every 30 minutes.</li>
+        <li>Some users were shown incorrect pages after clicking buttons or links.  This was happening when users were logged out after the current page was loaded and before the links were clicked.  Users should no longer experience this issue if they are logged out mid-session.</li>
+        <li>Some "Always Available" econtent items were displaying extremely high item counts (i.e. 999976 of 1000006 copies).  The availability of these items is now displayed as "Always Available."</li>
       </ul>
     </div>
     <div>
@@ -26,6 +28,14 @@
         <a class="moreLink" onClick="ToggleAccordion('Changes',1)">Show Earlier Changes</a>
       </span>
       <span id="accordionMoreChanges" style="display:none">
+        <br><div class="privacyHeader">Library Catalog v3.2.0 (December 2, 2019)</div><br>
+        <div>
+          <ul>
+            <li>Some materials with volume information were unable to be requested. These should now behave as expected.</li>
+            <li>Patrons who had previously checked out InterLibrary Loan items were unable to access their reading history. Those patrons should now be able to view/edit their reading history with no problems.</li>
+            <li>Some requests were being incorrectly given an expiration date of only one month in the future. All requests should now last for one year before expiring.</li>
+          </ul>
+        </div>
         <br><div class="privacyHeader">Library Catalog v3.1.1 (November 22, 2019)</div><br>
         <div>
           <ul>
