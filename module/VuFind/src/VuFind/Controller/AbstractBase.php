@@ -297,6 +297,33 @@ class AbstractBase extends AbstractActionController
         // Set a flag indicating that we are forcing login:
         $this->getRequest()->getPost()->set('forcingLogin', true);
 
+        // see if they have a stored cookie
+        if( isset($_COOKIE["einStoredBarcode"]) && isset($_COOKIE["einStoredPIN"]) ) {
+            $this->getRequest()->getPost()->set('username', $_COOKIE["einStoredBarcode"]);
+            $this->getRequest()->getPost()->set('password', $_COOKIE["einStoredPIN"]);
+            $this->getRequest()->getPost()->set('auth_method', "ILS");
+            try {
+                $this->getAuthManager()->login($this->getRequest());
+                // store their info to use again later
+                if( $this->getAuthManager()->isLoggedIn() ) {
+                    setcookie("einStoredBarcode", $_COOKIE["einStoredBarcode"], time() + 1209600, '/');
+                    setcookie("einStoredPIN", $_COOKIE["einStoredPIN"], time() + 1209600, '/');
+                    $url = $this->getFollowupUrl();
+                    if( $url ) {
+                        $this->clearFollowupUrl();
+                    } else {
+                        $url = $this->getServerUrl();
+                    }
+                    return $this->redirect()->toUrl($url);
+                }
+            } catch (AuthException $e) {
+                $this->flashMessenger()->addMessage($e->getMessage(), 'error');
+            }
+        }
+        if (!empty($msg)) {
+            $this->flashMessenger()->addMessage($msg, 'error');
+        }
+
         if ($forward) {
             return $this->forwardTo('MyResearch', 'Login');
         }
