@@ -126,7 +126,7 @@
         {
           thisSize = iTime.decodedBodySize;
         }
-        if( (validImagesSeen >= 20) || (thisSize == 5382) ) {
+        if( (validImagesSeen >= 20) || (thisSize == 5382) || ((this.naturalWidth == 472) && (this.naturalHeight == 600)) ) {
           $(this).parents(".neTD").css("display","none");
         } else {
           $(this).parents(".neTD").css("display","table-cell");
