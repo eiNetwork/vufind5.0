@@ -1663,7 +1663,12 @@ class MyResearchController extends AbstractBase
             $current["dateDiff"] = date_diff(date_create_from_format("!m-d-Y", $current["duedate"]), date_create(date("Y-m-d")));
 
             // Build record driver:
-            $current["driver"] = $this->getDriverForILSRecord($current);
+            $current["driver"] = null;
+            unset($current["fullrecord"]);
+            unset($current["description"]);
+            unset($current["spelling"]);
+            unset($current["url"]);
+            unset($current["cachedJson"]);
             $checkoutList[(($current["dateDiff"]->invert == 0) && ($current["dateDiff"]->days != 0)) ? 'overdue' : (($current["dateDiff"]->days <= 7) ? 'due_this_week' : 'other')][] = $current;
         }
 

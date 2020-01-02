@@ -92,7 +92,7 @@
                     <? $eContentCount++; ?>
                   <? endif; ?>
                 <? endforeach; ?>
-                <? foreach ($this->checkoutList[$checkoutType] as $current): ?>
+                <? foreach ($this->checkoutList[$checkoutType] as $index => $current): ?>
                   <? if( $showPhysicalHeader && !isset($current["reserveId"]) ): ?>
                     <div class="EIN-col-m-12" style="font-weight:700;font-size:24px;text-align:center;color:#3f51b5;background:#ededed;margin:-5px 0 -5px;padding:5px">Physical Items<span class="badge noHide" style="margin-left:5px;font-size:14px;top:-3px;position:relative"><?=$physicalCount?></span></div>
                     <div class="EIN-col-m-12"><hr style="margin:5px 0"></div>
@@ -103,7 +103,18 @@
                     <div class="EIN-col-m-12"><hr style="margin:5px 0"></div>
                     <? $showEcontentHeader = false; ?>
                   <? endif; ?>
-                  <?=$this->record($current["driver"])->getCheckoutEntry($current, $user, "checkout_" . $checkoutType)?>
+                  <div class="checkoutPlaceholder EIN-col-m-12">
+                    <div style="padding:9px;color:#3d3d3d">
+                      <span><i class="fa fa-spinner"></i></span>
+                      <span>&nbsp;Loading...</span>
+                    </div>
+                    <div class="ajaxCheckoutLoad" style="display:none">
+                      <span class="checkoutKey"><?=$checkoutType . $index?></span>
+                      <span class="checkoutType"><?=$checkoutType?></span>
+                      <span class="checkout"><?=json_encode($current)?></span>
+                    </div>
+                    <div class="EIN-col-m-12"><hr style="margin:5px 0"></div>
+                  </div>
                 <? endforeach; ?>
               </div>
             </div>
@@ -134,7 +145,46 @@
           $('#detailsAccordion').css({"min-height":$('.accordionButtonsLeft').height() + "px"});
           // hide the last hr
           $(".panel-body").children(".ajaxItem:last-child").children("div").css("display","none");
+
+          // load the first page of checked out items
+          loadNextCheckouts();
         } );
+
+        function loadNextCheckouts() {
+          if( $(".ajaxCheckoutLoad").length ) {
+            $("button.selectAllBulk").prop('disabled', true);
+            var data = { checkout:[] };
+            $(".ajaxCheckoutLoad").each( function() {
+              if( data.checkout.length < 50 ) {
+                data.checkout.push( { key: $(this).children(".checkoutKey").html(),
+                                      type: $(this).children(".checkoutType").html(),
+                                      checkout: $(this).children(".checkout").html() } );
+              }
+            } );
+            $.ajax({
+              type: 'POST',
+              dataType: 'json',
+              url: VuFind.path + '/AJAX/JSON?method=EINgetCheckouts',
+              data: data,
+              success: handleCheckoutResponse
+            })
+          } else {
+            $("button.selectAllBulk").prop('disabled', false);
+          }
+        }
+
+        function handleCheckoutResponse(response) {
+          if(response.data.status == 'OK') {
+            for( let key in response.data.checkouts ) {
+              $('.checkoutKey').each( function() {
+                if( $(this).html() == key ) {
+                  $(this).parents('.checkoutPlaceholder').replaceWith(response.data.checkouts[key]);
+                }
+              } );
+            }
+            loadNextCheckouts();
+          }
+        }
       </script>
     <? endif; ?>
   </div>

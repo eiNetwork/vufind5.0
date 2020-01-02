@@ -52,6 +52,7 @@ class PluginManager extends \VuFind\ServiceManager\AbstractPluginManager
         'getFacetData' => 'VuFind\AjaxHandler\GetFacetData',
         'getIlsStatus' => 'VuFind\AjaxHandler\GetIlsStatus',
         'getItemStatuses' => 'VuFind\AjaxHandler\GetItemStatuses',
+        'EINgetCheckouts' => 'VuFind\AjaxHandler\EINGetCheckouts',
         'EINgetDescription' => 'VuFind\AjaxHandler\EINGetDescription',
         'EINgetItemStatuses' => 'VuFind\AjaxHandler\EINGetItemStatuses',
         'EINgetListContents' => 'VuFind\AjaxHandler\EINGetListContents',
@@ -95,6 +96,8 @@ class PluginManager extends \VuFind\ServiceManager\AbstractPluginManager
             'VuFind\AjaxHandler\GetIlsStatusFactory',
         'VuFind\AjaxHandler\GetItemStatuses' =>
             'VuFind\AjaxHandler\GetItemStatusesFactory',
+        'VuFind\AjaxHandler\EINGetCheckouts' =>
+            'VuFind\AjaxHandler\EINGetCheckoutsFactory',
         'VuFind\AjaxHandler\EINGetDescription' =>
             'VuFind\AjaxHandler\EINGetDescriptionFactory',
         'VuFind\AjaxHandler\EINGetItemStatuses' =>
