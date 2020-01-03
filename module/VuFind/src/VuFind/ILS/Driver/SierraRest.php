@@ -570,7 +570,7 @@ class SierraRest extends AbstractBase implements TranslatorAwareInterface,
                 'id' => '',
                 'checkout_id' => $this->extractId($entry['id']),
                 'item_id' => $this->extractId($entry['item']),
-                'barcode' => $entry['barcode'],
+                'barcode' => $entry['barcode'] ?? null,
                 'duedate' => $this->dateConverter->convertToDisplayDate(
                     'Y-m-d', $entry['dueDate']
                 ),

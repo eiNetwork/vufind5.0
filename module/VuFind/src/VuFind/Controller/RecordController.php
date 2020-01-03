@@ -122,7 +122,7 @@ class RecordController extends AbstractRecord
         }
 
         // see whether they already have a hold on it
-        if($canHold && ($user = $this->getUser()) && !$hasVolumes) {
+        if(($user = $this->getUser()) && $canHold && !$hasVolumes) {
             $patron = $this->catalogLogin();
             $holds = $catalog->getMyHolds($patron);
             foreach($holds as $thisHold) {
@@ -295,7 +295,7 @@ class RecordController extends AbstractRecord
             }
             // clear the cached contents
             $post = $this->getRequest()->getPost()->toArray();
-            $this->getILS()->clearMemcachedVar("cachedList" . $post['list']);
+            $this->getILS()->clearMemcachedVar("cachedList" . ($post['list'] ?? ""));
             return parent::saveAction();
         } catch (\Exception $e) {
             switch(get_class($e)) {

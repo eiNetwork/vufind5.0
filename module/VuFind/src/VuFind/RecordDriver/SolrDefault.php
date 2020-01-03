@@ -200,6 +200,10 @@ class SolrDefault extends DefaultRecord
                     foreach( $this->highlightDetails[$current] as $thisHighlight ) {
                         $haystack = strtolower($thisHighlight);
                         foreach( $lookfor as $index => $value ) {
+                            // skip empty needles
+                            if( !$value ) {
+                                continue;
+                            }
                             // make sure it wasnt included in any of the other snippets we already added
                             foreach( $highlights as $greenLitHighlight ) {
                                 $haystack2 = strtolower($greenLitHighlight["snippet"]);
@@ -236,6 +240,10 @@ class SolrDefault extends DefaultRecord
                         }
                         $highlight = strtolower(explode("{{{{END_HILITE}}}}", $thisBit, 2)[0]);
                         foreach ($lookfor as $index => $value2 ) {
+                            // skip empty needles
+                            if( !$value2 ) {
+                                continue;
+                            }
                             // make sure it wasnt included in any of the other snippets we already added
                             foreach( $highlights as $greenLitHighlight ) {
                                 $haystackBits = explode("{{{{START_HILITE}}}}", $greenLitHighlight["snippet"]);
@@ -455,7 +463,7 @@ class SolrDefault extends DefaultRecord
     {
         $json = isset($this->fields['cachedJson']) ? $this->fields['cachedJson'] : "";
         $json = json_decode($json, true);
-        foreach( $json["holding"] as $key => $thisJson ) {
+        foreach( ($json["holding"] ?? []) as $key => $thisJson ) {
             $locCodeRow = $this->getDbTable('ShelvingLocation')->getByCode($thisJson["locationID"]);
             if( $locCodeRow ) {
                 $json["holding"][$key]["location"] = $locCodeRow->sierraName;
@@ -464,7 +472,7 @@ class SolrDefault extends DefaultRecord
                 $json["holding"][$key]["item_id"] = $json["holding"][$key]["itemId"] ?? null;
             }
         }
-        foreach( $json["orderRecords"] as $key => $thisJson ) {
+        foreach( ($json["orderRecords"] ?? []) as $key => $thisJson ) {
             // find this location in the database
             $row = $this->getDBTable('shelvinglocation')->getByCode($key);
             $row = $row ? $row->toArray() : [];

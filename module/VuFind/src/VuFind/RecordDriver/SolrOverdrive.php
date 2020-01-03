@@ -515,7 +515,7 @@ class SolrOverdrive extends SolrMarc implements LoggerAwareInterface
             $fulldata = $this->connector->getMetadata(array($od_id));
             $data = $fulldata[strtolower($od_id)];
         } else {
-            return $this->fields['thumbnail'];
+            return $this->fields['thumbnail'] ?? false;
         }
 
         if (isset($data->images)) {
