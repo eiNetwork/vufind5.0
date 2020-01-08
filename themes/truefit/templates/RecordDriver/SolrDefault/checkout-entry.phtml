@@ -167,22 +167,22 @@
               <ul role="navigation" class="dropdown-menu standardDropdown manageListDropdown">
                 <? if( $this->checkout["mediaDo"] ?? false ): ?>
                   <li>
-                    <a href="<?=$this->checkout["mediaDo"]->data->downloadLink?>" target="_blank"><button class="btn-dropdown btn-standardDropdown">Read Now</button></a>
+                    <a href="<?=$this->checkout["mediaDo"]["data"]["downloadLink"]?>" target="_blank"><button class="btn-dropdown btn-standardDropdown">Read Now</button></a>
                   </li>
                 <? endif; ?>
                 <? if( $this->checkout["overdriveRead"] ?? false ): ?>
                   <li>
-                    <a href="<?=$this->checkout["overdriveRead"]->data->downloadLink?>" target="_blank"><button class="btn-dropdown btn-standardDropdown">Read Now</button></a>
+                    <a href="<?=$this->checkout["overdriveRead"]["data"]["downloadLink"]?>" target="_blank"><button class="btn-dropdown btn-standardDropdown">Read Now</button></a>
                   </li>
                 <? endif; ?>
                 <? if( $this->checkout["overdriveListen"] ?? false ): ?>
                   <li>
-                    <a href="<?=$this->checkout["overdriveListen"]->data->downloadLink?>" target="_blank"><button class="btn-dropdown btn-standardDropdown">Listen Now</button></a>
+                    <a href="<?=$this->checkout["overdriveListen"]["data"]["downloadLink"]?>" target="_blank"><button class="btn-dropdown btn-standardDropdown">Listen Now</button></a>
                   </li>
                 <? endif; ?>
                 <? if( $this->checkout["streamingVideo"] ?? false ): ?>
                   <li>
-                    <a href="<?=$this->checkout["streamingVideo"]->data->downloadLink?>" target="_blank"><button class="btn-dropdown btn-standardDropdown">Watch Now</button></a>
+                    <a href="<?=$this->checkout["streamingVideo"]["data"]["downloadLink"]?>" target="_blank"><button class="btn-dropdown btn-standardDropdown">Watch Now</button></a>
                   </li>
                 <? endif; ?>
                 <? if( isset($this->checkout["availableFormats"]) && count($this->checkout["availableFormats"]) > 0 ): ?>
