@@ -178,7 +178,9 @@
             for( let key in response.data.checkouts ) {
               $('.checkoutKey').each( function() {
                 if( $(this).html() == key ) {
+                  var grandpa = $(this).parents('.checkoutPlaceholder').parent();
                   $(this).parents('.checkoutPlaceholder').replaceWith(response.data.checkouts[key]);
+                  VuFind.lightbox.bind(grandpa.find('.ajaxItem').last());
                 }
               } );
             }
