@@ -175,15 +175,15 @@
 
         function handleCheckoutResponse(response) {
           if(response.data.status == 'OK') {
+            var grandpa = $('.checkoutPlaceholder').parent();
             for( let key in response.data.checkouts ) {
               $('.checkoutKey').each( function() {
                 if( $(this).html() == key ) {
-                  var grandpa = $(this).parents('.checkoutPlaceholder').parent();
                   $(this).parents('.checkoutPlaceholder').replaceWith(response.data.checkouts[key]);
-                  VuFind.lightbox.bind(grandpa.find('.ajaxItem').last());
                 }
               } );
             }
+            VuFind.lightbox.bind(grandpa.find('.ajaxItem'));
             loadNextCheckouts();
           }
         }
