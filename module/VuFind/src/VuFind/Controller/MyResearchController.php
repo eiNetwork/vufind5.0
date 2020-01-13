@@ -1661,6 +1661,7 @@ class MyResearchController extends AbstractBase
         $checkoutList = ['overdue' => [], 'due_this_week' => [], 'other' => []];
         foreach ($result as $current) {
             $current["dateDiff"] = date_diff(date_create_from_format("!m-d-Y", $current["duedate"]), date_create(date("Y-m-d")));
+            $current["dateStr"] = substr($current["duedate"], 6) . "-" . substr($current["duedate"], 0, 5);
 
             // Build record driver:
             $current["driver"] = $this->getDriverForILSRecord($current);
@@ -1678,9 +1679,9 @@ class MyResearchController extends AbstractBase
                         return -1;
                     } else if(isset($co1["reserveId"]) && !isset($co2["reserveId"])) {
                         return 1;
-                    } else if($co1["duedate"] > $co2["duedate"]) {
+                    } else if($co1["dateStr"] > $co2["dateStr"]) {
                         return 1;
-                    } else if($co1["duedate"] < $co2["duedate"]) {
+                    } else if($co1["dateStr"] < $co2["dateStr"]) {
                         return -1;
                     }
                     $t1 = isset($co1["title"]) ? $co1["title"] : $co1["driver"]->getTitle();
@@ -1696,9 +1697,9 @@ class MyResearchController extends AbstractBase
             // otherwise, normal sort
             } else {
                 usort($checkoutList[$key], function($co1, $co2) {
-                    if($co1["duedate"] > $co2["duedate"]) {
+                    if($co1["dateStr"] > $co2["dateStr"]) {
                         return 1;
-                    } else if($co1["duedate"] < $co2["duedate"]) {
+                    } else if($co1["dateStr"] < $co2["dateStr"]) {
                         return -1;
                     }
                     $t1 = isset($co1["title"]) ? $co1["title"] : $co1["driver"]->getTitle();
@@ -1722,9 +1723,9 @@ class MyResearchController extends AbstractBase
                     return -1;
                 } else if(isset($co1["reserveId"]) && !isset($co2["reserveId"])) {
                     return 1;
-                } else if($co1["duedate"] > $co2["duedate"]) {
+                } else if($co1["dateStr"] > $co2["dateStr"]) {
                     return 1;
-                } else if($co1["duedate"] < $co2["duedate"]) {
+                } else if($co1["dateStr"] < $co2["dateStr"]) {
                     return -1;
                 }
                 $t1 = isset($co1["title"]) ? $co1["title"] : $co1["driver"]->getTitle();
