@@ -12,14 +12,14 @@
   </div><br>
   <div class="privacyText">
     <div class="privacySubtitle">Recent Changes:</div><br>
-    <div class="privacyHeader">Library Catalog v3.3.0 (December 16, 2019)</div><br>
+    <div class="privacyHeader">Library Catalog v3.4.0 (January 13, 2020)</div><br>
     <div>
       <ul>
-        <li>Fixed a bug causing excessive delays before displaying checkboxes in Book Cart and Lists in some instances.</li>
-        <li>On the mobile interface, the Cart/Lists dropdown was appearing at the very top of the screen.  This dropdown is now correctly appearing under the Cart/Lists button.</li>
-        <li>Patron reading history was not being updated unless the patron logged out of their account and back in.  The reading history will now be automatically updated every 30 minutes.</li>
-        <li>Some users were shown incorrect pages after clicking buttons or links.  This was happening when users were logged out after the current page was loaded and before the links were clicked.  Users should no longer experience this issue if they are logged out mid-session.</li>
-        <li>Some "Always Available" econtent items were displaying extremely high item counts (i.e. 999976 of 1000006 copies).  The availability of these items is now displayed as "Always Available."</li>
+        <li>Fixed a bug affecting the order of items on the checked-out items page.  Items on this page are normally sorted by due date, with the items due soonest shown first, but this was not displaying correctly if patrons had items due in December 2019 and January 2020.</li>
+        <li>Reinstated the ability for users to save their credentials.  This functionality was no longer available after the Version 3.0 release and has now been reinstated.</li>
+        <li>Fixed a bug preventing users with more than 100 checked out items from viewing the checked-out items page.  We have updated the way the check out information is retrieved from Sierra to make this more reliable for patrons affected by this issue.</li>
+        <li>Fixed a bug preventing users from cancelling holds that are ready for pickup.</li>
+        <li>A bug allowing titles without cover images to display on the landing page in Safari has been fixed.</li>
       </ul>
     </div>
     <div>
@@ -28,6 +28,16 @@
         <a class="moreLink" onClick="ToggleAccordion('Changes',1)">Show Earlier Changes</a>
       </span>
       <span id="accordionMoreChanges" style="display:none">
+        <br><div class="privacyHeader">Library Catalog v3.3.0 (December 16, 2019)</div><br>
+        <div>
+          <ul>
+            <li>Fixed a bug causing excessive delays before displaying checkboxes in Book Cart and Lists in some instances.</li>
+            <li>On the mobile interface, the Cart/Lists dropdown was appearing at the very top of the screen.  This dropdown is now correctly appearing under the Cart/Lists button.</li>
+            <li>Patron reading history was not being updated unless the patron logged out of their account and back in.  The reading history will now be automatically updated every 30 minutes.</li>
+            <li>Some users were shown incorrect pages after clicking buttons or links.  This was happening when users were logged out after the current page was loaded and before the links were clicked.  Users should no longer experience this issue if they are logged out mid-session.</li>
+            <li>Some "Always Available" econtent items were displaying extremely high item counts (i.e. 999976 of 1000006 copies).  The availability of these items is now displayed as "Always Available."</li>
+          </ul>
+        </div>
         <br><div class="privacyHeader">Library Catalog v3.2.0 (December 2, 2019)</div><br>
         <div>
           <ul>
