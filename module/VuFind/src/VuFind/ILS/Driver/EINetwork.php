@@ -1106,7 +1106,7 @@ class EINetwork extends SierraRest implements
             $notifications[] = ["attnSubject" => "<span class=\"messageWarning\">Please choose a preferred or alternate library.</span> Click here to learn how.",
                                 "subject" => "Choose a preferred or alternate library",
                                 "message" => "You have not yet chosen a preferred or alternate library. Doing so will make placing requests on physical items much easier, since your preferred libraries are used as the default pickup " .
-                                             "location. You can assign a preferred or alternate library on the <a class=\"messageLink\" href=\"/MyResearch/Profile\">profile page</a>."];
+                                             "location. You can assign a preferred or alternate library on the <a class=\"messageLink\" href=\"/MyResearch/Profile\" data-lightbox-ignore>profile page</a>."];
         }
         if( date_diff(date_create_from_format("m-d-Y", $profile["expiration_date"]), date_create(date("Y-m-d")))->invert == 0 ) {
             $notifications[] = ["subject" => "<span class=\"messageWarning\">Card expired</span>",
