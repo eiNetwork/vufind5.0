@@ -156,6 +156,11 @@ class MyResearchController extends AbstractBase
                     // if they successfully logged in, make sure they have a book cart
                     if( $user = $this->getUser() ) {
                         $user->getBookCart();
+
+                        // store their info to use again later
+                        $expiration = $this->getILS()->getCurrentLocation() ? 0 : (time() + 1209600);
+                        setcookie("einStoredBarcode", $this->params()->fromPost('username'), $expiration, '/');
+                        setcookie("einStoredPIN", $this->params()->fromPost('password'), $expiration, '/');
                     }
                     if( $this->params()->fromPost('clearLightbox') ) {
                         $view = $this->createViewModel();
@@ -307,6 +312,15 @@ class MyResearchController extends AbstractBase
                 $this->getRequest()->getPost()->set('processLogin', true);
                 return $this->forwardTo('MyResearch', 'Home');
             }
+        }
+
+        // see if they have a stored cookie
+        if( isset($_COOKIE["einStoredBarcode"]) && isset($_COOKIE["einStoredPIN"]) && !$this->params()->fromPost('clearLightbox', false) ) {
+            $this->getRequest()->getPost()->set('username', $_COOKIE["einStoredBarcode"]);
+            $this->getRequest()->getPost()->set('password', $_COOKIE["einStoredPIN"]);
+            $this->getRequest()->getPost()->set('auth_method', "ILS");
+            $this->getRequest()->getPost()->set('clearLightbox', true);
+            return $this->forwardTo('MyResearch', 'Home');
         }
 
         // Make request available to view for form updating:
