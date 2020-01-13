@@ -1246,7 +1246,7 @@ class EINetwork extends SierraRest implements
             }
             $results[$hKey] = $thisHolding;
 
-            $addAllLinks |= $thisHolding["addLink"];
+            $addAllLinks |= $thisHolding["addLink"] ?? false;
         }
         // if one guy gets a item-level link, they all need one
         if( $addAllLinks ) {

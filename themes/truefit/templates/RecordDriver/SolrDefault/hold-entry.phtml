@@ -149,7 +149,7 @@
                 <? if( $holdType != "hold_all" ): ?>
                   <div class="EIN-col-m-12" style="height:10px"></div>
                 <? endif; ?>
-                Notify me at: <span class="bold"><?=$this->hold["emailAddress"]?></span>
+                Notify me at: <span class="bold"><?=$this->hold["emailAddress"]??"Email address not specified"?></span>
               </td>
             </tr>
           <? endif; ?>

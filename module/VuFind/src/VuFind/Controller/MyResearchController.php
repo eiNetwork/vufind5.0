@@ -1093,7 +1093,7 @@ class MyResearchController extends AbstractBase
             }
 
             $args = $this->getRequest()->getQuery()->toArray();
-            $listToShow = ($listFound && isset($_COOKIE["mostRecentList"])) ? $_COOKIE["mostRecentList"] : $lists[0]->id;
+            $listToShow = ($listFound && isset($_COOKIE["mostRecentList"])) ? $_COOKIE["mostRecentList"] : ($lists[0]->id ?? null);
             $sort = isset($args["sort"]) ? $args["sort"] : "title";
             return $this->createViewModel(
                 ['results' => $results, 'showList' => $listToShow, 'sort' => $sort]
@@ -1374,7 +1374,7 @@ class MyResearchController extends AbstractBase
                 foreach($rawIds as $id) {
                     $ids[] = explode("|", $id)[1];
                     if( !isset($checkHolds["defaultRequiredDate"]) ) {
-                        $checkHolds = $catalog->checkFunction('Holds', ['id' => $ids[-1],'patron' => $patron]);
+                        $checkHolds = $catalog->checkFunction('Holds', ['id' => $ids[-1] ?? "",'patron' => $patron]);
                     }
                 }
                 $view->ids = $ids;

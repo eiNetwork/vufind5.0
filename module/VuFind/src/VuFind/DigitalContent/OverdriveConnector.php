@@ -724,7 +724,7 @@ class OverdriveConnector implements LoggerAwareInterface,
                 $result->status = true;
                 $result->msg = '<i class="fa fa-info"></i>Your item was returned successfully.';
             } else {
-                $result->msg = '<i class="fa fa-exclamation-triangle"></i>There was an error returning this item. ' . $response->message;
+                $result->msg = '<i class="fa fa-exclamation-triangle"></i>There was an error returning this item.';
             }
         }
         return $result;

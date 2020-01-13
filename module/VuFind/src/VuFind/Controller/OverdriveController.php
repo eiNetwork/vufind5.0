@@ -277,9 +277,9 @@ class OverdriveController extends AbstractBase implements LoggerAwareInterface
             $this->getILS()->clearSessionVar("checkouts");
 
             // if this item was being held by this patron, we need to invalidate their holds
-            $holds = $this->getILS()->getSessionVar("holds");
+            $holds = $this->getILS()->getSessionVar("holds") ?? [];
             foreach( $holds as $thisHold ) {
-                if( (strtolower($thisHold["reserveId"]) ?? "unknown") == strtolower($od_id) ) {
+                if( (strtolower($thisHold["reserveId"] ?? "unknown")) == strtolower($od_id) ) {
                     $this->getILS()->setSessionVar("staleHoldsHash", md5(json_encode($holds)));
                 }
             }
