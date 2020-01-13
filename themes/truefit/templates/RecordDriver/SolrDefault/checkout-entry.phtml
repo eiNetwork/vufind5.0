@@ -124,20 +124,20 @@
           <tr>
             <td class="EIN-hide-m itemDetailCategory">Return Date:</td>
             <td style="padding-bottom:5px">
-              <? if( ($this->checkout["dateDiff"]->invert == 0) || ($this->checkout["dateDiff"]->days <= 7) ): ?>
-                <span class="<?=((($this->checkout["dateDiff"]->invert == 0) && ($this->checkout["dateDiff"]->days != 0)) ? "un" : "")?>availableTag">
-                  <? if( $this->checkout["dateDiff"]->days == 0 ): ?>
+              <? if( ($this->checkout["dateDiff"]["invert"] == 0) || ($this->checkout["dateDiff"]["days"] <= 7) ): ?>
+                <span class="<?=((($this->checkout["dateDiff"]["invert"] == 0) && ($this->checkout["dateDiff"]["days"] != 0)) ? "un" : "")?>availableTag">
+                  <? if( $this->checkout["dateDiff"]["days"] == 0 ): ?>
                     <?=isset($this->checkout["expires"])?"Auto-returned":"Due"?> today!
-                  <? elseif( $this->checkout["dateDiff"]->invert == 0 ): ?>
-                    Due <?=($this->checkout["dateDiff"]->days == 1) ? "yesterday!" : ($this->checkout["dateDiff"]->days . " days ago!")?>
-                  <? elseif( $this->checkout["dateDiff"]->days == 1 ): ?>
+                  <? elseif( $this->checkout["dateDiff"]["invert"] == 0 ): ?>
+                    Due <?=($this->checkout["dateDiff"]["days"] == 1) ? "yesterday!" : ($this->checkout["dateDiff"]["days"] . " days ago!")?>
+                  <? elseif( $this->checkout["dateDiff"]["days"] == 1 ): ?>
                     <?=isset($this->checkout["expires"])?"Auto-returned":"Due"?> tomorrow!
-                  <? elseif( $this->checkout["dateDiff"]->days <= 7 ): ?>
-                    <?=isset($this->checkout["expires"])?"Auto-returned":"Due"?> in <?=$this->checkout["dateDiff"]->days?> days!
+                  <? elseif( $this->checkout["dateDiff"]["days"] <= 7 ): ?>
+                    <?=isset($this->checkout["expires"])?"Auto-returned":"Due"?> in <?=$this->checkout["dateDiff"]["days"]?> days!
                   <? endif; ?>
                 </span><br><div style="height:5px"></div>
               <? endif; ?>
-              <span class="<?=((($this->checkout["dateDiff"]->invert == 0) && ($this->checkout["dateDiff"]->days != 0)) ? "un" : "")?>availableTag">
+              <span class="<?=((($this->checkout["dateDiff"]["invert"] == 0) && ($this->checkout["dateDiff"]["days"] != 0)) ? "un" : "")?>availableTag">
                 <?=isset($this->checkout["expires"])?"Auto-returned":"Due"?> <?= date_format(date_create_from_format("m-d-Y", $this->checkout["duedate"]), "m/d/Y")?>
               </span>
               <? if( isset($this->checkout["renew"]) && ($this->checkout["renew"] > 0) ): ?>
@@ -152,7 +152,7 @@
           if( isset($this->checkout["reserveId"]) ):
             $holdClick = " data-toggle=\"dropdown\" data-target=\"#holdButtonDropdown" . str_replace(".", "", $id) . (($this->checkoutType == "checkout_all") ? "All" : "") . "\"";
           else:
-            $thisType = (($this->checkout["dateDiff"]->invert == 0) && ($this->checkout["dateDiff"]->days != 0)) ? 'overdue' : (($this->checkout["dateDiff"]->days <= 7) ? 'due_this_week' : 'other');
+            $thisType = (($this->checkout["dateDiff"]["invert"] == 0) && ($this->checkout["dateDiff"]["days"] != 0)) ? 'overdue' : (($this->checkout["dateDiff"]["days"] <= 7) ? 'due_this_week' : 'other');
             $holdClick = "";
           endif;
         else:
@@ -167,22 +167,22 @@
               <ul role="navigation" class="dropdown-menu standardDropdown manageListDropdown">
                 <? if( $this->checkout["mediaDo"] ?? false ): ?>
                   <li>
-                    <a href="<?=$this->checkout["mediaDo"]->data->downloadLink?>" target="_blank"><button class="btn-dropdown btn-standardDropdown">Read Now</button></a>
+                    <a href="<?=$this->checkout["mediaDo"]["data"]["downloadLink"]?>" target="_blank"><button class="btn-dropdown btn-standardDropdown">Read Now</button></a>
                   </li>
                 <? endif; ?>
                 <? if( $this->checkout["overdriveRead"] ?? false ): ?>
                   <li>
-                    <a href="<?=$this->checkout["overdriveRead"]->data->downloadLink?>" target="_blank"><button class="btn-dropdown btn-standardDropdown">Read Now</button></a>
+                    <a href="<?=$this->checkout["overdriveRead"]["data"]["downloadLink"]?>" target="_blank"><button class="btn-dropdown btn-standardDropdown">Read Now</button></a>
                   </li>
                 <? endif; ?>
                 <? if( $this->checkout["overdriveListen"] ?? false ): ?>
                   <li>
-                    <a href="<?=$this->checkout["overdriveListen"]->data->downloadLink?>" target="_blank"><button class="btn-dropdown btn-standardDropdown">Listen Now</button></a>
+                    <a href="<?=$this->checkout["overdriveListen"]["data"]["downloadLink"]?>" target="_blank"><button class="btn-dropdown btn-standardDropdown">Listen Now</button></a>
                   </li>
                 <? endif; ?>
                 <? if( $this->checkout["streamingVideo"] ?? false ): ?>
                   <li>
-                    <a href="<?=$this->checkout["streamingVideo"]->data->downloadLink?>" target="_blank"><button class="btn-dropdown btn-standardDropdown">Watch Now</button></a>
+                    <a href="<?=$this->checkout["streamingVideo"]["data"]["downloadLink"]?>" target="_blank"><button class="btn-dropdown btn-standardDropdown">Watch Now</button></a>
                   </li>
                 <? endif; ?>
                 <? if( isset($this->checkout["availableFormats"]) && count($this->checkout["availableFormats"]) > 0 ): ?>

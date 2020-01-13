@@ -147,9 +147,9 @@
 <div class="checkbox EIN-col-m-12">
   <span class="EIN-col-m-12">
     <input type="checkbox" name="selectAll" class="checkbox-select-all" style="display:none"/>
-    <button class="btn-default btn-wide EIN-hide-m" onclick="ToggleAll($(this).siblings('.checkbox-select-all')); ScanBulkButton($(this).parents('form')); return false;"><?=$this->transEsc('select_page')?></button>
+    <button class="btn-default btn-wide EIN-hide-m selectAllBulk" onclick="ToggleAll($(this).siblings('.checkbox-select-all')); ScanBulkButton($(this).parents('form')); return false;"><?=$this->transEsc('select_page')?></button>
     <div class="EIN-col-m-6 EIN-hide-t EIN-hide">
-      <button class="btn-default leftButton" onclick="ToggleAll($(this).parent().siblings('.checkbox-select-all')); ScanBulkButton($(this).parents('form')); return false;"><?=$this->transEsc('select_page')?></button>
+      <button class="btn-default leftButton selectAllBulk" onclick="ToggleAll($(this).parent().siblings('.checkbox-select-all')); ScanBulkButton($(this).parents('form')); return false;"><?=$this->transEsc('select_page')?></button>
     </div>
     <div class="floatR bulkFloat">
       <? if (isset($hold) && (($hold == "ready") || ($hold == "transit"))): ?>
