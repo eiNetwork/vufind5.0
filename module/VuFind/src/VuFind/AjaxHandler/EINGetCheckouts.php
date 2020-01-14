@@ -108,7 +108,7 @@ class EINGetCheckouts extends AbstractBase
         try {
             foreach( $inputs as $thisInput ) {
                 $thisCheckout = json_decode($thisInput["checkout"], true);
-                $driver = $this->loader->load( $thisCheckout["fullID"] );
+                $driver = $this->loader->load( $thisCheckout["fullID"], DEFAULT_SEARCH_BACKEND, true );
 
                 $checkouts[$thisInput["key"]] = $this->renderer->record($driver)->getCheckoutEntry($thisCheckout, $this->user, "checkout_" . $thisInput["checkoutType"]);
             }
