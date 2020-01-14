@@ -119,6 +119,94 @@
     } );
   }
 
+  function ConfirmSelectedPaged(formOriginal, id, action) {
+    // load the lightbox to show them we're doing something
+    VuFind.lightbox.render(
+      "<h2 class=\"lightbox-header\"><?=$this->transEsc('Renew Titles')?></h2>" +
+      "<span><i class=\"fa fa-spinner\"></i></span><span>&nbsp;Loading...</span>" +
+      "<div class=\"modal-footer\">" +
+      "  <button class=\"btn-alternate btn-wide\" onclick=\"$('#modalClose').click()\" disabled>OK</button>" +
+      "</div>"
+    );
+    var pages = 0;
+    var allDone = false;
+    var masterResults = null;
+    var checkboxesToGo = 1;
+
+    // copy this form
+    var form = formOriginal.clone();
+    form.find('#bulkAction' + id).attr('name',action);
+    form.find('#bulkAction2' + id).attr('name',action + 'Selected');
+    form.find('');
+
+    // cycle through it until we've got all the responses
+    while( checkboxesToGo ) {
+      checkboxesToGo = 0;
+      form.find('.temporaryInput').remove();
+      form.find('.checkbox-select-item').each(function() {
+        if( $(this).prop('checked') && form.find('.temporaryInput').length < 10 ) {
+          $(this).prop('checked', false);
+          $(this).append('<input type="hidden" class="temporaryInput" name="' + action + 'SelectedIDS[]" value="' + $(this).attr('value') + '">');
+          var twin = form.siblings('.ajaxItem').find('.checkbox-select-item[value="' + $(this).attr("value") + '"]');
+          var title = twin.parents('tr').find('.itemTitle').children('a, .unlinkedTitle').html();
+          $(this).append('<input type="hidden" class="temporaryInput" name="holdTitles[]" value="' + encodeURI(title) + '">');
+        } else if( $(this).prop('checked') ) {
+          checkboxesToGo++;
+        }
+      } );
+      form.append('<input type="hidden" class="temporaryInput" name="pageNumber" value="' + pages + '">');
+
+      pages++;
+      $.ajax({type:"POST", url:form.attr("action"), data: form.serialize(), success: function(data) {
+        var results = $(data);
+
+        pages--;
+        if( masterResults == null ) {
+          masterResults = results;
+        } else {
+          results.find('.renewSuccess .renewResults').appendTo( masterResults.find('.renewSuccess') );
+          results.find('.renewFailure .renewResults').appendTo( masterResults.find('.renewFailure') );
+        }
+
+        if( allDone && (pages == 0) ) {
+          // get the original ordering
+          var ordering = {};
+          formOriginal.nextAll('.ajaxItem').each( function() {
+            ordering["title" + $(this).find('.hiddenId').attr('value')] = Object.keys(ordering).length + 1;
+          });
+
+          // hide the success results if it's empty
+          if( masterResults.find('.renewSuccess .renewResults').length == 0 ) {
+            masterResults.find('.renewSuccess').remove();
+          // otherwise sort it
+          } else {
+            var resultsArray = masterResults.find('.renewSuccess .renewResults').detach();
+            resultsArray.sort( function(a,b) {
+              return ordering[$(a).find('.loadTitle').attr('id')] - ordering[$(b).find('.loadTitle').attr('id')];
+            });
+            masterResults.find('.renewSuccess .renewHeading').after(resultsArray);
+          }
+
+          // hide the failure results if it's empty
+          if( masterResults.find('.renewFailure .renewResults').length == 0 ) {
+            masterResults.find('.renewDivider').remove();
+            masterResults.find('.renewFailure').remove();
+          // otherwise sort it
+          } else {
+            var resultsArray = masterResults.find('.renewFailure .renewResults').detach();
+            resultsArray.sort( function(a,b) {
+              return ordering[$(a).find('.loadTitle').attr('id')] - ordering[$(b).find('.loadTitle').attr('id')];
+            });
+            masterResults.find('.renewFailure .renewHeading').after(resultsArray);
+          }
+
+          VuFind.lightbox.render(masterResults.find('#content').html());
+        }
+      }});
+    }
+    allDone = true;
+  }
+
   function AddSelected(form, id, listID) {
     form.find('.temporaryInput').remove();
     if( listID == "NEW" ) {
@@ -156,8 +244,8 @@
         <button class="btn-default btn-wide bulkButton EIN-hide-m" onclick="ConfirmSelected($(this).parents('form'), '<?=$bulkID?>', 'cancel')">Cancel Selected</button>
         <button class="btn-default bulkButton rightButton EIN-hide-t EIN-hide" onclick="ConfirmSelected($(this).parents('form'), '<?=$bulkID?>', 'cancel')">Cancel Selected</button>
       <? elseif (isset($checkout)): ?>
-        <button class="btn-default btn-wide bulkButton EIN-hide-m" onclick="ConfirmSelected($(this).parents('form'), '<?=$bulkID?>','renew')">Renew Selected</button>
-        <button class="btn-default bulkButton rightButton EIN-hide-t EIN-hide" onclick="ConfirmSelected($(this).parents('form'), '<?=$bulkID?>','renew')">Renew Selected</button>
+        <button class="btn-default btn-wide bulkButton EIN-hide-m" onclick="ConfirmSelectedPaged($(this).parents('form'), '<?=$bulkID?>','renew'); return false;">Renew Selected</button>
+        <button class="btn-default bulkButton rightButton EIN-hide-t EIN-hide" onclick="ConfirmSelectedPaged($(this).parents('form'), '<?=$bulkID?>','renew'); return false;">Renew Selected</button>
       <? elseif (isset($history)): ?>
         <button class="btn-default btn-wide bulkButton EIN-hide-m" onclick="ConfirmSelected($(this).parents('form'), '<?=$bulkID?>','history')">Delete Selected</button>
         <button class="btn-default bulkButton rightButton EIN-hide-t EIN-hide" onclick="ConfirmSelected($(this).parents('form'), '<?=$bulkID?>','history')">Delete Selected</button>
