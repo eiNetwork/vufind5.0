@@ -22,7 +22,7 @@
           <tr>
             <td style="padding:5px"><span class="formatTag"><?=$format?></span></td>	
             <td class="lightboxText" style="padding:5px">
-              <?=($downloadId?("<a href=\"/Overdrive/Hold?action=getTitle&getTitleFormat=" . $downloadId . "&rec_id=" . $this->rec_id . "&od_id=" . $this->od_id . "&parentURL=" . urlencode($this->parentURL) . "\" class=\"odDownloadLink\" id=\"format-" . $downloadId ."\" data-lightbox-ignore target=\"" . (($downloadId=="periodicals-nook")?"_self":((($downloadId=="video-streaming") || ($downloadId=="ebook-kindle")) ? "_blank" : "loginFrame")) . "\">"):"")?>
+              <?=($downloadId?("<a href=\"/Overdrive/Hold?action=getTitle&getTitleFormat=" . $downloadId . "&rec_id=" . $this->rec_id . "&od_id=" . $this->od_id . "\" class=\"odDownloadLink\" id=\"format-" . $downloadId ."\" data-lightbox-ignore target=\"" . (($downloadId=="periodicals-nook")?"_self":((($downloadId=="video-streaming") || ($downloadId=="ebook-kindle")) ? "_blank" : "loginFrame")) . "\">"):"")?>
                 <button class="btn-default"<?=($downloadId?"":" disabled")?>>Download</button>
               <?=($downloadId?"</a>":"")?>
             </td>
