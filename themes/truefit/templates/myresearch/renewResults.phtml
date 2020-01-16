@@ -1,5 +1,13 @@
 <h2>Renew Titles</h2>
-<div class="renewSuccess">
+<? $showSuccess = false; $showFailure = false; ?>
+<? foreach($this->results as $thisResult): ?>
+  <? if( $thisResult === true ): ?>
+    <? $showSuccess = true; ?>
+  <? else: ?>
+    <? $showFailure = true; ?>
+  <? endif; ?>
+<? endforeach; ?>
+<div class="renewSuccess"<?=($showSuccess?"":" style=\"display:none !important\"")?>>
   <div class="renewHeading">Renewed</div>
   <? foreach($this->results as $id => $thisResult): ?>
     <? if( $thisResult === true ): ?>
@@ -18,13 +26,13 @@
       </div>
     <? endif; ?>
   <? endforeach; ?>
-  <div class="renewDivider">
+  <div class="renewDivider"<?=($showFailure?"":" style=\"display:none !important\"")?>>
     <div class="EIN-col-m-12">
       <hr style="margin:5px 0 15px;display:block">
     </div>
   </div>
 </div>
-<div class="renewFailure">
+<div class="renewFailure"<?=($showFailure?"":" style=\"display:none !important\"")?>>
   <div class="renewHeading">Not Renewed</div>
   <? foreach($this->results as $id => $thisResult): ?>
     <? if( $thisResult !== true ): ?>

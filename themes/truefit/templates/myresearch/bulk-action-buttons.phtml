@@ -180,6 +180,7 @@
             masterResults.find('.renewSuccess').remove();
           // otherwise sort it
           } else {
+            masterResults.find('.renewSuccess').css({"display":"block"});
             var resultsArray = masterResults.find('.renewSuccess .renewResults').detach();
             resultsArray.sort( function(a,b) {
               return ordering[$(a).find('.loadTitle').attr('id')] - ordering[$(b).find('.loadTitle').attr('id')];
@@ -193,6 +194,8 @@
             masterResults.find('.renewFailure').remove();
           // otherwise sort it
           } else {
+            masterResults.find('.renewDivider').css({"display":"block"});
+            masterResults.find('.renewFailure').css({"display":"block"});
             var resultsArray = masterResults.find('.renewFailure .renewResults').detach();
             resultsArray.sort( function(a,b) {
               return ordering[$(a).find('.loadTitle').attr('id')] - ordering[$(b).find('.loadTitle').attr('id')];
