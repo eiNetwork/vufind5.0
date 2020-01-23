@@ -119,6 +119,7 @@ class Results extends \VuFind\Search\Base\Results
         if( $fieldList = $this->getParams()->getOptions()->getFieldList() ) {
             $params->set('fl', $fieldList);
         }
+        $params->set('useGrouping', $this->getOptions()->getUseGrouping());
 
         try {
             $collection = $searchService

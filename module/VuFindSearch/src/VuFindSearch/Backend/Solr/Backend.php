@@ -109,9 +109,10 @@ class Backend extends AbstractBackend
         $params = $params ?: new ParamBag();
         $this->injectResponseWriter($params);
 
+        $useGrouping = ($limit > 0) && ($params->get("useGrouping")[0] ?? true);
         $params->set('rows', $limit);
         $params->set('start', $offset);
-        $params->mergeWith($this->getQueryBuilder()->build($query, ($limit > 0)));
+        $params->mergeWith($this->getQueryBuilder()->build($query, $useGrouping));
         $response   = $this->connector->search($params);
         $collection = $this->createRecordCollection($response);
         $this->injectSourceIdentifier($collection);

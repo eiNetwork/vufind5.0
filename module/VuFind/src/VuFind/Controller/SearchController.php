@@ -506,6 +506,11 @@ class SearchController extends AbstractSolrSearch
             $this->getILS()->setSessionVar("retainFilters", ($this->getRequest()->getQuery()->retainFilters == "true") ? true : false);
         }
 
+        // set the use grouping flag
+        if( ($user = $this->getUser()) && ($user->useGrouping == "N") ) {
+            $this->getRequest()->getQuery()->set('useGrouping', false);
+        }
+
         // suppress the search prompt
         if( $this->params()->fromQuery('lookfor') == "Search For..." ) {
             $this->getRequest()->getQuery()->set('lookfor', "");
