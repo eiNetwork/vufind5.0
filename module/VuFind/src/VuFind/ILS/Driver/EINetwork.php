@@ -463,6 +463,7 @@ class EINetwork extends SierraRest implements
         $patron['OD_video'] = $lendingOptions["Video"];
         $patron['OD_renewalInDays'] = $lendingOptions["renewalInDays"];
         $patron['splitEcontent'] = $user->splitEcontent;
+        $patron['useGrouping'] = $user->useGrouping;
 
         $this->sessionCache->patron = $patron;
 
@@ -510,6 +511,12 @@ class EINetwork extends SierraRest implements
         if( isset($updatedInfo['splitEcontent']) ) {
             $user = $this->getDbTable('user')->getByUsername($patron['username'], false);
             $user->changeSplitEcontent($updatedInfo['splitEcontent']);
+        }
+
+        // see whether they have given us a new useGrouping preference
+        if( isset($updatedInfo['useGrouping']) ) {
+            $user = $this->getDbTable('user')->getByUsername($patron['username'], false);
+            $user->changeUseGrouping($updatedInfo['useGrouping']);
         }
 
         // see whether they have updated their overdrive lending periods

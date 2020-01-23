@@ -118,6 +118,23 @@
             </div>
             <div class="EIN-hide-m EIN-col-t-4 EIN-col-4 fieldTitle">&nbsp;</div>
             <div class="EIN-col-m-12 EIN-col-t-8 EIN-col-8 fieldTitle" style="margin-top:5px">This option lets you choose between viewing physical and e-content items in two separate lists or together in one list (default) on your Checked Out and <?=$this->transEsc('Holds')?> pages.</div>
+            <div class="EIN-col-m-12"><hr style="margin:5px 0"></div>
+            <div class="EIN-col-m-12 EIN-col-t-4 EIN-col-4 fieldTitle">Group Search Results</div>
+            <div class="EIN-col-m-12 EIN-col-t-8 EIN-col-8 fieldValue">
+              <?
+                $selected = (isset($this->profile['useGrouping']) && $this->profile['useGrouping'] != "") ? $this->profile['useGrouping'] : 'Y';
+              ?>
+              <button class="btn-alternate EIN-col-m-12" id="useGroupingButton" data-toggle="dropdown" data-target="#useGroupingButtonDropdown"><span><?=($selected == 'N')?'Do not group results':'Group results'?></span><i class="fa fa-caret-down"></i></button>
+              <div class="EIN-col-m-12 dropdown" id="useGroupingButtonDropdown">
+                <ul role="navigation" class="dropdown-menu standardDropdown" style="width:100%">
+                  <li><button class="btn-dropdown btn-standardDropdown manageListDropdown" onclick="$('#useGrouping').attr('value','N');ChangeButtonToLoading('useGroupingButton');"><?=$this->transEsc('Do not group results')?></button></li>
+                  <li><button class="btn-dropdown btn-standardDropdown manageListDropdown" onclick="$('#useGrouping').attr('value','Y');ChangeButtonToLoading('useGroupingButton');"><?=$this->transEsc('Group results')?></button></li>
+                </ul>
+              </div>
+              <input id="useGrouping" name="useGrouping" value="<?=$selected?>" class="hidden">
+            </div>
+            <div class="EIN-hide-m EIN-col-t-4 EIN-col-4 fieldTitle">&nbsp;</div>
+            <div class="EIN-col-m-12 EIN-col-t-8 EIN-col-8 fieldTitle" style="margin-top:5px">Setting this option will group instances of the same story together in your search results, regardless of the particular format or edition.</div>
           </form>
         </div>
       </div>

@@ -510,6 +510,7 @@ class MyResearchController extends AbstractBase
             // Process update parameters (if present):
             $notification = $this->params()->fromPost('notification', false);
             $splitEcontent = $this->params()->fromPost('splitEcontent', false);
+            $useGrouping = $this->params()->fromPost('useGrouping', false);
             $preferredLibrary = $this->params()->fromPost('preferred_library', false);
             $alternateLibrary = $this->params()->fromPost('alternate_library', false);
             $phone = $this->params()->fromPost('phone', false);
@@ -528,6 +529,9 @@ class MyResearchController extends AbstractBase
                 }
                 if( !empty($splitEcontent) && $profile["splitEcontent"] != $splitEcontent ) {
                     $updatedInfo["splitEcontent"] = $splitEcontent;
+                }
+                if( !empty($useGrouping) && $profile["useGrouping"] != $useGrouping ) {
+                    $updatedInfo["useGrouping"] = $useGrouping;
                 }
                 if( !empty($preferredLibrary) && $profile["preferredlibrarycode"] != $preferredLibrary) {
                     $updatedInfo["preferred_library"] = $preferredLibrary;
