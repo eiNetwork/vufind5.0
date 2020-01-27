@@ -1662,7 +1662,8 @@ class MyResearchController extends AbstractBase
             setcookie("checkoutTab", $checkoutType, time() + 3600, '/');
 
             // Process the renews:
-            $view = $this->createViewModel(['results' => $renewResult]);
+            $view = $this->createViewModel(['results' => $renewResult,
+                                            'pageNumber' => count($this->getRequest()->getPost()) ? $this->getRequest()->getPost()->get('pageNumber') : $this->getRequest()->getQuery()->get('pageNumber')]);
             $view->setTemplate('myresearch/renewResults');
             return $view;
         }
