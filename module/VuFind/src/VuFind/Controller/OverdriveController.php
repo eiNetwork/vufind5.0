@@ -362,7 +362,6 @@ class OverdriveController extends AbstractBase implements LoggerAwareInterface
         $view = $this->createViewModel();
         $view->rec_id = $rec_id;
         $view->od_id = $od_id;
-        $view->parentURL = $this->params()->fromQuery('parentURL');
         $view->driver = $driver;
         $view->setTemplate('record/overdriveDownload');
         return $view;
