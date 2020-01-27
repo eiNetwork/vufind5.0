@@ -147,6 +147,8 @@ class SierraRest extends AbstractBase implements TranslatorAwareInterface,
      * @var int
      */
     protected $apiVersion = 5;
+    protected $checkoutParams = ['limit' => 10000, 'offset' => 0, 'fields' => 'item,dueDate,numberOfRenewals,outDate,recallDate,callNumber,barcode'];
+    protected $holdParams = ['limit' => 10000, 'offset' => 0, 'fields' => 'id,record,frozen,placed,location,pickupLocation,status,recordType,priority,priorityQueueLength,pickupByDate'];
 
     /**
      * Constructor
@@ -552,12 +554,7 @@ class SierraRest extends AbstractBase implements TranslatorAwareInterface,
     {
         $result = $this->makeRequest(
             ['v' . $this->apiVersion, 'patrons', $patron['id'], 'checkouts'],
-            [
-                'limit' => 10000,
-                'offset' => 0,
-                'fields' => 'item,dueDate,numberOfRenewals,outDate,recallDate'
-                    . ',callNumber,barcode'
-            ],
+            $this->checkoutParams,
             'GET',
             $patron
         );
@@ -761,17 +758,9 @@ class SierraRest extends AbstractBase implements TranslatorAwareInterface,
      */
     public function getMyHolds($patron)
     {
-        $fields = 'id,record,frozen,placed,location,pickupLocation,status'
-            . ',recordType,priority,priorityQueueLength';
-        if ($this->apiVersion >= 5) {
-            $fields .= ',pickupByDate';
-        }
         $result = $this->makeRequest(
             ['v' . $this->apiVersion, 'patrons', $patron['id'], 'holds'],
-            [
-                'limit' => 10000,
-                'fields' => $fields
-            ],
+            $this->holdParams,
             'GET',
             $patron
         );

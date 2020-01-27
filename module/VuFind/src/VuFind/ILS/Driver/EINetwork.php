@@ -576,10 +576,9 @@ class EINetwork extends SierraRest implements
         if( isset($this->sessionCache->checkouts) && !isset($this->sessionCache->staleCheckoutsHash) && !$skipCache ) {
             return $this->sessionCache->checkouts;
         // clear out these intermediate cached API results
-        } else if( $skipCache ) {
+        } else {
             $hierarchy = ['v' . $this->apiVersion, 'patrons', $patron['id'], 'checkouts'];
-            $params = ['limit' => 10000, 'offset' => 0, 'fields' => 'item,dueDate,numberOfRenewals,outDate,recallDate,callNumber,barcode'];
-            $hash = md5(json_encode($hierarchy) . ($params ? ("###" . json_encode($params)) : ""));
+            $hash = md5(json_encode($hierarchy) . "###" . json_encode($this->checkoutParams));
             $this->memcached->set($hash, null);
         }
 
@@ -641,6 +640,25 @@ class EINetwork extends SierraRest implements
     }
 
     /**
+     * Renew My Items
+     *
+     * Function for attempting to renew a patron's items.  The data in
+     * $renewDetails['details'] is determined by getRenewDetails().
+     *
+     * @param array $renewDetails An array of data required for renewing items
+     * including the Patron ID and an array of renewal IDS
+     *
+     * @return array              An array of renewal information keyed by item ID
+     */
+    public function renewMyItems($renewDetails)
+    {
+        // this should change their checkouts, so throw out the cached info
+        unset($this->sessionCache->checkouts);
+
+        return parent::renewMyItems($renewDetails);
+    }
+
+    /**
      * Get Number of My Holds
      *
      * This is responsible for returning the raw count of a patron's holds.
@@ -690,15 +708,9 @@ class EINetwork extends SierraRest implements
         if( isset($this->sessionCache->holds) && !isset($this->sessionCache->staleHoldsHash) && !$skipCache ) {
             return $this->sessionCache->holds;
         // clear out these intermediate cached API results
-        } else if( $skipCache ) {
-            $fields = 'id,record,frozen,placed,location,pickupLocation,status'
-                . ',recordType,priority,priorityQueueLength';
-            if ($this->apiVersion >= 5) {
-                $fields .= ',pickupByDate';
-            }
+        } else {
             $hierarchy = ['v' . $this->apiVersion, 'patrons', $patron['id'], 'holds'];
-            $params = ['limit' => 10000, 'offset' => 0, 'fields' => $fields];
-            $hash = md5(json_encode($hierarchy) . ($params ? ("###" . json_encode($params)) : ""));
+            $hash = md5(json_encode($hierarchy) . "###" . json_encode($this->holdParams));
             $this->memcached->set($hash, null);
         }
 
