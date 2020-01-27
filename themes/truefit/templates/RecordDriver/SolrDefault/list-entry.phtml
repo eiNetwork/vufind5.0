@@ -180,10 +180,6 @@
           <a<?=$user?"":$holdClick?> data-lightbox>
             <button class="btn-default leftButton"<?=$user?$holdClick:""?> disabled><i class="fa fa-spinner"></i>&nbsp;Loading...</button>
           </a>
-          <div class="dropdown EIN-hide-m" id="holdButtonDropdownMobile<?=str_replace(".", "", $this->driver->getUniqueID())?>">
-            <ul role="navigation" class="dropdown-menu standardDropdown manageListDropdown">
-            </ul>
-          </div>
         </div>
         <div class="EIN-col-m-6">
           <a<?=$user?"":$mobileSaveClick?> data-lightbox>
@@ -192,6 +188,12 @@
         </div>
         <div class="EIN-col-m-12">
           <span></span>
+        </div>
+        <div class="EIN-col-m-12">
+          <div class="dropdown" id="holdButtonDropdownMobile<?=str_replace(".", "", $this->driver->getUniqueID())?>">
+            <ul role="navigation" class="dropdown-menu standardDropdown manageListDropdown">
+            </ul>
+          </div>
         </div>
       </div>
     </td>
