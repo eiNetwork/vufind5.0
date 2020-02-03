@@ -57,7 +57,7 @@
           <div class="helpLinkSubsection"><a href="#section4-1" class="helpLink">Accessing Your Library Account</a></div>
           <div class="helpLinkSubsection"><a href="#section4-2" class="helpLink">Preferred Libraries</a></div>
           <div class="helpLinkSubsection"><a href="#section4-3" class="helpLink">Checked Out</a></div>
-          <div class="helpLinkSubsection"><a href="#section4-4" class="helpLink">How to Renew Items</a></div>
+          <div class="helpLinkSubsection"><a href="#section4-4" class="helpLink">Renewing Items</a></div>
           <div class="helpLinkSubsection"><a href="#section4-5" class="helpLink"><?=$this->transEsc('holds_uppercase')?></a></div>
           <div class="helpLinkSubsection"><a href="#section4-6" class="helpLink">How to Freeze <?=$this->transEsc('holds_uppercase')?></a></div>
           <div class="helpLinkSubsection"><a href="#section4-7" class="helpLink">Lists and Book Cart</a></div>
@@ -332,14 +332,16 @@
       </div>
     </div>
     <div class="helpSubsection" id="section4-4">
-      <div class="helpSubsectionHeader">How to Renew Items</div>
-      <div class="helpContent">You can renew items that you have checked out on the <span class="helpEmphasis">Checked Out</span> page. To go to the <span class="helpEmphasis">Checked Out</span> page, log in at
-        the top right corner of the page. Once you are logged in, click the Account drop down menu at the top right and select <span class="helpEmphasis">Checked Out</span>. You can renew an individual item by
-        clicking the <span class="helpEmphasis">Renew</span> button. To renew multiple items at the same time, click the check box to the left of the items you want to renew, and then click
-        <span class="helpEmphasis">Renew Selected</span> at the top of the page. A popup box will indicate which items have been successfully renewed. An item will not be renewed if another user has requested
-        it, or if there is the maximum number of renewals has been reached. The number of renewals permitted for an item varies by library. You cannot renew items if your library account has a problem, such as
-        an expired card or unpaid fines above a certain amount. The <span class="helpEmphasis">Message Center</span> on your account menu will usually indicate problems with your library account. Please call
-        your local library to find out how to resolve your problem.
+      <div class="helpSubsectionHeader">Renewing Items</div>
+      <div class="helpContent">You can see the due dates for items you have checked out and the number of times the item has been renewed on the <span class="helpEmphasis">Checked Out</span> page. To go to the
+        <span class="helpEmphasis">Checked Out</span> page, log in at the top right corner of the page. Once you are logged in, click the Account drop down menu at the top right and select
+        <span class="helpEmphasis">Checked Out</span>.<br><br>Items that are eligible for renewal will be automatically renewed for you.  If eligible, items borrowed for 3 weeks will be renewed 3 days before the
+        due date. Items borrowed for one week will be renewed 1 day before the due date.  A library reminder notice will be sent to the email address in your patron record when the system attempts to renew your
+        items. You can confirm and update your email address in your <span class="helpEmphasis">Account</span>.<br><br>The following are some reasons an item may not be eligible for renewal:<br>
+        <ul><li>Another user has requested it</li>
+        <li>The maximum number of renewals has been reached. The number of renewals permitted for an item varies by library.</li>
+        <li>Your library account has a problem, such as an expired card or unpaid fines above a certain amount. The <span class="helpEmphasis">Message Center</span> on your account menu will usually indicate
+        problems with your library account. Please call your local library to find out how to resolve your problem.</li></ul>
       </div>
     </div>
     <div class="helpSubsection" id="section4-5">
