@@ -1704,8 +1704,8 @@ class MyResearchController extends AbstractBase
                     } else if($co1["dateStr"] < $co2["dateStr"]) {
                         return -1;
                     }
-                    $t1 = isset($co1["title"]) ? $co1["title"] : $co1["driver"]->getTitle();
-                    $t2 = isset($co2["title"]) ? $co2["title"] : $co2["driver"]->getTitle();
+                    $t1 = isset($co1["title"]) ? $co1["title"] : "";
+                    $t2 = isset($co2["title"]) ? $co2["title"] : "";
                     if($t1 > $t2) {
                         return 1;
                     } else if($t1 < $t2) {
@@ -1722,8 +1722,8 @@ class MyResearchController extends AbstractBase
                     } else if($co1["dateStr"] < $co2["dateStr"]) {
                         return -1;
                     }
-                    $t1 = isset($co1["title"]) ? $co1["title"] : $co1["driver"]->getTitle();
-                    $t2 = isset($co2["title"]) ? $co2["title"] : $co2["driver"]->getTitle();
+                    $t1 = isset($co1["title"]) ? $co1["title"] : "";
+                    $t2 = isset($co2["title"]) ? $co2["title"] : "";
                     if($t1 > $t2) {
                         return 1;
                     } else if($t1 < $t2) {
@@ -1748,8 +1748,8 @@ class MyResearchController extends AbstractBase
                 } else if($co1["dateStr"] < $co2["dateStr"]) {
                     return -1;
                 }
-                $t1 = isset($co1["title"]) ? $co1["title"] : $co1["driver"]->getTitle();
-                $t2 = isset($co2["title"]) ? $co2["title"] : $co2["driver"]->getTitle();
+                $t1 = isset($co1["title"]) ? $co1["title"] : "";
+                $t2 = isset($co2["title"]) ? $co2["title"] : "";
                 if($t1 > $t2) {
                     return 1;
                 } else if($t1 < $t2) {
