@@ -1698,7 +1698,13 @@ class EINetwork extends SierraRest implements
         }
 
         // invalidate the cache
-        $hierarchy = ['v' . $this->apiVersion, 'patrons', $patron['id'], 'checkouts', 'history'];
+        $this->clearReadingHistoryCache($patron["id"]);
+
+        // return info
+        return $success;
+
+    public function clearReadingHistoryCache($patronID) {
+        $hierarchy = ['v' . $this->apiVersion, 'patrons', $patronID, 'checkouts', 'history'];
         $offset = 0;
         $params = ['limit' => 50, 'offset' => $offset];
         $hash = md5(json_encode($hierarchy) . ($params ? ("###" . json_encode($params)) : ""));
@@ -1707,10 +1713,8 @@ class EINetwork extends SierraRest implements
           $params['offset'] += 50;
           $hash = md5(json_encode($hierarchy) . ($params ? ("###" . json_encode($params)) : ""));
         }
-        $this->memcached->delete("readingHistory" . $patron["id"]);
-
-        // return info
-        return $success;
+        $this->memcached->delete("readingHistory" . $patronID);
+        unset($this->sessionCache->readingHistory);
     }
 
 
@@ -1978,12 +1982,18 @@ class EINetwork extends SierraRest implements
             curl_setopt($curl_connection, CURLOPT_URL, $curl_url);
             curl_setopt($curl_connection, CURLOPT_HTTPGET, true);
             $sresult = curl_exec($curl_connection);
+
+            // invalidate the cache
+            $this->clearReadingHistoryCache($patron["id"]);
         }elseif ($action == 'optIn'){
             //load patron page readinghistory/OptIn
             $curl_url = $this->config['Catalog']['classic_url'] . "/patroninfo~S1}/" . $patron['id'] ."/readinghistory/OptIn";
             curl_setopt($curl_connection, CURLOPT_URL, $curl_url);
             curl_setopt($curl_connection, CURLOPT_HTTPGET, true);
             $sresult = curl_exec($curl_connection);
+
+            // invalidate the cache
+            $this->clearReadingHistoryCache($patron["id"]);
         }
         curl_close($curl_connection);
 
