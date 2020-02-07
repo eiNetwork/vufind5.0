@@ -2360,12 +2360,17 @@ class MyResearchController extends AbstractBase
             }
         }
 
-        $readingHistory = $catalog->getReadingHistory($patron, ($this->params()->fromQuery("pageNum") ? $this->params()->fromQuery("pageNum") : 1), 50, ($this->params()->fromQuery("sort") ? $this->params()->fromQuery("sort") : "outDate"));
+        $readingHistory = $catalog->getReadingHistory($patron, ($this->params()->fromQuery("sort") ? $this->params()->fromQuery("sort") : "outDate"));
         // add in the drivers where needed
         foreach( $readingHistory["titles"] as $key => $item ) {
             if( !isset($item["skipLoad"]) ) {
                 try{
-                    $item["driver"] = $this->serviceLocator->get('VuFind\Record\Loader')->load($item['bibID'], DEFAULT_SEARCH_BACKEND);
+                    $driver = $this->serviceLocator->get('VuFind\Record\Loader')->load($item['bibID'], DEFAULT_SEARCH_BACKEND);
+                    $item["source"] = $driver->getResourceSource();
+                    $item["title"] = trim(($driver->getShortTitle() == "") ? $driver->getTitle() : $driver->getShortTitle(),"\0\t\n\x0B\r /") . ' ' .
+                                     trim($driver->getSubtitle(),"\0\t\n\x0B\r /") . ' ' . trim($driver->getTitleSection(),"\0\t\n\x0B\r /");
+                    $item["authors"] = $driver->getDeduplicatedAuthors();
+                    $item["format"] = $driver->getFormats();
                 } catch(RecordMissingException $e) {
                 }
             }
@@ -2375,7 +2380,6 @@ class MyResearchController extends AbstractBase
         $view = $this->createViewModel();
         $view->sort = $this->params()->fromQuery("sort");
         $view->readingHistory = $readingHistory;
-        $view->indexOffset = ($this->params()->fromQuery("pageNum") ? (($this->params()->fromQuery("pageNum") - 1) * 50) : 0) + 1;
         return $view;
     }
 
@@ -2396,12 +2400,12 @@ class MyResearchController extends AbstractBase
             } else if ( $this->params()->fromQuery('content') == "checkouts" ) {
                 // Connect to the ILS:
                 $catalog = $this->getILS();
-                $holds = $catalog->getMyTransactions($patron);
+                $checkouts = $catalog->getMyTransactions($patron);
             // they want us to load history
             } else if ( $this->params()->fromQuery('content') == "readingHistory" ) {
                 // Connect to the ILS:
                 $catalog = $this->getILS();
-                $holds = $catalog->getReadingHistory($patron);
+                $readingHistory = $catalog->getReadingHistory($patron);
             }
         }
         $view = $this->createViewModel();
