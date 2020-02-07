@@ -1703,18 +1703,27 @@ class EINetwork extends SierraRest implements
         return $success;
     }
 
-    public function clearReadingHistoryCache($patronID) {
-        $hierarchy = ['v' . $this->apiVersion, 'patrons', $patronID, 'checkouts', 'history'];
-        $offset = 0;
-        $params = ['limit' => 50, 'offset' => $offset];
-        $hash = md5(json_encode($hierarchy) . ($params ? ("###" . json_encode($params)) : ""));
-        while( $this->memcached->get($hash) ) {
-          $this->memcached->set($hash, null);
-          $params['offset'] += 50;
-          $hash = md5(json_encode($hierarchy) . ($params ? ("###" . json_encode($params)) : ""));
+    public function clearReadingHistoryCache($patronID=null) {
+        // if they didn't give us a patronID, let's see if we have one cached
+        $patronID = $patronID ?? ($this->sessionCache->patron["id"] ?? ($this->sessionCache->patronLogin["id"] ?? null));
+
+        // if we've got a patronID, clear the associated history records
+        if( $patronID != null ) {
+            $hierarchy = ['v' . $this->apiVersion, 'patrons', $patronID, 'checkouts', 'history'];
+            $offset = 0;
+            $params = ['limit' => 50, 'offset' => $offset];
+            $hash = md5(json_encode($hierarchy) . ($params ? ("###" . json_encode($params)) : ""));
+            while( $this->memcached->get($hash) ) {
+              $this->memcached->set($hash, null);
+              $params['offset'] += 50;
+              $hash = md5(json_encode($hierarchy) . ($params ? ("###" . json_encode($params)) : ""));
+            }
+            $this->memcached->delete("readingHistory" . $patronID);
         }
-        $this->memcached->delete("readingHistory" . $patronID);
+
+        // clear anything in the cache
         unset($this->sessionCache->readingHistory);
+        unset($this->sessionCache->readingHistoryPartial);
     }
 
 

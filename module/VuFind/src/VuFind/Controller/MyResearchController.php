@@ -402,12 +402,11 @@ class MyResearchController extends AbstractBase
         }
 
         // clear out the patron info
+        $this->getILS()->clearReadingHistoryCache();
         $this->getILS()->clearSessionVar("patronLogin");
         $this->getILS()->clearSessionVar("patron");
         $this->getILS()->clearSessionVar("checkouts");
         $this->getILS()->clearSessionVar("holds");
-        $this->getILS()->clearSessionVar("readingHistory");
-        $this->getILS()->clearSessionVar("readingHistoryPartial");
         $this->getILS()->clearSessionVar("dismissedAnnouncements");
         $this->getILS()->clearSessionVar("memCacheRefreshTimer");
         $this->getILS()->clearSessionVar("sessionExpiration");
