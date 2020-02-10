@@ -1590,7 +1590,7 @@ class EINetwork extends SierraRest implements
                     }
                 }
 
-                $isILL = (substr($pieces[$fieldMap["title"]], 0 , 17) == "InterLibrary Loan") && (intval(substr($pieces[$fieldMap["title"]], 17)) > 0);
+                $isILL = (strtolower(substr($pieces[$fieldMap["title"]], 0 , 17)) == "interlibrary loan") && (intval(substr($pieces[$fieldMap["title"]], 17)) > 0);
                 $newInfo = ["author" => $pieces[$fieldMap["author"]], "title" => $pieces[$fieldMap["title"]], "format" => $pieces[$fieldMap["format"]], "ILL" => $isILL];
                 $this->memcached->set("readingHistoryInfo" . $pieces[$fieldMap["id"]], $newInfo);
                 $returnMap[$pieces[$fieldMap["id"]]] = $newInfo;
