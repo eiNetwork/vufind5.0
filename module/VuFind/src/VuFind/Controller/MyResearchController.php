@@ -1680,11 +1680,9 @@ class MyResearchController extends AbstractBase
 
             // Build record driver:
             $current["driver"] = null;
-            unset($current["fullrecord"]);
-            unset($current["description"]);
-            unset($current["spelling"]);
-            unset($current["url"]);
-            unset($current["cachedJson"]);
+            foreach( ["fullrecord","description","spelling","url","cachedJson","contents","contents_unstemmed","spellingShingle"] as $thisProperty ) {
+                unset($current[$thisProperty]);
+            }
             $checkoutList[(($current["dateDiff"]->invert == 0) && ($current["dateDiff"]->days != 0)) ? 'overdue' : (($current["dateDiff"]->days <= 7) ? 'due_this_week' : 'other')][] = $current;
         }
 

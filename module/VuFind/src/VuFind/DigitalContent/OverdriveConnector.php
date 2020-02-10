@@ -752,6 +752,9 @@ class OverdriveConnector implements LoggerAwareInterface,
             return $result;
         }
         $checkout = $this->getCheckout($overDriveId, false);
+        if( !$checkout ) {
+            return $result;
+        }
 
         //either they are requesting a format that is always avail
         //or it is locked in and they are requesting the format that
