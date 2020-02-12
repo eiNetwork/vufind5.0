@@ -1,6 +1,38 @@
 <?
   $user = $this->auth()->isLoggedIn();
-  foreach($this->results as $thisResult) {
-    echo $this->record($thisResult)->getListEntry($this->list, $user);
+  foreach($this->results as $i => $thisResult) {
+    // show a blank
+    if( is_array($thisResult) ) {
+      if (isset($this->list) && is_object($this->list)) {
+        $list_id = $this->list->id;
+        $user_id = $this->list->user_id;
+      } else {
+        $list_id = null;
+        $user_id = $this->user ? $this->user->id : null;
+      }
+?>
+      <div class="row result ajaxItem EIN-col-m-12">
+        <div class="EIN-col-m-12"><hr style="margin:5px 0"></div>
+        <table class="EIN-col-m-12"><tr>
+          <td class="EIN-col-m-1" style="margin:auto"></td>
+          <td class="EIN-col-m-3" style="vertical-align:top">
+            <div class="text-center" style="padding:10px">
+              <img src="<?=$this->url('cover-unavailable')?>" class="recordcover" alt="<?=$this->transEsc('No Cover Image')?>"/>
+            </div>
+          </td>
+          <td class="EIN-col-m-8">
+            <div class="highlightContainer EIN-col-m-12 EIN-col-t-8 EIN-col-8">
+              <h1 property="name" class="itemTitle">This record is no longer available</h1>
+            </div>
+            <div class="EIN-hide-m EIN-col-t-4 EIN-col-4" style="padding:5px 0px 10px">
+            </div>
+          </td>
+        </tr></table>
+      </div>
+<?
+    // show the actual entry
+    } else {
+      echo $this->record($thisResult)->getListEntry($this->list, $user);
+    }
   }
 ?>
