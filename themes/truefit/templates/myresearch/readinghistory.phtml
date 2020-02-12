@@ -128,7 +128,7 @@
       $('.historyItem').addClass("checkToggleOff");
 
       $('.historyItem').each( function() {
-        var searchStr = $(this).find('.unlinkedTitle').html() + " " + $(this).find('.authorLink').html();
+        var searchStr = ($(this).find('.unlinkedTitle').length ? $(this).find('.unlinkedTitle').html() : "") + " " + ($(this).find('.authorLink').length ? $(this).find('.authorLink').html() : "");
         if( searchStr.toLowerCase().indexOf(searchBox.value.toLowerCase()) != -1 ) {
           $(this).removeClass("checkToggleOff");
         }
