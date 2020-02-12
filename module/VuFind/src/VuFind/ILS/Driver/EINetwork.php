@@ -1108,11 +1108,11 @@ class EINetwork extends SierraRest implements
             }
         }
         if( isset($profile["showTemporaryClosureMessage"]) && $profile["showTemporaryClosureMessage"] ) {
-            $notifications[] = ["attnSubject" => "<span class=\"messageWarning\">Temporary library closure.</span> Click here to learn more.",
-                                "subject" => "Temporary library closure",
-                                "message" => "Your home library or one of your preferred libraries is temporarily closed. It will not show up as an option for picking up your requests until it has reopened, and it will not be an option " .
-                                             "on the Preferred Libraries section of the <a class=\"messageLink\" href=\"/MyResearch/Profile\" data-lightbox-ignore>profile page</a>. In the meantime, you can choose a different library location as a preferred " .
-                                             "library there. If you would rather not change it, you can simply wait until that location reopens and it will once again appear in your preferred libraries."];
+            $notifications[] = ["attnSubject" => "<span class=\"messageWarning\">Library closure.</span> Click here to learn more.",
+                                "subject" => "Library closure",
+                                "message" => "Your home library or one of your preferred libraries is permanently closing. It will not show up as an option for picking up your requests, and it will no longer be an option " .
+                                             "on the Preferred Libraries section of the <a class=\"messageLink\" href=\"/MyResearch/Profile\" data-lightbox-ignore>profile page</a>. You should choose a different library " . 
+                                             "location as a preferred library there."];
         }
         if( ($profile["preferredlibrarycode"] == null || $profile["preferredlibrarycode"] == "none") && ($profile["alternatelibrarycode"] == null || $profile["alternatelibrarycode"] == "none") ) {
             $notifications[] = ["attnSubject" => "<span class=\"messageWarning\">Please choose a preferred or alternate library.</span> Click here to learn how.",
