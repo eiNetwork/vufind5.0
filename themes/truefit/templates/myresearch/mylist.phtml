@@ -239,10 +239,13 @@
     } );
 
     // fix the count
-    if( items.has('.checkToggleOff').size() ) {
+    if( items.filter('.checkToggleOff').size() ) {
       $(searchBox).parents(".panel-body").find(".listCount").removeClass("checkToggleOff").html(items.not('.checkToggleOff').size() + " of ");
     } else {
       $(searchBox).parents(".panel-body").find(".listCount").addClass("checkToggleOff");
     }
+
+    // en/disable the select all button
+    $(searchBox).parents(".panel-body").find('.selectAllBulk').prop('disabled', items.filter('.checkToggleOff').size() ? true : false);
   }
 </script>
