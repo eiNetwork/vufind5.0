@@ -136,6 +136,9 @@
 
       // fix the count
       $('#historyCount').html($('.historyItem').not('.checkToggleOff').size() + " of " + $('.historyItem').size());
+
+      // en/disable the select all button
+      $('.selectAllBulk').prop('disabled', $('.historyItem.checkToggleOff').size() ? true : false);
     }
 
     function SaveReadingHistory() {
