@@ -261,7 +261,7 @@ class EINetwork extends SierraRest implements
                             }
                             if( isset($thisChange["duedate"]) ) {
                                 $thisHolding["duedate"] = ($thisChange["duedate"] != "NULL") ? strftime("%m-%d-%y", strtotime($thisChange["duedate"])) : null;
-                                $thisHolding["availability"] = ((($thisChange["statusCode"] ?? "") == "-") && !$thisHolding["duedate"]);
+                                $thisHolding["availability"] = (in_array($thisChange["statusCode"] ?? "", ["-","o","p","v","y"]) && !($thisHolding["duedate"] ?? ""));
                             }
                             $results[$hKey] = $thisHolding;
                         }
