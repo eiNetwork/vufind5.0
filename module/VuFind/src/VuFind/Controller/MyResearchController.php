@@ -2362,16 +2362,13 @@ class MyResearchController extends AbstractBase
         $readingHistory = $catalog->getReadingHistory($patron, ($this->params()->fromQuery("sort") ? $this->params()->fromQuery("sort") : "outDate"));
         // add in the drivers where needed
         foreach( $readingHistory["titles"] as $key => $item ) {
-            if( !isset($item["skipLoad"]) ) {
-                try{
-                    $driver = $this->serviceLocator->get('VuFind\Record\Loader')->load($item['bibID'], DEFAULT_SEARCH_BACKEND);
-                    $item["source"] = $driver->getResourceSource();
-                    $item["title"] = trim(($driver->getShortTitle() == "") ? $driver->getTitle() : $driver->getShortTitle(),"\0\t\n\x0B\r /") . ' ' .
-                                     trim($driver->getSubtitle(),"\0\t\n\x0B\r /") . ' ' . trim($driver->getTitleSection(),"\0\t\n\x0B\r /");
-                    $item["authors"] = $driver->getDeduplicatedAuthors();
-                    $item["format"] = $driver->getFormats();
-                } catch(RecordMissingException $e) {
-                }
+            $driver = isset($item["skipLoad"]) ? null : $this->serviceLocator->get('VuFind\Record\Loader')->load($item['bibID'], DEFAULT_SEARCH_BACKEND, true);
+            if( $driver && get_class($driver) != "VuFind\RecordDriver\Missing" ) {
+                $item["source"] = $driver->getResourceSource();
+                $item["title"] = trim(($driver->getShortTitle() == "") ? $driver->getTitle() : $driver->getShortTitle(),"\0\t\n\x0B\r /") . ' ' .
+                                 trim($driver->getSubtitle(),"\0\t\n\x0B\r /") . ' ' . trim($driver->getTitleSection(),"\0\t\n\x0B\r /");
+                $item["authors"] = $driver->getDeduplicatedAuthors();
+                $item["format"] = $driver->getFormats();
             }
             $readingHistory["titles"][$key] = $item;
         }
