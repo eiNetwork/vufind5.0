@@ -54,7 +54,6 @@ use VuFind\Cache\KeyGeneratorTrait;
  *       allow override for cover display using other covers
  *       provide option for not requiring email for holds
  *       provide option for giving users option for every hold
- *       provide option for asking about autocheckout for every hold
  *       provide config options for how to handle patrons with no access to OD
  */
 class OverdriveConnector implements LoggerAwareInterface,
@@ -546,13 +545,11 @@ class OverdriveConnector implements LoggerAwareInterface,
 
         if ($config = $this->getConfig()) {
             //TODO: Make this a configuration option
-            $autoCheckout = true;
             $ignoreHoldEmail = false;
             $url = $config->circURL . '/v1/patrons/me/holds';
             $params = array(
                 'reserveId' => $overDriveId,
                 'emailAddress' => $email ?? $user["email"],
-                'autoCheckout' => $autoCheckout,
                 'ignoreHoldEmail' => $ignoreHoldEmail,
             );
 
@@ -1181,7 +1178,7 @@ class OverdriveConnector implements LoggerAwareInterface,
                     $result->data = $response->holds ?? [];
                     //Check for holds ready for chechout
                     foreach ($response->holds ?? [] as $key => $hold) {
-                        if (!$hold->autoCheckout
+                        if (!($hold->autoCheckout ?? F)
                             && $hold->holdListPosition == 1
                         ) {
                             $result->data[$key]->holdReadyForCheckout = true;
