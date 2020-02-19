@@ -753,6 +753,43 @@ class EINetwork extends SierraRest implements
     }
 
     /**
+     * Checkout Holds
+     *
+     * This is responsible for checkint out a patron's OverDrive holds.
+     *
+     * @param array  $holds  The holds to checkout
+     *
+     * @throws ILSException
+     * @return mixed          Associative array of patron info on successful login,
+     * null on unsuccessful login.
+     */
+    public function checkoutHolds($holds){
+        // invalidate the cached data
+        $this->sessionCache->staleHoldsHash = md5(json_encode($this->sessionCache->holds));
+
+        $success = true;
+        $overDriveHolds = [];
+        for($i=0; $i<count($holds["details"]); $i++ )
+        {
+            if( substr($holds["details"][$i], 0, 9) == "OverDrive" ) {
+                $overDriveHolds[] = substr(array_splice($holds["details"], $i, 1)[0], 9);
+                $i--;
+            }
+        }
+
+        // grab a copy of this because the OverDrive functionality can wipe it
+        $cachedHolds = $this->sessionCache->holds;
+
+        // process the overdrive holds
+        foreach($overDriveHolds as $overDriveID ) {
+            $overDriveResults = $this->connector->doOverdriveCheckout($overDriveID);
+            $success &= $overDriveResults->status;
+        }
+
+        return ["success" => $success];
+    }
+
+    /**
      * Get Cancel Hold Details
      *
      * Get required data for canceling a hold. This value is used by relayed to the

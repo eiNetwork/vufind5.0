@@ -39,6 +39,107 @@ namespace VuFind\Controller\Plugin;
 class Holds extends AbstractRequestBase
 {
     /**
+     * Process checkout requests.
+     *
+     * @param \VuFind\ILS\Connection $catalog ILS connection object
+     * @param array                  $patron  Current logged in patron
+     *
+     * @return array                          The result of the cancellation, an
+     * associative array keyed by item ID (empty if no cancellations performed)
+     */
+    public function checkoutHolds($catalog, $patron)
+    {
+        // Retrieve the flashMessenger helper:
+        $flashMsg = $this->getController()->flashMessenger();
+        $params = $this->getController()->params();
+
+        // Pick IDs to checkout based on which button was pressed:
+        $all = $params->fromPost('checkoutAll');
+        $selected = $params->fromPost('checkoutSelected');
+        if (!empty($all)) {
+            $details = $params->fromPost('checkoutAllIDS');
+        } elseif (!empty($selected)) {
+            $details = $params->fromPost('checkoutSelectedIDS');
+        } else {
+            // No button pushed -- no action needed
+            return [];
+        }
+
+        if (!empty($details)) {
+            // Confirm?
+            if ($params->fromPost('confirm') === "0") {
+                if ($params->fromPost('checkoutAll') !== null) {
+                    return $this->getController()->confirm(
+                        'hold_checkout_all',
+                        $this->getController()->url()->fromRoute('myresearch-holds'),
+                        $this->getController()->url()->fromRoute('myresearch-holds'),
+                        'confirm_hold_checkout_all_text',
+                        [
+                            'checkoutAll' => 1,
+                            'checkoutAllIDS' => $params->fromPost('checkoutAllIDS')
+                        ]
+                    );
+                } else {
+                    $checkoutIDs = $params->fromPost('checkoutSelectedIDS');
+                    $replacement = ((count($checkoutIDs) > 1) ? (count($checkoutIDs) . " requests") : "request") . "?<br>";
+                    foreach($params->fromPost('holdTitles') as $title) {
+                        $replacement .= "<br><span class=\"bold\">Title: </span>" . urldecode($title);
+                    }
+                    $msg = [['msg' => 'confirm_hold_checkout_selected_text',
+                             'html' => true,
+                             'tokens' => ['%%holdData%%' => $replacement]]];
+                    return $this->getController()->confirm(
+                        'hold_checkout_selected',
+                        $this->getController()->url()->fromRoute('myresearch-holds'),
+                        $this->getController()->url()->fromRoute('myresearch-holds'),
+                        $msg,
+                        [
+                            'checkoutSelected' => 1,
+                            'checkoutSelectedIDS' =>
+                                $params->fromPost('checkoutSelectedIDS')
+                        ]
+                    );
+                }
+            }
+
+            foreach ($details as $info) {
+                // If the user input contains a value not found in the session
+                // whitelist, something has been tampered with -- abort the process.
+                if (!in_array($info, $this->getSession()->validIds)) {
+                    $flashMsg->addMessage('error_inconsistent_parameters', 'error');
+                    return [];
+                }
+            }
+
+            // Add Patron Data to Submitted Data
+            $checkoutResults = $catalog->checkoutHolds(
+                ['details' => $details, 'patron' => $patron]
+            );
+            if ($checkoutResults == false) {
+                $flashMsg->addMessage('hold_checkout_fail', 'error');
+            } else {
+                $success = true;
+                foreach( $checkoutResults['items'] as $thisCheckout ) {
+                    $success &= $thisCheckout['success'];
+                }
+                if ($success) {
+                    $msg = $this->getController()
+                        ->translate(($checkoutResults['count'] == 1) ? 'hold_checkout_success_single' : 'hold_checkout_success_multiple');
+                    $flashMsg->addMessage(['html' => true, 'msg' => $msg], 'info');
+                } else {
+                    $msg = $this->getController()
+                        ->translate(($checkoutResults['count'] == 1) ? 'hold_checkout_fail_single' : 'hold_checkout_fail_multiple');
+                    $flashMsg->addMessage(['html' => true, 'msg' => $msg], 'error');
+                }
+                return $checkoutResults;
+            }
+        } else {
+            $flashMsg->addMessage('hold_empty_selection', 'error');
+        }
+        return [];
+    }
+
+    /**
      * Update ILS details with cancellation-specific information, if appropriate.
      *
      * @param \VuFind\ILS\Connection $catalog      ILS connection object
