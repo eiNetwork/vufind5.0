@@ -69,6 +69,8 @@ function handleListContentResponse(response) {
 
         // sort buttons
         $(this).find(".ajaxListSortControls").html(response.data.sortHtml).parents("tr").css({"display":"inherit"});
+        // search widget
+        $(this).find(".listSearch").parent().css({"display":"block"});
         // bulk buttons
         $(this).find(".ajaxListBulkButtons").html(response.data.bulkHtml);
         $(this).find(".ajaxListBulkButtons").next().append($(this).find(".ajaxItem").find("span.pull-left").clone());

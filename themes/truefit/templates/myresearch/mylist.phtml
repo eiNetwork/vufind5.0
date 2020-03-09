@@ -92,10 +92,13 @@
               <div class="EIN-hide-m EIN-col-t-12 EIN-col-12" style="height:10px"></div>
               <table style="margin:auto;display:inline-block">
                 <tr style="display:none">
-                  <td><span><strong><?=$this->localizedNumber($list->count())?></strong> titles sorted by </span></td>
+                  <td><span>Showing <strong class="listCount checkToggleOff"></strong><strong><?=$this->localizedNumber($list->count())?></strong> titles sorted by </span></td>
                   <td style="padding-left:5px" class="ajaxListSortControls"><?=$this->currentPath()?></td>
                 </tr>
               </table>
+            </div>
+            <div class="center" style="display:none">Search for:&nbsp;
+              <input type="text" onkeyup="SearchList(this);" value="Enter a term" class="formControl listSearch textBox" onfocus="if (this.value=='Enter a term') {this.value = '';this.style.color='#3d3d3d';}" onblur="if (this.value=='') {this.value = 'Enter a term';this.style.color='#949494';}" />
             </div>
           <? endif; ?>
           <? if ($list->count() > 0): ?>
@@ -219,5 +222,30 @@
       }
     });
     $("#saveButtonDropdown").find(".newListButton").parent().attr("href", "/MyResearch/EditList?id=NEW&recordId=" + itemData.id.split("|")[1]);
+  }
+
+  function SearchList(searchBox) {
+    // grab the set of items in this list
+    var items = $(searchBox).parents(".panel-body").find(".ajaxItem");
+
+    // hide all the sections, undo this later if they have a child which is shown
+    items.addClass("checkToggleOff");
+
+    items.each( function() {
+      var searchStr = ($(this).find('.itemTitle a').length ? $(this).find('.itemTitle a').html() : "") + " " + ($(this).find('.authorLink').length ? $(this).find('.authorLink').html() : "");
+      if( searchStr.toLowerCase().indexOf(searchBox.value.toLowerCase()) != -1 ) {
+        $(this).removeClass("checkToggleOff");
+      }
+    } );
+
+    // fix the count
+    if( items.filter('.checkToggleOff').size() ) {
+      $(searchBox).parents(".panel-body").find(".listCount").removeClass("checkToggleOff").html(items.not('.checkToggleOff').size() + " of ");
+    } else {
+      $(searchBox).parents(".panel-body").find(".listCount").addClass("checkToggleOff");
+    }
+
+    // en/disable the select all button
+    $(searchBox).parents(".panel-body").find('.selectAllBulk').prop('disabled', items.filter('.checkToggleOff').size() ? true : false);
   }
 </script>

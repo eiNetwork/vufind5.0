@@ -185,6 +185,8 @@ class EINGetListContents extends AbstractBase //implements TranslatorAwareInterf
                 $record = $this->loader->load($thisResult["ID"], DEFAULT_SEARCH_BACKEND, true);
                 if( !($record instanceof \VuFind\RecordDriver\Missing) ) {
                     $results[] = $record;
+                } else {
+                    $results[] = $thisResult;
                 }
             }
             $html = $this->renderer->render('myresearch/listContents.phtml', ['results' => $results, 'list' => $this->listTable->getExisting($id), 'cachedResults' => $cachedResults ?? []]);
