@@ -402,12 +402,11 @@ class MyResearchController extends AbstractBase
         }
 
         // clear out the patron info
+        $this->getILS()->clearReadingHistoryCache();
         $this->getILS()->clearSessionVar("patronLogin");
         $this->getILS()->clearSessionVar("patron");
         $this->getILS()->clearSessionVar("checkouts");
         $this->getILS()->clearSessionVar("holds");
-        $this->getILS()->clearSessionVar("readingHistory");
-        $this->getILS()->clearSessionVar("readingHistoryPartial");
         $this->getILS()->clearSessionVar("dismissedAnnouncements");
         $this->getILS()->clearSessionVar("memCacheRefreshTimer");
         $this->getILS()->clearSessionVar("sessionExpiration");
@@ -2358,14 +2357,16 @@ class MyResearchController extends AbstractBase
             }
         }
 
-        $readingHistory = $catalog->getReadingHistory($patron, ($this->params()->fromQuery("pageNum") ? $this->params()->fromQuery("pageNum") : 1), 50, ($this->params()->fromQuery("sort") ? $this->params()->fromQuery("sort") : "outDate"));
+        $readingHistory = $catalog->getReadingHistory($patron, ($this->params()->fromQuery("sort") ? $this->params()->fromQuery("sort") : "outDate"));
         // add in the drivers where needed
         foreach( $readingHistory["titles"] as $key => $item ) {
-            if( !isset($item["skipLoad"]) ) {
-                try{
-                    $item["driver"] = $this->serviceLocator->get('VuFind\Record\Loader')->load($item['bibID'], DEFAULT_SEARCH_BACKEND);
-                } catch(RecordMissingException $e) {
-                }
+            $driver = isset($item["skipLoad"]) ? null : $this->serviceLocator->get('VuFind\Record\Loader')->load($item['bibID'], DEFAULT_SEARCH_BACKEND, true);
+            if( $driver && get_class($driver) != "VuFind\RecordDriver\Missing" ) {
+                $item["source"] = $driver->getResourceSource();
+                $item["title"] = trim(($driver->getShortTitle() == "") ? $driver->getTitle() : $driver->getShortTitle(),"\0\t\n\x0B\r /") . ' ' .
+                                 trim($driver->getSubtitle(),"\0\t\n\x0B\r /") . ' ' . trim($driver->getTitleSection(),"\0\t\n\x0B\r /");
+                $item["authors"] = $driver->getDeduplicatedAuthors();
+                $item["format"] = $driver->getFormats();
             }
             $readingHistory["titles"][$key] = $item;
         }
@@ -2373,7 +2374,6 @@ class MyResearchController extends AbstractBase
         $view = $this->createViewModel();
         $view->sort = $this->params()->fromQuery("sort");
         $view->readingHistory = $readingHistory;
-        $view->indexOffset = ($this->params()->fromQuery("pageNum") ? (($this->params()->fromQuery("pageNum") - 1) * 50) : 0) + 1;
         return $view;
     }
 
@@ -2394,12 +2394,12 @@ class MyResearchController extends AbstractBase
             } else if ( $this->params()->fromQuery('content') == "checkouts" ) {
                 // Connect to the ILS:
                 $catalog = $this->getILS();
-                $holds = $catalog->getMyTransactions($patron);
+                $checkouts = $catalog->getMyTransactions($patron);
             // they want us to load history
             } else if ( $this->params()->fromQuery('content') == "readingHistory" ) {
                 // Connect to the ILS:
                 $catalog = $this->getILS();
-                $holds = $catalog->getReadingHistory($patron);
+                $readingHistory = $catalog->getReadingHistory($patron);
             }
         }
         $view = $this->createViewModel();

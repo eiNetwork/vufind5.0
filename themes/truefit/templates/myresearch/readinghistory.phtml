@@ -5,18 +5,6 @@
 
   // Set up page title:
   $this->headTitle($this->translate('Reading History'));
-
-  $maxPage = ceil($this->readingHistory["total_records"] / 50);
-  $previous = ($this->readingHistory["page"] == 1) ? null : ($this->readingHistory["page"] - 1);
-  $next = ($this->readingHistory["page"] == $maxPage) ? null : ($this->readingHistory["page"] + 1);
-  $range = [];
-  $start = $this->readingHistory["page"] - (($maxPage == $this->readingHistory["page"]) ? 4 : (($maxPage == $next) ? 3 : (($this->readingHistory["page"] == 2) ? 1 : (($this->readingHistory["page"] == 1) ? 0 : 2))));
-  for( $i=$start; $i<$start+5; $i++ ) {
-    if( ($i > 0) && ($i <= $maxPage) ) {
-      $range[] = $i;
-    }
-  }
-  $paginationInfo = [ "pageCount" => $maxPage, "previous" => $previous, "next" => $next, "current" => $this->readingHistory["page"], "pagesInRange" => $range ];
 ?>
 
 <?=$this->flashmessages()?>
@@ -42,14 +30,15 @@
       <div>You do not have any items in your reading list. It may take up to 3 hours for your reading history to be updated after you start recording your history.</div>
     <? else: ?>
       <div class="clearfix hidden-print center">
-        <?=$this->render('myresearch/readinghistorypagination.phtml', $paginationInfo)?>
-        <div class="EIN-hide-m EIN-col-t-12 EIN-col-12" style="height:10px"></div>
         <table style="margin:auto;display:inline-block">
           <tr>
-            <td><span>Title<?=(($this->readingHistory["total_records"] == 1) ? "" : "s")?> <strong id="historyCount"><?=((($this->readingHistory["page"] - 1) * 50) + 1) . "-" . ((($this->readingHistory["page"] * 50) < $this->readingHistory["total_records"]) ? ($this->readingHistory["page"] * 50) : $this->readingHistory["total_records"])?> of <?=$this->readingHistory["total_records"]?></strong> sorted by </span></td>
+            <td><span>Showing <strong id="historyCount"><?=$this->readingHistory["total_records"]?> of <?=$this->readingHistory["total_records"]?></strong> sorted by </span></td>
             <td style="padding-left:5px" class="ajaxListSortControls"><?=$this->render('myresearch/readinghistorysort.phtml', ['sort' => $this->sort])?></td>
           </tr>
         </table>
+      </div>
+      <div class="center">Search for:&nbsp;
+        <input type="text" onkeyup="SearchReadingHistory(this);" value="Enter a term" class="formControl textBox" onfocus="if (this.value=='Enter a term') {this.value = '';this.style.color='#3d3d3d';}" onblur="if (this.value=='') {this.value = 'Enter a term';this.style.color='#949494';}" id="readingHistorySearch" disabled />
       </div>
       <form class="form-inline" method="post" name="bulkActionForm" action="<?=$this->url('cart-myresearchbulk')?>" data-lightbox>
         <span class="ajaxReadingHistory">
@@ -57,11 +46,7 @@
         </span>
         <div style="display:none">
           <? foreach ($this->readingHistory["titles"] as $i=>$current): ?>
-            <? if( isset($current["driver"]) ): ?>
-              <?=$this->record($current["driver"])->getHoldCheckbox($current["rsh"], "readinghistory")?>
-            <? else: ?>
-              <?=$this->context()->renderInContext('record/checkbox.phtml', ['overruleId' => $current["rsh"], 'count' => $i, 'page' => 'readinghistory'])?>
-            <? endif; ?>
+            <?=$this->context()->renderInContext('record/checkbox.phtml', ['overruleId' => $current["rsh"], 'count' => $i, 'page' => 'readinghistory'])?>
           <? endforeach; ?>
         </div>
       </form>
@@ -75,53 +60,41 @@
         </tr>
         <? $lastIndex = -1; ?>
         <? foreach( $this->readingHistory["titles"] as $i=>$item ): ?>
-          <? if( isset($item["driver"]) ): ?>
-            <? $record = $this->record($item["driver"]); ?>
-            <? $lastIndex = (isset($item["itemindex"]) && ($item["itemindex"] > $lastIndex)) ? $item["itemindex"] : $lastIndex; ?>
-            <tr class="historyItem">
-              <td style="margin:auto">
-                <span class="pull-left flip checkBoxLabel"><?=$record->getHoldCheckbox($item["rsh"], "readinghistory") ?></span>
-                <input type="hidden" value="<?=$this->escapeHtmlAttr($item["driver"]->getUniqueId())?>" class="hiddenId" />
-                <input type="hidden" value="<?=$this->escapeHtmlAttr($item["driver"]->getResourceSource())?>" class="hiddenSource" />
-              </td>
-              <td style="padding:15px 5px" class="itemTitle">
-                <a href="<?=$this->recordLink()->getUrl($item["driver"])?>"><?=$this->escapeHtml(trim(($item["driver"]->getShortTitle() == "") ? $item["driver"]->getTitle() : $item["driver"]->getShortTitle(),"\0\t\n\x0B\r /") . ' ' . trim($item["driver"]->getSubtitle(),"\0\t\n\x0B\r /") . ' ' . trim($item["driver"]->getTitleSection(),"\0\t\n\x0B\r /"))?></a>
-                <? $authors = $item["driver"]->getDeduplicatedAuthors(); ?>
-                <? if (isset($authors['primary']) && !empty($authors['primary'])): ?>
-                  <? reset($authors['primary']); ?>
-                  <? $mainAuthor = key($authors['primary']); ?>
-                  <h4 property="author" class="itemAuthor">by <a href="<?=$record->getLink('author', $mainAuthor)?>" class="authorLink"><?=$this->escapeHtml($mainAuthor)?></a></h4>
-                <? endif; ?>
-              </td>
-              <td>
-                <? $formats = $item["driver"]->getFormats(); if (!empty($formats)): ?>
-                  <? $firstTime = true; foreach( $formats as $thisFormat ): ?>
-                    <div style="padding-bottom:5px">
-                      <span class="formatTag"><?=$thisFormat?></span>
-                    </div>
-                  <? endforeach; ?>
-                <? endif; ?>
-              </td>
-              <td style="text-align:right"><?=$item["checkout"]?></td>
-            </tr>
-          <? else: ?>
-            <tr class="historyItem">
-              <td style="margin:auto">
-                <span class="pull-left flip checkBoxLabel"><?=$this->context()->renderInContext('record/checkbox.phtml', ['overruleId' => $item["rsh"], 'count' => $i, 'page' => 'readinghistory'])?></span>
-              </td>
-              <td style="padding:15px 5px" class="itemTitle">
-                <span class="unlinkedTitle"><?=$this->escapeHtml($item["title"])?></span>
-              </td>
-              <td>
-              </td>
-              <td style="text-align:right"><?=$item["checkout"]?></td>
-            </tr>
-          <? endif; ?>
+          <tr class="historyItem">
+            <td style="margin:auto">
+              <span class="pull-left flip checkBoxLabel"><?=$this->context()->renderInContext('record/checkbox.phtml', ['overruleId' => $item["rsh"], 'count' => $i, 'page' => 'readinghistory'])?></span>
+              <? if( isset($item["bibID"]) && isset($item["source"]) ): ?>
+                <input type="hidden" value="<?=$this->escapeHtmlAttr($item["bibID"])?>" class="hiddenId" />
+                <input type="hidden" value="<?=$this->escapeHtmlAttr($item["source"])?>" class="hiddenSource" />
+              <? endif; ?>
+            </td>
+            <td style="padding:15px 5px" class="itemTitle">
+              <? if( isset($item["bibID"]) && isset($item["source"]) ): ?>
+                <a href="<?=$this->recordLink()->getUrl($item["source"] . "|" . $item["bibID"])?>">
+              <? endif; ?>
+              <span class="unlinkedTitle"><?=$this->escapeHtml($item["title"])?></span>
+              <? if( isset($item["bibID"]) && isset($item["source"]) ): ?>
+                </a>
+              <? endif; ?>
+              <? if( isset($item["authors"]["primary"]) && !empty($item["authors"]["primary"]) ): ?>
+                <? reset($item["authors"]["primary"]); ?>
+                <? $mainAuthor = key($item["authors"]["primary"]); ?>
+                <h4 property="author" class="itemAuthor">by <a href="<?=$this->context()->renderInContext('RecordDriver/SolrDefault/link-author.phtml', ['lookfor' => $mainAuthor])?>" class="authorLink"><?=$this->escapeHtml($mainAuthor)?></a></h4>
+              <? endif; ?>
+            </td>
+            <td>
+              <? if( isset($item["format"]) && !empty($item["format"])): ?>
+                <? $firstTime = true; foreach( $item["format"] as $thisFormat ): ?>
+                  <div style="padding-bottom:5px">
+                    <span class="formatTag"><?=$thisFormat?></span>
+                  </div>
+                <? endforeach; ?>
+              <? endif; ?>
+            </td>
+            <td style="text-align:right"><?=$item["checkout"]?></td>
+          </tr>
         <? endforeach; ?>
       </table>
-      <div class="clearfix hidden-print center">
-        <?=$this->render('myresearch/readinghistorypagination.phtml', $paginationInfo)?>
-      </div>
     <? endif; ?>
     <div class="center" style="margin:20px 0px">
       <form method="post">
@@ -150,6 +123,24 @@
       return false;
     }
 
+    function SearchReadingHistory(searchBox) {
+      // hide all the sections, undo this later if they have a child which is shown
+      $('.historyItem').addClass("checkToggleOff");
+
+      $('.historyItem').each( function() {
+        var searchStr = ($(this).find('.unlinkedTitle').length ? $(this).find('.unlinkedTitle').html() : "") + " " + ($(this).find('.authorLink').length ? $(this).find('.authorLink').html() : "");
+        if( searchStr.toLowerCase().indexOf(searchBox.value.toLowerCase()) != -1 ) {
+          $(this).removeClass("checkToggleOff");
+        }
+      } );
+
+      // fix the count
+      $('#historyCount').html($('.historyItem').not('.checkToggleOff').size() + " of " + $('.historyItem').size());
+
+      // en/disable the select all button
+      $('.selectAllBulk').prop('disabled', $('.historyItem.checkToggleOff').size() ? true : false);
+    }
+
     function SaveReadingHistory() {
       var CSV = 'Title,Author,Format,Checked Out\r\n';
 
@@ -168,7 +159,7 @@
         CSV += "\"" + $title.text().replace(/"/g,"\"\"") + "\",\"" + $author.text().replace("\"","\\\"") + "\",\"" + $format.text() + "\",\"" + $date.text() + "\"\r\n";
       });
 
-      var fileName = "Reading_History_sort_by_<?=($this->sort ? $this->sort : "date")?>_page_<?=$this->readingHistory["page"]?>.csv";
+      var fileName = "Reading_History_sort_by_<?=($this->sort ? $this->sort : "date")?>.csv";
       if(msieversion()){
         var IEwindow = window.open();
         IEwindow.document.write('sep=,\r\n' + CSV);

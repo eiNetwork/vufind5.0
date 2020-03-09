@@ -1613,7 +1613,7 @@ class EINetwork extends SierraRest implements
         return $returnMap;
     }
 
-    public function getReadingHistory($patron, $page = 1, $recordsPerPage = 50, $sortOption = "outDate") {
+    public function getReadingHistory($patron, $sortOption = "outDate") {
         $this->testSession();
 
         // if it isn't cached yet, grab it
@@ -1691,10 +1691,9 @@ class EINetwork extends SierraRest implements
             if( $sortOption == "outDate" ) {
                 $sortedTitles = array_reverse($sortedTitles);
             }
-            $sortedTitles = array_slice($sortedTitles, ($page - 1) * $recordsPerPage, $recordsPerPage);
         }
 
-        return array('historyActive'=>($readingHistory !== false), 'titles'=>$sortedTitles, 'numTitles'=> count($sortedTitles), 'total_records' => ($readingHistory !== false) ? count($readingHistory) : 0, 'page' => $page);
+        return array('historyActive'=>($readingHistory !== false), 'titles'=>$sortedTitles, 'total_records' => count($sortedTitles));
     }
 
     public function deleteReadingHistoryItems($patron, $selectedIDs) {
@@ -1710,19 +1709,33 @@ class EINetwork extends SierraRest implements
         }
 
         // invalidate the cache
-        $hierarchy = ['v' . $this->apiVersion, 'patrons', $patron['id'], 'checkouts', 'history'];
-        $offset = 0;
-        $params = ['limit' => 50, 'offset' => $offset];
-        $hash = md5(json_encode($hierarchy) . ($params ? ("###" . json_encode($params)) : ""));
-        while( $this->memcached->get($hash) ) {
-          $this->memcached->set($hash, null);
-          $params['offset'] += 50;
-          $hash = md5(json_encode($hierarchy) . ($params ? ("###" . json_encode($params)) : ""));
-        }
-        $this->memcached->delete("readingHistory" . $patron["id"]);
+        $this->clearReadingHistoryCache($patron["id"]);
 
         // return info
         return $success;
+    }
+
+    public function clearReadingHistoryCache($patronID=null) {
+        // if they didn't give us a patronID, let's see if we have one cached
+        $patronID = $patronID ?? ($this->sessionCache->patron["id"] ?? ($this->sessionCache->patronLogin["id"] ?? null));
+
+        // if we've got a patronID, clear the associated history records
+        if( $patronID != null ) {
+            $hierarchy = ['v' . $this->apiVersion, 'patrons', $patronID, 'checkouts', 'history'];
+            $offset = 0;
+            $params = ['limit' => 50, 'offset' => $offset];
+            $hash = md5(json_encode($hierarchy) . ($params ? ("###" . json_encode($params)) : ""));
+            while( $this->memcached->get($hash) ) {
+              $this->memcached->set($hash, null);
+              $params['offset'] += 50;
+              $hash = md5(json_encode($hierarchy) . ($params ? ("###" . json_encode($params)) : ""));
+            }
+            $this->memcached->delete("readingHistory" . $patronID);
+        }
+
+        // clear anything in the cache
+        unset($this->sessionCache->readingHistory);
+        unset($this->sessionCache->readingHistoryPartial);
     }
 
 
@@ -1990,12 +2003,18 @@ class EINetwork extends SierraRest implements
             curl_setopt($curl_connection, CURLOPT_URL, $curl_url);
             curl_setopt($curl_connection, CURLOPT_HTTPGET, true);
             $sresult = curl_exec($curl_connection);
+
+            // invalidate the cache
+            $this->clearReadingHistoryCache($patron["id"]);
         }elseif ($action == 'optIn'){
             //load patron page readinghistory/OptIn
             $curl_url = $this->config['Catalog']['classic_url'] . "/patroninfo~S1}/" . $patron['id'] ."/readinghistory/OptIn";
             curl_setopt($curl_connection, CURLOPT_URL, $curl_url);
             curl_setopt($curl_connection, CURLOPT_HTTPGET, true);
             $sresult = curl_exec($curl_connection);
+
+            // invalidate the cache
+            $this->clearReadingHistoryCache($patron["id"]);
         }
         curl_close($curl_connection);
 
