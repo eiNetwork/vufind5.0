@@ -8,6 +8,7 @@ namespace VuFind\ILS\Driver;
 
 use Memcached;
 use SoapClient;
+use VuFind\Db\Table\Location;
 
 class EINetwork extends SierraRest implements
     \VuFind\Db\Table\DbTableAwareInterface
@@ -422,12 +423,14 @@ class EINetwork extends SierraRest implements
         $patron = parent::getMyProfile($patron);
 
         $patron['showTemporaryClosureMessage'] = false;
+        $patron['showPermanentClosureMessage'] = false;
         if( !$this->memcached->get("locationByCode" . $patron['homelibrarycode']) ) {
             $this->memcached->set("locationByCode" . $patron['homelibrarycode'], $this->getDbTable('Location')->getByCode($patron['homelibrarycode']));
         }
         $location = $this->memcached->get("locationByCode" . $patron['homelibrarycode']);
         $patron['homelibrary'] = ($location != null && $location->validHoldPickupBranch) ? $location->displayName : null;
-        $patron['showTemporaryClosureMessage'] |= ($location != null && ($location->validHoldPickupBranch == 2));
+        $patron['showTemporaryClosureMessage'] |= ($location != null && ($location->validHoldPickupBranch == Location::VHPB_TEMPORARY_CLOSURE));
+        $patron['showPermanentClosureMessage'] |= ($location != null && ($location->validHoldPickupBranch == Location::VHPB_PERMANENT_CLOSURE));
         if( !$patron['homelibrary'] ) {
             $patron['homelibrarycode'] = null;
         }
@@ -440,7 +443,8 @@ class EINetwork extends SierraRest implements
         }
         $location = $this->memcached->get("locationByCode" . $patron['preferredlibrarycode']);
         $patron['preferredlibrary'] = ($location != null && $location->validHoldPickupBranch) ? $location->displayName : null;
-        $patron['showTemporaryClosureMessage'] |= ($location != null && ($location->validHoldPickupBranch == 2));
+        $patron['showTemporaryClosureMessage'] |= ($location != null && ($location->validHoldPickupBranch == Location::VHPB_TEMPORARY_CLOSURE));
+        $patron['showPermanentClosureMessage'] |= ($location != null && ($location->validHoldPickupBranch == Location::VHPB_PERMANENT_CLOSURE));
         if( !$patron['preferredlibrary'] ) {
             $patron['preferredlibrarycode'] = null;
         }
@@ -451,7 +455,8 @@ class EINetwork extends SierraRest implements
         }
         $location = $this->memcached->get("locationByCode" . $patron['alternatelibrarycode'] );
         $patron['alternatelibrary'] = ($location != null && $location->validHoldPickupBranch) ? $location->displayName : null;
-        $patron['showTemporaryClosureMessage'] |= ($location != null && ($location->validHoldPickupBranch == 2));
+        $patron['showTemporaryClosureMessage'] |= ($location != null && ($location->validHoldPickupBranch == Location::VHPB_TEMPORARY_CLOSURE));
+        $patron['showPermanentClosureMessage'] |= ($location != null && ($location->validHoldPickupBranch == Location::VHPB_PERMANENT_CLOSURE));
         if( !$patron['alternatelibrary'] ) {
             $patron['alternatelibrarycode'] = null;
         }
@@ -523,7 +528,7 @@ class EINetwork extends SierraRest implements
         }
 
         unset($this->sessionCache->patron);
-        $this->getMyProfile($patron);
+        $this->getMyProfile($patron, true);
     }
 
     /**
@@ -1108,10 +1113,17 @@ class EINetwork extends SierraRest implements
             }
         }
         if( isset($profile["showTemporaryClosureMessage"]) && $profile["showTemporaryClosureMessage"] ) {
+            $notifications[] = ["attnSubject" => "<span class=\"messageWarning\">Temporary library closure.</span> Click here to learn more.",
+                                "subject" => "Temporary library closure",
+                                "message" => "Your home library or one of your preferred libraries is temporarily closed. It will not show up as an option for picking up your requests until it has reopened, and it will not be an option " .
+                                             "on the Preferred Libraries section of the <a class=\"messageLink\" href=\"/MyResearch/Profile\" data-lightbox-ignore>profile page</a>. In the meantime, you can choose a different library location as a preferred " .
+                                             "library there. If you would rather not change it, you can simply wait until that location reopens and it will once again appear in your preferred libraries."];
+        }
+        if( isset($profile["showPermanentClosureMessage"]) && $profile["showPermanentClosureMessage"] ) {
             $notifications[] = ["attnSubject" => "<span class=\"messageWarning\">Library closure.</span> Click here to learn more.",
                                 "subject" => "Library closure",
                                 "message" => "Your home library or one of your preferred libraries is permanently closing. It will not show up as an option for picking up your requests, and it will no longer be an option " .
-                                             "on the Preferred Libraries section of the <a class=\"messageLink\" href=\"/MyResearch/Profile\" data-lightbox-ignore>profile page</a>. You should choose a different library " . 
+                                             "on the Preferred Libraries section of the <a class=\"messageLink\" href=\"/MyResearch/Profile\" data-lightbox-ignore>profile page</a>. You should choose a different library " .
                                              "location as a preferred library there."];
         }
         if( ($profile["preferredlibrarycode"] == null || $profile["preferredlibrarycode"] == "none") && ($profile["alternatelibrarycode"] == null || $profile["alternatelibrarycode"] == "none") ) {

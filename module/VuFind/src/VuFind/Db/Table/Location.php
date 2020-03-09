@@ -43,6 +43,11 @@ use Zend\Db\Adapter\Adapter;
  */
 class Location extends Gateway
 {
+    // add some constants to keep our code readable
+    const VHPB_VALID = 1;
+    const VHPB_TEMPORARY_CLOSURE = 2;
+    const VHPB_PERMANENT_CLOSURE = 3;
+
     /**
      * Constructor
      *
@@ -114,7 +119,7 @@ class Location extends Gateway
     public function getPickupLocations()
     {
         $callback = function ($select) {
-            $select->where('validHoldPickupBranch=1')
+            $select->where('validHoldPickupBranch=' . self::VHPB_VALID)
                 ->order('displayName');
         };
         return $this->select($callback);
