@@ -47,10 +47,11 @@
         </div>
         <div class="EIN-col-m-6 EIN-col-t-4 helpQuickJumpSection">
           <a href="#section3" class="helpLink">Other Topics</a><br>
-          <div class="helpLinkSubsection"><a href="#section3-1" class="helpLink">Other Search Options and Advanced Search</a></div>
-          <div class="helpLinkSubsection"><a href="#section3-2" class="helpLink">Saving Searches</a></div>
-          <div class="helpLinkSubsection"><a href="#section3-3" class="helpLink">How to Place a <?=$this->transEsc('hold_uppercase')?></a></div>
-          <div class="helpLinkSubsection"><a href="#section3-4" class="helpLink">Accessing EContent Items</a></div>
+          <div class="helpLinkSubsection"><a href="#section3-1" class="helpLink">Grouped Search Results</a></div>
+          <div class="helpLinkSubsection"><a href="#section3-2" class="helpLink">Other Search Options and Advanced Search</a></div>
+          <div class="helpLinkSubsection"><a href="#section3-3" class="helpLink">Saving Searches</a></div>
+          <div class="helpLinkSubsection"><a href="#section3-4" class="helpLink">How to Place a <?=$this->transEsc('hold_uppercase')?></a></div>
+          <div class="helpLinkSubsection"><a href="#section3-5" class="helpLink">Accessing EContent Items</a></div>
         </div>
         <div class="EIN-col-m-6 EIN-col-t-4 helpQuickJumpSection">
           <a href="#section4" class="helpLink">Account</a><br>
@@ -268,6 +269,16 @@
   <div class="EIN-col-m-12 helpSection" id="section3">
     <div class="helpSectionHeader">Other Topics</div>
     <div class="helpSubsection" id="section3-1">
+      <div class="helpSubsectionHeader">Grouped Search Results</div>
+      <div class="helpContent">In Library Catalog, different formats of the same title are grouped together by default (this applies to books and video materials only). For example, the print version of Pride
+        and Prejudice by Jane Austen is grouped together with the eBook and audiobook formats of the same title. This feature allows you to easily find all available formats for a given title.<br><br>
+        If you prefer ungrouped search results, follow these steps to change the default setting for your Account:<br>
+        <ol><li>If you are not logged in, click <span class="helpEmphasis">Log In</span> in the upper right corner and enter your library barcode number and PIN.</li>
+        <li>In the upper right corner, click <span class="helpEmphasis">Account</span> and select <span class="helpEmphasis">Profile</span> from the dropdown menu.</li>
+        <li>On the <span class="helpEmphasis">About Me</span> tab (selected by default), click the drop-down next to Group Search Results and choose "Do not group results". Your profile option will be
+        automatically saved, and a confirmation banner will display.</li></ol></div>
+    </div>
+    <div class="helpSubsection" id="section3-2">
       <div class="helpSubsectionHeader">Other Search Options and Advanced Search</div>
       <div class="helpContent">By default, the library catalog does a <span class="helpEmphasis">Keyword</span> search, meaning that it searches for the word or phrase you enter in the search box in any of the
         information (i.e. title, author, description, notes) in the catalog. You can change the type of search that to search for only specific fields instead, such as <span class="helpEmphasis">Title</span>,
@@ -275,7 +286,7 @@
         these alternate search types, or <span class="helpEmphasis">Advanced Search</span>, click the gear icon (<span class="helpEmphasis"><i class="fa fa-cog"></i></span>) just to the right of the magnifying
         glass icon (<span class="helpEmphasis"><i class="fa fa-search"></i></span>), and select a search type from the drop down menu.</div>
     </div>
-    <div class="helpSubsection" id="section3-2">
+    <div class="helpSubsection" id="section3-3">
       <div class="helpSubsectionHeader">Saving Searches</div>
       <div class="helpContent">If you frequently do the same search, you can save your search so that you can easily rerun it. To save your search, click the gear icon
         (<span class="helpEmphasis"><i class="fa fa-cog"></i></span>) just to the right of the magnifying glass icon (<span class="helpEmphasis"><i class="fa fa-search"></i></span>), and select
@@ -283,7 +294,7 @@
         <span class="helpEmphasis">Saved Searches</span> page in your Account.
       </div>
     </div>
-    <div class="helpSubsection" id="section3-3">
+    <div class="helpSubsection" id="section3-4">
       <div class="helpSubsectionHeader">How to Place a <?=$this->transEsc('hold_uppercase')?></div>
       <div class="helpContent">A <?=$this->transEsc('hold_lowercase')?> is an order for the first available item to be sent to the library you designate as a pickup location. The item will be held for you at that library, and you will
         receive an email or phone message (depending on your account preferences) that the item it ready to pick up. There are several ways that you can place a <?=$this->transEsc('hold_lowercase')?>.<br><br>
@@ -293,7 +304,7 @@
         You can see the status of your <?=$this->transEsc('holds_lowercase')?> on the <span class="helpEmphasis"><?=$this->transEsc('Holds')?></span> page on the Account menu. You can also cancel, freeze, and change the pickup location of your <?=$this->transEsc('holds_lowercase')?> on this page.
        </div>
     </div>
-    <div class="helpSubsection" id="section3-4">
+    <div class="helpSubsection" id="section3-5">
       <div class="helpSubsectionHeader">Accessing EContent Items</div>
       <div class="helpContent">The library catalog includes econtent items as well as physical material. To locate econtent items, you can filter your search results by material type and select econtent material
         type (i.e. <span class="helpEmphasis">eBook</span>, <span class="helpEmphasis">OverDrive Listen</span>, <span class="helpEmphasis">OverDrive MP3 Audiobook</span>,

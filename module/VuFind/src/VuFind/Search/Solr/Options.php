@@ -79,6 +79,13 @@ class Options extends \VuFind\Search\Base\Options
     protected $fieldList = null;
 
     /**
+     * Grouping or not grouping
+     *
+     * @var bool
+     */
+    protected $useGrouping = true;
+
+    /**
      * Constructor
      *
      * @param \VuFind\Config\PluginManager $configLoader Config loader
@@ -332,5 +339,27 @@ class Options extends \VuFind\Search\Base\Options
     public function getFieldList()
     {
         return $this->fieldList;
+    }
+
+    /**
+     * Set the grouping option.
+     *
+     * @param bool $useGrouping Use grouping or not.
+     *
+     * @return void
+     */
+    public function setUseGrouping($useGrouping)
+    {
+        $this->useGrouping = $useGrouping;
+    }
+
+    /**
+     * Get the grouping option.
+     *
+     * @return bool
+     */
+    public function getUseGrouping()
+    {
+        return $this->useGrouping;
     }
 }

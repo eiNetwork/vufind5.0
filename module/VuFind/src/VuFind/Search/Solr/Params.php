@@ -616,5 +616,10 @@ class Params extends \VuFind\Search\Base\Params
         if( $fl = $request->get('fl', null) ) {
             $this->getOptions()->setFieldList($fl);
         }
+
+        // use grouping?
+        if( ($useGrouping = $request->get('useGrouping', null)) !== null ) {
+            $this->getOptions()->setUseGrouping($useGrouping);
+        }
     }
 }
