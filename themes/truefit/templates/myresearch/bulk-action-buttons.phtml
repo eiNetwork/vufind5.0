@@ -48,11 +48,15 @@
       }
     } );
 
+    var showCheckout = true;
     var showEmail = true;
     var showPickup = true;
     var showFreeze = true;
     var showUnfreeze = true;
     testSet.find('.checkbox-select-item').each( function() {
+      if(this.checked && ($(this).parents(".pull-left").siblings(".checkoutTarget").length == 0)) {
+        showCheckout = false;
+      }
       if(this.checked && (($(this).parents(".pull-left").siblings(".changeTarget").length == 0) || ($(this).parents(".pull-left").siblings(".changeTarget").attr("value") == "email"))) {
         showPickup = false;
       }
@@ -66,6 +70,7 @@
         showUnfreeze = false;
       }
     } );
+    form.find(".BulkCheckout").css({"display":(showCheckout ? "list-item" : "none")});
     form.find(".BulkPickupLocation").css({"display":(showPickup ? "list-item" : "none")});
     form.find(".BulkEmailAddress").css({"display":(showEmail ? "list-item" : "none")});
     form.find(".BulkFreeze").css({"display":(showFreeze ? "list-item" : "none")});
@@ -243,7 +248,7 @@
       <button class="btn-default leftButton selectAllBulk" onclick="ToggleAll($(this).parent().siblings('.checkbox-select-all')); ScanBulkButton($(this).parents('form')); return false;"><?=$this->transEsc('select_page')?></button>
     </div>
     <div class="floatR bulkFloat">
-      <? if (isset($hold) && (($hold == "ready") || ($hold == "transit"))): ?>
+      <? if (isset($hold) && ($hold == "transit")): ?>
         <button class="btn-default btn-wide bulkButton EIN-hide-m" onclick="ConfirmSelected($(this).parents('form'), '<?=$bulkID?>', 'cancel')">Cancel Selected</button>
         <button class="btn-default bulkButton rightButton EIN-hide-t EIN-hide" onclick="ConfirmSelected($(this).parents('form'), '<?=$bulkID?>', 'cancel')">Cancel Selected</button>
       <? elseif (isset($checkout)): ?>
@@ -273,10 +278,15 @@
             <hr class="stretchHR">
             <li><span class="modalNote">Click a list name to add all selected titles.  Click 'Remove...' to remove selected titles from this list.</span></li>
           <? elseif (isset($hold) && ($hold == "all")): ?>
+            <li class="BulkCheckout"><button class="btn-dropdown btn-standardDropdown" onclick="ConfirmSelected($(this).parents('form'), '<?=$bulkID?>', 'checkout')">Check Out</button></li>
             <li class="BulkPickupLocation"><button class="btn-dropdown btn-standardDropdown" onclick="$('#bulkAction<?=$bulkID?>').attr('name','changePickup');">Change Pickup</button></li>
             <li class="BulkEmailAddress"><button class="btn-dropdown btn-standardDropdown" onclick="$('#bulkAction<?=$bulkID?>').attr('name','changeEmail');">Change Email</button></li>
             <li class="BulkFreeze"><button class="btn-dropdown btn-standardDropdown" onclick="ConfirmSelected($(this).parents('form'), '<?=$bulkID?>', 'freeze')">Freeze</button></li>
             <li class="BulkUnfreeze"><button class="btn-dropdown btn-standardDropdown" onclick="ConfirmSelected($(this).parents('form'), '<?=$bulkID?>', 'unfreeze')">Unfreeze</button></li>
+            <li><button class="btn-dropdown btn-standardDropdown" onclick="ConfirmSelected($(this).parents('form'), '<?=$bulkID?>', 'cancel')">Cancel</button></li>
+          <? elseif (isset($hold) && ($hold == "ready")): ?>
+            <li class="BulkCheckout"><button class="btn-dropdown btn-standardDropdown" onclick="ConfirmSelected($(this).parents('form'), '<?=$bulkID?>', 'checkout')">Check Out</button></li>
+            <li class="BulkFreeze"><button class="btn-dropdown btn-standardDropdown" onclick="ConfirmSelected($(this).parents('form'), '<?=$bulkID?>', 'freeze')">Freeze</button></li>
             <li><button class="btn-dropdown btn-standardDropdown" onclick="ConfirmSelected($(this).parents('form'), '<?=$bulkID?>', 'cancel')">Cancel</button></li>
           <? elseif (isset($hold) && (($hold == "hold") || ($hold == "frozen"))): ?>
             <li class="BulkPickupLocation"><button class="btn-dropdown btn-standardDropdown" onclick="$('#bulkAction<?=$bulkID?>').attr('name','changePickup');">Change Pickup</button></li>
@@ -305,10 +315,15 @@
             <hr class="stretchHR">
             <li><span class="modalNote">Click a list name to add all selected titles.  Click 'Remove...' to remove selected titles from this list.</span></li>
           <? elseif (isset($hold) && ($hold == "all")): ?>
+            <li class="BulkCheckout"><button class="btn-dropdown btn-standardDropdown" onclick="ConfirmSelected($(this).parents('form'), '<?=$bulkID?>', 'checkout')">Check Out</button></li>
             <li class="BulkPickupLocation"><button class="btn-dropdown btn-standardDropdown" onclick="$('#bulkAction<?=$bulkID?>').attr('name','changePickup');">Change Pickup</button></li>
             <li class="BulkEmailAddress"><button class="btn-dropdown btn-standardDropdown" onclick="$('#bulkAction<?=$bulkID?>').attr('name','changeEmail');">Change Email</button></li>
             <li class="BulkFreeze"><button class="btn-dropdown btn-standardDropdown" onclick="ConfirmSelected($(this).parents('form'), '<?=$bulkID?>', 'freeze')">Freeze</button></li>
             <li class="BulkUnfreeze"><button class="btn-dropdown btn-standardDropdown" onclick="ConfirmSelected($(this).parents('form'), '<?=$bulkID?>', 'unfreeze')">Unfreeze</button></li>
+            <li><button class="btn-dropdown btn-standardDropdown" onclick="ConfirmSelected($(this).parents('form'), '<?=$bulkID?>', 'cancel')">Cancel</button></li>
+          <? elseif (isset($hold) && ($hold == "ready")): ?>
+            <li class="BulkCheckout"><button class="btn-dropdown btn-standardDropdown" onclick="ConfirmSelected($(this).parents('form'), '<?=$bulkID?>', 'checkout')">Check Out</button></li>
+            <li class="BulkFreeze"><button class="btn-dropdown btn-standardDropdown" onclick="ConfirmSelected($(this).parents('form'), '<?=$bulkID?>', 'freeze')">Freeze</button></li>
             <li><button class="btn-dropdown btn-standardDropdown" onclick="ConfirmSelected($(this).parents('form'), '<?=$bulkID?>', 'cancel')">Cancel</button></li>
           <? elseif (isset($hold) && (($hold == "hold") || ($hold == "frozen"))): ?>
             <li class="BulkPickupLocation"><button class="btn-dropdown btn-standardDropdown" onclick="$('#bulkAction<?=$bulkID?>').attr('name','changePickup');">Change Pickup</button></li>

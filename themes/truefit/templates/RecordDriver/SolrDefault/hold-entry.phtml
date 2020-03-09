@@ -8,7 +8,8 @@
   $holdType = (isset($this->holdType) ? $this->holdType : "none");
 
   $showChangeTarget = (!isset($this->hold["available"]) || !$this->hold["available"]) && !$this->hold["in_transit"];
-  $showFreeze = $showChangeTarget && (!isset($this->hold["frozen"]) || !$this->hold["frozen"]);
+  $showCheckout = isset($this->hold["available"]) && $this->hold["available"] && isset($this->hold["reserveId"]);
+  $showFreeze = ($showChangeTarget || $showCheckout) && (!isset($this->hold["frozen"]) || !$this->hold["frozen"]);
   $showUnfreeze = $showChangeTarget && isset($this->hold["frozen"]) && $this->hold["frozen"];
 ?>
 <div class="row result<? if($this->driver->supportsAjaxStatus()): ?> ajaxItem<? endif ?> EIN-col-m-12">
@@ -17,6 +18,9 @@
       <span class="pull-left flip"><?=$this->record($this->driver)->getHoldCheckbox($this->hold["requestId"], $holdType) ?></span>
       <input type="hidden" value="<?=$this->escapeHtmlAttr($id)?>" class="hiddenId" />
       <input type="hidden" value="<?=$this->escapeHtmlAttr($source)?>" class="hiddenSource" />
+      <? if( $showCheckout ): ?>
+        <input type="hidden" value="true" class="checkoutTarget" />
+      <? endif; ?>
       <? if( $showChangeTarget ): ?>
         <input type="hidden" value="<?=(isset($this->hold["reserveId"]) ? "email" : "pickup")?>" class="changeTarget" />
       <? endif; ?>
@@ -155,15 +159,6 @@
           <? endif; ?>
         </table>
       </div>
-      <? if( isset($this->hold["reserveId"]) && $this->hold["statusCode"] == "i" ): ?>
-        <div class="EIN-col-m-12 EIN-col-t-4 EIN-col-4" style="padding:5px 0px 10px">
-          <div class="singleButtonGap">
-            <a href="<?= $this->url('overdrive-hold') . "?od_id=" . strtolower($this->hold["reserveId"]) . "&rec_id=" . $this->hold["id"] . "&action=doCheckout" ?>" target="loginFrame">
-              <button class="btn-default singleButton" onclick="$(this).html('<i class=\'fa fa-spinner bwSpinner\'></i> Loading...')">Check Out</button>
-            </a>
-          </div>
-        </div>
-      <? endif; ?>
     </td>
   </tr></table>
   <div class="EIN-col-m-12"><hr style="margin:5px 0"></div>

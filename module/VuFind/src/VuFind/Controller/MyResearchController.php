@@ -1409,6 +1409,13 @@ class MyResearchController extends AbstractBase
             }
         }
 
+        // Process checkout requests if necessary:
+        $view->cancelResults = $this->holds()->checkoutHolds($catalog, $patron);
+        // If we need to confirm
+        if (!is_array($view->cancelResults)) {
+            return $view->cancelResults;
+        }
+
         // Process cancel requests if necessary:
         $cancelStatus = $catalog->checkFunction('cancelHolds', compact('patron'));
         $view->cancelResults = $cancelStatus
