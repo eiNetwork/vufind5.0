@@ -988,7 +988,8 @@ class EINetwork extends SierraRest implements
 
         // item level holds via the API don't work yet
         // BJP - neither do local copy overriding the hold
-        if( true || isset($holdDetails["item_id"]) ) {
+        // BJP (3-10-20) - scratch that, run everything through API and see what happens
+        if( false && isset($holdDetails["item_id"]) ) {
             $holdsInfo = $this->placeItemLevelHold($holdDetails);
         } else {
             $holdsInfo = parent::placeHold($holdDetails);
