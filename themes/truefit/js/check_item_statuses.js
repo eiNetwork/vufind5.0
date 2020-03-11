@@ -158,7 +158,7 @@ function handleItemStatusResponse(response) {
             streamingVideo |= (result.downloadFormats[k].id == "video-streaming");
             nookPeriodical |= (result.downloadFormats[k].id == "periodicals-nook");
           }
-          leftButtonMenu.children(".standardDropdown").append("<li><a href=\"" + result.downloadFormats[0].URL + location.pathname + "\" data-lightbox><button class=\"btn-dropdown btn-standardDropdown\">" + (streamingVideo ? "Watch Now" : "Download") + "</button></a></li>");
+          leftButtonMenu.children(".standardDropdown").append("<li><a href=\"" + result.downloadFormats[0].URL + "\" data-lightbox><button class=\"btn-dropdown btn-standardDropdown\">" + (streamingVideo ? "Watch Now" : "Download") + "</button></a></li>");
         }
         if( ("canReturn" in result) && result.canReturn ) {
           leftButtonMenu.children(".standardDropdown").append("<li><a href=\"" + result.canReturn + "\" target=\"loginFrame\"><button class=\"btn-dropdown btn-standardDropdown\" onClick=\"$(this).parents('.dropdown').siblings('.leftButton').html('<i class=\\'fa fa-spinner bwSpinner\\'></i>&nbsp;Loading...')\">Return</button></a></li>");
