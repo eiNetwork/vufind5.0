@@ -120,7 +120,7 @@
             <tr>
               <td colspan="2">
                 <div class="EIN-col-m-12" style="height:10px"></div>
-                Status: <span class="bold"><?=$this->transEsc('holdtype_' . ($this->hold["available"] ? 'ready' : ($this->hold["in_transit"] ? 'transit' : ($this->hold["frozen"] ? 'frozen' : 'hold'))))?></span>
+                Status: <span class="bold"><?=$this->transEsc('holdtype_' . ($this->hold["available"] ? 'ready' : ($this->hold["in_transit"] ? 'transit' : ($this->hold["frozen"] ? 'frozen' : 'hold')))) . (isset($this->hold["freezeLength"]) ? (" until " . date("M j, Y", time() + (($this->hold["freezeLength"] + 1) * 24 * 3600))) : "")?></span>
               </td>
             </tr>
           <? endif; ?>
@@ -154,6 +154,9 @@
                   <div class="EIN-col-m-12" style="height:10px"></div>
                 <? endif; ?>
                 Notify me at: <span class="bold"><?=$this->hold["emailAddress"]??"Email address not specified"?></span>
+                <? if( isset($this->hold["freezeLength"]) && $holdType != "hold_all" ): ?>
+                  <br>Frozen until: <span class="bold"><?=date("M j, Y", time() + (($this->hold["freezeLength"] + 1) * 24 * 3600))?></span>
+                <? endif; ?>
               </td>
             </tr>
           <? endif; ?>

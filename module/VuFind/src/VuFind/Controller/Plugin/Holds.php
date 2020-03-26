@@ -362,7 +362,7 @@ class Holds extends AbstractRequestBase
 
             // Add Patron Data to Submitted Data
             $freezeResults = $catalog->freezeHolds(
-                ['details' => $details, 'patron' => $patron], true
+                ['details' => $details, 'patron' => $patron, 'freezeLength' => $params->fromPost('freezeLength') ?? 0], true
             );
             if ($freezeResults == false) {
                 $flashMsg->addMessage('hold_freeze_fail', 'error');

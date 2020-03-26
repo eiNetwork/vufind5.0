@@ -657,7 +657,7 @@ class OverdriveConnector implements LoggerAwareInterface,
      * @param boolean $freeze
      * @return \stdClass Object with result
      */
-    public function freezeHold($overDriveId, $doFreeze){
+    public function freezeHold($overDriveId, $doFreeze, $freezeLength=0){
         $holdResult = $this->getResultObject();
         $this->debug("OverdriveConnector: freezeHold");
 
@@ -672,6 +672,10 @@ class OverdriveConnector implements LoggerAwareInterface,
                     "emailAddress" => $user["email"],
                     "suspensionType" => "indefinite"
                 );
+                if( $freezeLength ) {
+                    $params["suspensionType"] = "limited";
+                    $params["numberOfDays"] = $freezeLength;
+                }
                 $response = $this->callPatronUrl(
                     $user["cat_username"], $user["cat_password"], $url, $params,
                     "POST"
