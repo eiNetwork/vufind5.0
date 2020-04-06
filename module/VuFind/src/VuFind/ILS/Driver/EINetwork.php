@@ -750,6 +750,9 @@ class EINetwork extends SierraRest implements
                 $hold['requestId'] = "OverDrive" . $hold["reserveId"];
                 $hold['statusCode'] = isset($hold["actions"]["checkout"]) ? "i" : "-";
                 $hold['frozen'] = isset($hold["holdSuspension"]);
+                if( $hold['frozen'] && (($hold["holdSuspension"]["suspensionType"] ?? "") == "limited") ) {
+                    $hold['freezeLength'] = $hold["holdSuspension"]["numberOfDays"] ?? 0;
+                }
 
                 $sierraHolds[] = $hold;
             }
@@ -895,7 +898,7 @@ class EINetwork extends SierraRest implements
 
         // process the overdrive holds
         foreach($overDriveHolds as $overDriveID ) {
-            $overDriveResults = $this->connector->freezeHold($overDriveID, $doFreeze);
+            $overDriveResults = $this->connector->freezeHold($overDriveID, $doFreeze, $holds["freezeLength"] ?? 0);
             $success &= $overDriveResults->status;
         }
 

@@ -13,6 +13,31 @@
     <div class="EIN-col-m-12 confirmText"><?=$this->transEsc($msg)?></div>
   <? endif; ?>
 <? endforeach; ?>
+<? if( isset($this->extras["freezeAllIDS"]) || isset($this->extras["freezeSelectedIDS"]) ): ?>
+  <? $showSelector = true; ?>
+  <? foreach (($this->extras["freezeAllIDS"] ?? []) as $value): ?>
+    <? $showSelector &= (substr($value, 0, 9) == "OverDrive"); ?>
+  <? endforeach; ?>
+  <? foreach (($this->extras["freezeSelectedIDS"] ?? []) as $value): ?>
+    <? $showSelector &= (substr($value, 0, 9) == "OverDrive"); ?>
+  <? endforeach; ?>
+  <? if( $showSelector ): ?>
+    <div class="EIN-col-m-12 confirmText">&nbsp;</div>
+    <table class="pickupLocationTable">
+      <tr><td colspan="2" class="modalSubheading center">Freeze until</td></tr>
+      <tr>
+        <td><span class="bigGreenCheck" name="check-0"><span class="sr-only">Checked</span><i class="fa fa-check"></i></span></td>
+        <td><button class="btn-dropdown btn-standardDropdown btn-pickupLocation" onclick="return SelectFreezeLength('0');">I unfreeze</button></td>
+      </tr>
+      <? foreach ([7,14,21,28,60,90,180] as $count): ?>
+        <tr>
+          <td><span class="bigGreenCheck" name="check-<?=$count?>" style="color:#fff"><span class="sr-only">Checked</span><i class="fa fa-check"></i></span></td>
+          <td><button class="btn-dropdown btn-standardDropdown btn-pickupLocation" onclick="return SelectFreezeLength('<?=$count?>');"><?=date('M j, Y', time() + ($count * (24 * 3600)))?> (<?=$count?> days)</button></td>
+        </tr>
+      <? endforeach; ?>
+    </table>
+  <? endif; ?>
+<? endif; ?>
 <div class="modal-footer">
   <div id="confirmFooter">
     <form id="confirmForm" action="<?=$this->escapeHtmlAttr($this->confirm)?>" method="<?=isset($this->formMethod) ? $this->formMethod : "post"?>">
@@ -29,6 +54,9 @@
           <? endif; ?>
         <? endforeach; ?>
       <? endif;?>
+      <? if( $showSelector ): ?>
+        <input type="hidden" name="freezeLength" value="0">
+      <? endif;?>
     </form>
     <button class="btn-alternate btn-wide" onclick="$('#modalClose').click()"><?=$this->transEsc('confirm_dialog_no')?></button>
     <button class="btn-default btn-wide" onclick="SubmitConfirmation();"><?=$this->transEsc('confirm_dialog_yes') ?></button>
@@ -43,6 +71,13 @@
     $('#confirmFooter').css('display','none');
     $('#loadingFooter').css('display','block');
     $('#confirmForm').submit();
+  }
+
+  function SelectFreezeLength(chosenID) {
+    var currentID = $('input[name="freezeLength"]').val();
+    $('span[name="check-' + currentID + '"]').css("color","#fff");
+    $('input[name="freezeLength"]').val(chosenID);
+    $('span[name="check-' + chosenID + '"]').css("color","");
   }
 </script>
 
