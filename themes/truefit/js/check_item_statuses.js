@@ -172,7 +172,7 @@ function handleItemStatusResponse(response) {
     } else if( result.holdArgs != '' ) {
       var isOverDrive = (result.location == "OverDrive");
       var holdArgs = JSON.parse(result.holdArgs.replace(/'/g,"\""));
-      leftButton.prop('disabled', false);
+      leftButton.prop('disabled', !isOverDrive);
       var holdLink = isOverDrive ? ("/Overdrive/") : ("/Record/" + holdArgs.id + "/");
       if( result.hasVolumes ) {
         holdLink += "SelectItem";

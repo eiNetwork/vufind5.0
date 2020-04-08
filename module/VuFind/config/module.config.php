@@ -721,7 +721,7 @@ $staticRoutes = [
     'EDS/Advanced', 'EDS/Home', 'EDS/Search',
     'EIT/Advanced', 'EIT/Home', 'EIT/Search',
     'Error/PermissionDenied', 'Error/Unavailable',
-    'Feedback/Email', 'Feedback/Home', 'Help/Changes', 'Help/Home', 'Help/PrivacyPolicy',
+    'Feedback/Email', 'Feedback/Home', 'Help/Changes', 'Help/HoldLists', 'Help/Home', 'Help/PrivacyPolicy',
     'Install/Done', 'Install/FixBasicConfig', 'Install/FixCache',
     'Install/FixDatabase', 'Install/FixDependencies', 'Install/FixILS',
     'Install/FixSecurity', 'Install/FixSolr', 'Install/FixSSLCerts', 'Install/Home',
