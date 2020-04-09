@@ -396,9 +396,6 @@ body.modalOpen {overflow:hidden;position:fixed;width:100%}
 .alert-announcement .alertLink {color:#fafafa; text-decoration:underline}
 .alert-announcement .alertLink:hover {color:#5c6dcc}
 
-.alert-blue{background-color: #3f51b5;color: #fff}
-.alert-blue .alertLink {color:#fafafa; text-decoration:underline}
-.alert-blue .alertLink:hover {color:#5c6dcc}
 .fa-exclamation {padding:12px; margin-left:5px; margin-right:5px}
 
 .loadingWall {text-align:center; margin:20px}
