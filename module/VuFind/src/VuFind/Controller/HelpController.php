@@ -67,6 +67,16 @@ class HelpController extends AbstractBase
     }
 
     /**
+     * Shows the patron the instructions to make a list for their requests during covid-19
+     *
+     * @return mixed
+     */
+    public function holdListsAction()
+    {
+        return $this->createViewModel();
+    }
+
+    /**
      * Shows the patron the changelog
      *
      * @return mixed

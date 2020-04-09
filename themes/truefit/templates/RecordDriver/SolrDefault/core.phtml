@@ -326,7 +326,7 @@
         <? if($holdLink != null): ?>
           <a href="<?=$holdLink?>"<?=($holdLink?$targetStr:"")?>>
         <? endif; ?>
-        <button class="btn-default leftButton"<?=$holdClick?><?=((($this->canHold && (!$holdableCopyHere || $hasVolumes)) || $this->canCheckOut || ($isOverDrive && $this->holdArgs) || $accessOnline)?"":" disabled")?>><?=$holdLabel?></button>
+        <button class="btn-default leftButton"<?=$holdClick?><?=((($this->canHold && ($isOverDrive || $accessOnline) && (!$holdableCopyHere || $hasVolumes)) || $this->canCheckOut || ($isOverDrive && $this->holdArgs) || $accessOnline)?"":" disabled")?>><?=$holdLabel?></button>
         <? if($holdLink != null): ?>
           </a>
         <? endif; ?>

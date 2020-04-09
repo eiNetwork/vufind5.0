@@ -396,6 +396,8 @@ body.modalOpen {overflow:hidden;position:fixed;width:100%}
 .alert-announcement .alertLink {color:#fafafa; text-decoration:underline}
 .alert-announcement .alertLink:hover {color:#5c6dcc}
 
+.fa-exclamation {padding:12px; margin-left:5px; margin-right:5px}
+
 .loadingWall {text-align:center; margin:20px}
 
 .neTD { padding:5px; width: 5%; max-width:10px}
