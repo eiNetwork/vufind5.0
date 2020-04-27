@@ -189,7 +189,7 @@ function handleItemStatusResponse(response) {
       if( leftButton.parent("a").length == 0 ) {
         leftButton.wrap("<a data-lightbox></a>");
       }
-      leftButton.parent().attr("href", holdLink);
+      leftButton.parent().attr("href", isOverDrive ? holdLink : "");
       if( isOverDrive ) {
         leftButton.parent().removeAttr("data-lightbox").attr({"target":"loginFrame","data-lightbox-ignore":true});
         leftButton.attr('onClick', "$(this).html('<i class=\\\'fa fa-spinner bwSpinner\\\'></i>&nbsp;Loading...')");
