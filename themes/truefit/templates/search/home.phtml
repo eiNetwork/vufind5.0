@@ -88,6 +88,12 @@
     else if( window.location.href.toLowerCase().indexOf("/myresearch/getcard") != -1 ) {
       $('a[href$="/MyResearch/Login"]:first').click();
       $('#modal').on('shown.bs.modal', function() { ToggleLoginModal(document.getElementById('loginModalRegister')); });
+    // if they're trying to show the help, give it to them
+    } else if( window.location.href.toLowerCase().indexOf("/help/home") != -1 ) {
+      $('a[href$="/Help/Home"]:first').click();
+      if( window.location.hash ) {
+        $('#modal').on('shown.bs.modal', function() { setTimeout( function() { var origHash = window.location.hash; location.hash = '#test'; location.hash = origHash; }, 33); } );
+      }
     }
 
     // bind events to the buttons

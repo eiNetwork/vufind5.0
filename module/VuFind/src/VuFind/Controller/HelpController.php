@@ -50,6 +50,12 @@ class HelpController extends AbstractBase
      */
     public function homeAction()
     {
+        // if we're not in the lightbox, we need to show the landing page and call this section in the lightbox
+        if($this->getRequest()->getQuery('layout', 'no') !== 'lightbox' &&
+           'layout/lightbox' != $this->layout()->getTemplate()) {
+            return $this->forwardTo('Search', 'Home');
+        }
+
         $this->layout()->setTemplate('layout/help');
         return $this->createViewModel(
             ['topic' => $this->params()->fromQuery('topic')]
