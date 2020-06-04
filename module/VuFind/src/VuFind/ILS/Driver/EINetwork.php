@@ -1078,6 +1078,18 @@ class EINetwork extends SierraRest implements
      */
     public function getNotifications($profile){
         $notifications = [];
+        // if they have any physical holds ready for pickup, give them the notification about curbside pickup
+        $patron = $this->patronLogin(null, null);
+        $holds = $this->getMyHolds($patron);
+        $shownCurbsideMsg = false;
+        foreach( $holds as $thisHold ) {
+            if( !$shownCurbsideMsg && ($thisHold["available"] ?? false) && !($thisHold["reserveId"] ?? false) ) {
+                $notifications[] = ["attnSubject" => "<span class=\"messageWarning\">Some libraries now offering limited pickup services.</span> Click here to learn more.",
+                                    "subject" => "Some libraries now offering limited pickup services",
+                                    "message" => "Allegheny County public libraries are preparing to resume some services, and some have already begun offering limited services for pickup of requested items.  Please contact the library you have chosen as a pickup location for details.  You can check your pickup location by visiting the Requests page."];
+                $shownCurbsideMsg = true;
+            }
+        }
         if( $profile["moneyOwed"] > 0 ) {
             // build the message
             $msg = "<form name=\"creditForm\" method=\"post\" onsubmit=\"return checkFees()\" target=\"_blank\" action=\"https://payflowlink.paypal.com\" data-lightbox-ignore>" .

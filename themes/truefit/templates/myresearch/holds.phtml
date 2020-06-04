@@ -17,14 +17,28 @@
 
   // temporary OverDrive hold messaging
   $hasODhold = false;
+  $hasSierraHoldReady = false;
   foreach($order as $holdType):
     foreach ($this->recordList[$holdType] as $current):
       $hasODhold |= $current->getExtraDetail("ils_details")["reserveId"] ?? false;
+      $hasSierraHoldReady |= ($holdType == "ready") && !($current->getExtraDetail("ils_details")["reserveId"] ?? false);
     endforeach;
   endforeach;
 ?>
 
 <?=($this->suppressFlashMessages) ? "" : $this->flashmessages()?>
+
+<?
+  // message about self-managing holds
+  if( $hasSierraHoldReady ) {
+?>
+  <div class="EIN-col-m-12">
+    <h1 class="pageTitle" style="text-align:left">Some Libraries Now Offering Limited Pickup Services</h1>
+    <div class="EIN-col-m-12">Allegheny County public libraries are preparing to resume some services, and some have already begun offering limited services for pickup of requested items.  Please contact the library you have chosen as a pickup location for details.</div>
+  </div>
+<?
+  }
+?>
 
 <div class="EIN-col-m-12 padded">
   <div class="EIN-hide-m EIN-col-t-3 EIN-col-3 accordionButtonsLeft">
