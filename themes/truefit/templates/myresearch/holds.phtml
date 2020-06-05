@@ -17,14 +17,28 @@
 
   // temporary OverDrive hold messaging
   $hasODhold = false;
+  $hasSierraHold = false;
   foreach($order as $holdType):
     foreach ($this->recordList[$holdType] as $current):
       $hasODhold |= $current->getExtraDetail("ils_details")["reserveId"] ?? false;
+      $hasSierraHold |= !($current->getExtraDetail("ils_details")["reserveId"] ?? false);
     endforeach;
   endforeach;
 ?>
 
 <?=($this->suppressFlashMessages) ? "" : $this->flashmessages()?>
+
+<?
+  // message about self-managing holds
+  if( $hasSierraHold ) {
+?>
+  <div class="EIN-col-m-12">
+    <h1 class="pageTitle" style="text-align:left">Help Us Manage Requests for Physical Items</h1>
+    <div class="EIN-col-m-12">As Allegheny County public libraries prepare to resume services, we are eager to get you your most needed items as quickly as possible.  Please help us do this by taking a moment to review your current list of requested items and cancelling requests for items you no longer need.<br><br>You can cancel requests for items by selecting the check box to the left of the item title and then choosing <span class="helpEmphasis">Cancel</span> from the <span class="helpEmphasis">On Selected</span> dropdown.  We thank you for your patience.</div>
+  </div>
+<?
+  }
+?>
 
 <div class="EIN-col-m-12 padded">
   <div class="EIN-hide-m EIN-col-t-3 EIN-col-3 accordionButtonsLeft">
