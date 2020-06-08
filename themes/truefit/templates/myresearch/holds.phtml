@@ -17,10 +17,12 @@
 
   // temporary OverDrive hold messaging
   $hasODhold = false;
+  $hasSierraHold = false;
   $hasSierraHoldReady = false;
   foreach($order as $holdType):
     foreach ($this->recordList[$holdType] as $current):
       $hasODhold |= $current->getExtraDetail("ils_details")["reserveId"] ?? false;
+      $hasSierraHold |= !($current->getExtraDetail("ils_details")["reserveId"] ?? false);
       $hasSierraHoldReady |= ($holdType == "ready") && !($current->getExtraDetail("ils_details")["reserveId"] ?? false);
     endforeach;
   endforeach;
@@ -30,9 +32,19 @@
 
 <?
   // message about self-managing holds
-  if( $hasSierraHoldReady ) {
+  if( $hasSierraHold ) {
 ?>
   <div class="EIN-col-m-12">
+    <h1 class="pageTitle" style="text-align:left">Help Us Manage Requests for Physical Items</h1>
+    <div class="EIN-col-m-12">As Allegheny County public libraries prepare to resume services, we are eager to get you your most needed items as quickly as possible.  Please help us do this by taking a moment to review your current list of requested items and cancelling requests for items you no longer need.<br><br>You can cancel requests for items by selecting the check box to the left of the item title and then choosing <span class="helpEmphasis">Cancel</span> from the <span class="helpEmphasis">On Selected</span> dropdown.  We thank you for your patience.</div>
+  </div>
+<?
+  }
+
+  // message about curbside pickup
+  if( $hasSierraHoldReady ) {
+?>
+  <div class="EIN-col-m-12"<? echo ($hasSierraHold ? " style=\"margin-top:20px\"" : ""); ?>>
     <h1 class="pageTitle" style="text-align:left">Some Libraries Now Offering Limited Pickup Services</h1>
     <div class="EIN-col-m-12">Allegheny County public libraries are preparing to resume some services, and some have already begun offering limited services for pickup of requested items.  Please contact the library you have chosen as a pickup location for details.</div>
   </div>

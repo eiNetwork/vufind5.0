@@ -1078,6 +1078,14 @@ class EINetwork extends SierraRest implements
      */
     public function getNotifications($profile){
         $notifications = [];
+        // if they have any physical holds, give them the notification about self managing them
+        $numSierraHolds = $this->getNumberOfMyHolds($profile) - count($this->connector->getHolds(true)->data);
+        if( $numSierraHolds ) {
+            $notifications[] = ["attnSubject" => "<span class=\"messageWarning\">Help us manage requests for physical items.</span> Click here to learn more.",
+                                "subject" => "Help us manage physical item requests",
+                                "message" => "As Allegheny County public libraries prepare to resume services, we are eager to get you your most needed items as quickly as possible.  Please help us do this by taking a moment to review your current list of requested items and cancelling requests for items you no longer need.<br><br>You can cancel requests for items by selecting the check box to the left of the item title and then choosing <span class=\"helpEmphasis\">Cancel</span> from the <span class=\"helpEmphasis\">On Selected</span> dropdown.  We thank you for your patience."];
+        }
+
         // if they have any physical holds ready for pickup, give them the notification about curbside pickup
         $patron = $this->patronLogin(null, null);
         $holds = $this->getMyHolds($patron);
@@ -1090,6 +1098,7 @@ class EINetwork extends SierraRest implements
                 $shownCurbsideMsg = true;
             }
         }
+
         if( $profile["moneyOwed"] > 0 ) {
             // build the message
             $msg = "<form name=\"creditForm\" method=\"post\" onsubmit=\"return checkFees()\" target=\"_blank\" action=\"https://payflowlink.paypal.com\" data-lightbox-ignore>" .
