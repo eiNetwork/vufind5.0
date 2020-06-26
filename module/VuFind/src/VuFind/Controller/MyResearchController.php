@@ -2368,7 +2368,7 @@ class MyResearchController extends AbstractBase
             }
         }
 
-        $readingHistory = $catalog->getReadingHistory($patron, ($this->params()->fromQuery("sort") ? $this->params()->fromQuery("sort") : "outDate"));
+        $readingHistory = $catalog->getReadingHistory($patron, ($this->params()->fromQuery("pageNum") ? $this->params()->fromQuery("pageNum") : 1), 1000, ($this->params()->fromQuery("sort") ? $this->params()->fromQuery("sort") : "outDate"));
         // add in the drivers where needed
         foreach( $readingHistory["titles"] as $key => $item ) {
             $driver = isset($item["skipLoad"]) ? null : $this->serviceLocator->get('VuFind\Record\Loader')->load($item['bibID'], DEFAULT_SEARCH_BACKEND, true);

@@ -1682,7 +1682,7 @@ class EINetwork extends SierraRest implements
         return $returnMap;
     }
 
-    public function getReadingHistory($patron, $sortOption = "outDate") {
+    public function getReadingHistory($patron, $page = 1, $recordsPerPage = 1000, $sortOption = "outDate") {
         $this->testSession();
 
         // if it isn't cached yet, grab it
@@ -1760,9 +1760,10 @@ class EINetwork extends SierraRest implements
             if( $sortOption == "outDate" ) {
                 $sortedTitles = array_reverse($sortedTitles);
             }
+            $sortedTitles = array_slice($sortedTitles, ($page - 1) * $recordsPerPage, $recordsPerPage);
         }
 
-        return array('historyActive'=>($readingHistory !== false), 'titles'=>$sortedTitles, 'total_records' => count($sortedTitles));
+        return array('historyActive'=>($readingHistory !== false), 'titles'=>$sortedTitles, 'numTitles'=> count($sortedTitles), 'total_records' => ($readingHistory !== false) ? count($readingHistory) : 0, 'page' => $page);
     }
 
     public function deleteReadingHistoryItems($patron, $selectedIDs) {
