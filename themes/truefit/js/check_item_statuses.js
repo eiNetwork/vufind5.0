@@ -172,7 +172,7 @@ function handleItemStatusResponse(response) {
     } else if( result.holdArgs != '' ) {
       var isOverDrive = (result.location == "OverDrive");
       var holdArgs = JSON.parse(result.holdArgs.replace(/'/g,"\""));
-      leftButton.prop('disabled', !isOverDrive);
+      leftButton.prop('disabled', false);
       var holdLink = isOverDrive ? ("/Overdrive/") : ("/Record/" + holdArgs.id + "/");
       if( result.hasVolumes ) {
         holdLink += "SelectItem";
@@ -189,7 +189,7 @@ function handleItemStatusResponse(response) {
       if( leftButton.parent("a").length == 0 ) {
         leftButton.wrap("<a data-lightbox></a>");
       }
-      leftButton.parent().attr("href", isOverDrive ? holdLink : "");
+      leftButton.parent().attr("href", holdLink);
       if( isOverDrive ) {
         leftButton.parent().removeAttr("data-lightbox").attr({"target":"loginFrame","data-lightbox-ignore":true});
         leftButton.attr('onClick', "$(this).html('<i class=\\\'fa fa-spinner bwSpinner\\\'></i>&nbsp;Loading...')");

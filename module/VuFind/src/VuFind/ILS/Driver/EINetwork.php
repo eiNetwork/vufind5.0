@@ -995,6 +995,11 @@ class EINetwork extends SierraRest implements
         if( false && isset($holdDetails["item_id"]) ) {
             $holdsInfo = $this->placeItemLevelHold($holdDetails);
         } else {
+            // if there's no itemID, tell this it's a bib-level hold
+            if( !isset($holdDetails["item_id"]) ) {
+                $holdDetails["level"] = "bib";
+            }
+
             $holdsInfo = parent::placeHold($holdDetails);
         }
 
