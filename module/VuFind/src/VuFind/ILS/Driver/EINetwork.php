@@ -1078,13 +1078,6 @@ class EINetwork extends SierraRest implements
      */
     public function getNotifications($profile){
         $notifications = [];
-        // if they have any physical holds, give them the notification about self managing them
-        $numSierraHolds = $this->getNumberOfMyHolds($profile) - count($this->connector->getHolds(true)->data);
-        if( $numSierraHolds ) {
-            $notifications[] = ["attnSubject" => "<span class=\"messageWarning\">Help us manage requests for physical items.</span> Click here to learn more.",
-                                "subject" => "Help us manage physical item requests",
-                                "message" => "As Allegheny County public libraries prepare to resume services, we are eager to get you your most needed items as quickly as possible.  Please help us do this by taking a moment to review your current list of requested items and cancelling requests for items you no longer need.<br><br>You can cancel requests for items by selecting the check box to the left of the item title and then choosing <span class=\"helpEmphasis\">Cancel</span> from the <span class=\"helpEmphasis\">On Selected</span> dropdown.  We thank you for your patience."];
-        }
 
         // if they have any physical holds ready for pickup, give them the notification about curbside pickup
         $patron = $this->patronLogin(null, null);
@@ -1099,6 +1092,7 @@ class EINetwork extends SierraRest implements
             }
         }
 
+        // if they have a non-zero amount of money owed, tell them
         if( $profile["moneyOwed"] > 0 ) {
             // build the message
             $msg = "<form name=\"creditForm\" method=\"post\" onsubmit=\"return checkFees()\" target=\"_blank\" action=\"https://payflowlink.paypal.com\" data-lightbox-ignore>" .
@@ -1181,6 +1175,8 @@ class EINetwork extends SierraRest implements
                 $profile["moneyOwed"] = 0;
             }
         }
+
+        // if one of their preferred libraries is temporarily closed, tell them
         if( isset($profile["showTemporaryClosureMessage"]) && $profile["showTemporaryClosureMessage"] ) {
             $notifications[] = ["attnSubject" => "<span class=\"messageWarning\">Temporary library closure.</span> Click here to learn more.",
                                 "subject" => "Temporary library closure",
@@ -1188,6 +1184,8 @@ class EINetwork extends SierraRest implements
                                              "on the Preferred Libraries section of the <a class=\"messageLink\" href=\"/MyResearch/Profile\" data-lightbox-ignore>profile page</a>. In the meantime, you can choose a different library location as a preferred " .
                                              "library there. If you would rather not change it, you can simply wait until that location reopens and it will once again appear in your preferred libraries."];
         }
+
+        // if one of their preferred libraries is permanently closed, tell them
         if( isset($profile["showPermanentClosureMessage"]) && $profile["showPermanentClosureMessage"] ) {
             $notifications[] = ["attnSubject" => "<span class=\"messageWarning\">Library closure.</span> Click here to learn more.",
                                 "subject" => "Library closure",
@@ -1195,15 +1193,20 @@ class EINetwork extends SierraRest implements
                                              "on the Preferred Libraries section of the <a class=\"messageLink\" href=\"/MyResearch/Profile\" data-lightbox-ignore>profile page</a>. You should choose a different library " .
                                              "location as a preferred library there."];
         }
+
+        // if they haven't set a preferred library, ask them to do so
         if( ($profile["preferredlibrarycode"] == null || $profile["preferredlibrarycode"] == "none") && ($profile["alternatelibrarycode"] == null || $profile["alternatelibrarycode"] == "none") ) {
             $notifications[] = ["attnSubject" => "<span class=\"messageWarning\">Please choose a preferred or alternate library.</span> Click here to learn how.",
                                 "subject" => "Choose a preferred or alternate library",
                                 "message" => "You have not yet chosen a preferred or alternate library. Doing so will make placing requests on physical items much easier, since your preferred libraries are used as the default pickup " .
                                              "location. You can assign a preferred or alternate library on the <a class=\"messageLink\" href=\"/MyResearch/Profile\" data-lightbox-ignore>profile page</a>."];
         }
+
+        // warn them if their card is expired
         if( date_diff(date_create_from_format("m-d-Y", $profile["expiration_date"]), date_create(date("Y-m-d")))->invert == 0 ) {
             $notifications[] = ["subject" => "<span class=\"messageWarning\">Card expired</span>",
                                 "message" => "Your library card is expired. Please visit your local library to renew your card to ensure access to all online services."];
+        // warn them if their card is approaching expiration
         } else if( date_diff(date_create_from_format("m-d-Y", $profile["expiration_date"]), date_create(date("Y-m-d")))->days <= 30 ) {
             $notifications[] = ["subject" => "Card expiration approaching",
                                 "message" => "Your library card is due to expire within the next 30 days. Please visit your local library to renew your card to ensure access to all online services."];
