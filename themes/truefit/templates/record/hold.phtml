@@ -1,6 +1,7 @@
 <?=$this->flashmessages(false)?>
 <? $showWarning = $this->hasVolumesTitles || $this->localCopyTitles; ?>
-<h2><?=$this->transEsc($showWarning ? ("Some " . $this->transEsc("holds_uppercase") . " Cannot Be Placed") : (($this->changePickup?"Change ":"")."Pickup Location"))?></h2>
+<? $overDriveOnly = $this->bulkHold && !$this->ids && $this->overDriveIds; ?>
+<h2><?=$this->transEsc($showWarning ? ("Some " . $this->transEsc("holds_uppercase") . " Cannot Be Placed") : ($overDriveOnly ? "Processing" : (($this->changePickup?"Change ":"")."Pickup Location")))?></h2>
 <span class="backupDialogLabel" style="display:none"><?=$this->transEsc("Pickup Location")?></span>
 <div class="hold-form">
   <span class="holdWarning" style="display:<?=($showWarning ? "inline" : "none")?>">
@@ -87,13 +88,13 @@
 </div>
 <div class="modal-footer">
   <div id="holdFooter">
-    <? if( $showWarning && $this->bulkHold && !$this->ids ): ?>
+    <? if( $showWarning && $this->bulkHold && !$this->ids && !$this->overDriveIds ): ?>
       <button class="btn-default btn-wide" onclick="$('#modalClose').click();">Close</button>
     <? elseif( $showWarning ): ?>
       <button class="btn-default btn-wide holdWarning" onclick="HideIllegalHoldWarning();">Okay</button>
     <? endif; ?>
-    <? if( !$showWarning || !$this->bulkHold || $this->ids ): ?>
-      <form action="" class="form-horizontal" method="post" name="placeHold" target="loginFrame" style="display:<?=($showWarning ? "none" : "block")?>"><!-- data-lightbox-onsubmit="ProcessHoldForm"> -->
+    <? if( !$showWarning || !$this->bulkHold || $this->ids || $this->overDriveIds ): ?>
+      <form action="" class="form-horizontal" method="post" name="placeHold" target="loginFrame" style="display:<?=($showWarning ? "none" : "block")?>">
         <input type="hidden" name="gatheredDetails[comment]" value="" />
         <input type="hidden" name="gatheredDetails[requiredBy]" value="<?=(isset($this->gatheredDetails['requiredBy']) && !empty($this->gatheredDetails['requiredBy'])) ? $this->escapeHtmlAttr($this->gatheredDetails['requiredBy']) : $this->escapeHtmlAttr($this->defaultRequiredDate)?>"/>
         <input type="hidden" name="gatheredDetails[pickUpLocation]" value="<?=$selectedID?>">
@@ -106,6 +107,9 @@
           <input type="hidden" name="referrer" value="<?=$this->referrer?>">
           <? foreach( $this->ids as $id ): ?>
             <input type="hidden" name="<?=($this->changePickup ? "updateIDs[]" : "holdIDs[]")?>" value="<?=$id?>">
+          <? endforeach; ?>
+          <? foreach( $this->overDriveIds as $id ): ?>
+            <input type="hidden" name="holdIDs[]" value="<?=$id?>">
           <? endforeach; ?>
           <? foreach( $this->titles ?? [] as $title ): ?>
             <input type="hidden" name="holdTitles[]" value="<?=$title?>">
@@ -151,7 +155,7 @@
     }
 
     function ProcessHoldForm() {
-      if( ($('input[name="gatheredDetails[pickUpLocation]"]').val() == "") || ($('input[name="gatheredDetails[pickUpLocation]"]').val() == "none") ) {
+      if( <? echo $overDriveOnly ? "false && " : ""; ?>($('input[name="gatheredDetails[pickUpLocation]"]').val() == "") || ($('input[name="gatheredDetails[pickUpLocation]"]').val() == "none") ) {
         $('#holdLocationError').css('display','inherit');
       } else {
         $('#holdFooter').css('display', 'none');
@@ -166,5 +170,10 @@
       }
       return false;
     }
+    <? if( $overDriveOnly ): ?>
+      jQuery(document).ready(function() {
+        ProcessHoldForm();
+      } );
+    <? endif; ?>
   </script>
 </div>

@@ -134,6 +134,7 @@ function handleItemStatusResponse(response) {
       leftButton.wrap("<a href=\"" + holdLink + "\" target=\"loginFrame\"></a>");
       leftButton.attr('onClick', "$(this).html('<i class=\\\'fa fa-spinner bwSpinner\\\'></i>&nbsp;Loading...')");
       leftButton.empty().append('Check Out');
+      item.find('.maybeCheckoutTarget').removeClass("maybeCheckoutTarget").addClass("checkoutTarget");
     } else if( ("isCheckedOut" in result) && result.isCheckedOut ) {
       if( ("isOverDrive" in result) && result.isOverDrive ) {
         leftButton.prop('disabled', false);
@@ -195,6 +196,9 @@ function handleItemStatusResponse(response) {
         leftButton.attr('onClick', "$(this).html('<i class=\\\'fa fa-spinner bwSpinner\\\'></i>&nbsp;Loading...')");
       }
       leftButton.empty().append('Request');
+      if( isOverDrive ) {
+        item.find('.maybeHoldTarget').removeClass("maybeHoldTarget").addClass("holdTarget");
+      }
     } else if( result.learnMoreURL != null ) {
       leftButton.empty().append('Learn More');
       leftButton.prop('disabled', false);
