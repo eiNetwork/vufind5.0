@@ -1207,6 +1207,14 @@ class EINetwork extends SierraRest implements
                                              "location. You can assign a preferred or alternate library on the <a class=\"messageLink\" href=\"/MyResearch/Profile\" data-lightbox-ignore>profile page</a>."];
         }
 
+        // if they don't have an email address on their account, they should add one
+        if( empty($profile["email"]) ) {
+            $notifications[] = ["attnSubject" => "<span class=\"messageWarning\">Please specify your email address.</span> Click here to learn how.",
+                                "subject" => "Specify an email",
+                                "message" => "You have not yet specified your email address in your profile. Doing so will make using the library much easier, since you can then be notified about upcoming due dates " .
+                                             "for checked out items and holds being ready for pickup. You can set your email on the <a class=\"messageLink\" href=\"/MyResearch/Profile\" data-lightbox-ignore>profile page</a>."];
+        }
+
         // warn them if their card is expired
         if( date_diff(date_create_from_format("m-d-Y", $profile["expiration_date"]), date_create(date("Y-m-d")))->invert == 0 ) {
             $notifications[] = ["subject" => "<span class=\"messageWarning\">Card expired</span>",
