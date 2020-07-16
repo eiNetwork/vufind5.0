@@ -196,9 +196,7 @@ function handleItemStatusResponse(response) {
         leftButton.attr('onClick', "$(this).html('<i class=\\\'fa fa-spinner bwSpinner\\\'></i>&nbsp;Loading...')");
       }
       leftButton.empty().append('Request');
-      if( isOverDrive ) {
-        item.find('.maybeHoldTarget').removeClass("maybeHoldTarget").addClass("holdTarget");
-      }
+      item.find('.maybeHoldTarget').removeClass("maybeHoldTarget").addClass("holdTarget");
     } else if( result.learnMoreURL != null ) {
       leftButton.empty().append('Learn More');
       leftButton.prop('disabled', false);
