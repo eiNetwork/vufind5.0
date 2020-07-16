@@ -659,6 +659,10 @@ class EINGetItemStatuses extends GetItemStatuses
         }
 
         // Done
-        return $this->formatResponse(compact('statuses'));
+        $args = compact('statuses');
+        if( $this->ils->placeHoldsDisabled() ) {
+          $args["no_holds"] = true;
+        }
+        return $this->formatResponse($args);
     }
 }

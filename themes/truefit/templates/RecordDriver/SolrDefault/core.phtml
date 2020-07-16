@@ -324,9 +324,9 @@
     <div class="EIN-col-m-12 EIN-col-t-4 EIN-col-4" style="padding:5px 0px 10px">
       <div class="EIN-col-m-6 EIN-col-t-12 EIN-col-12">
         <? if($holdLink != null): ?>
-          <a href="<?=$holdLink?>"<?=($holdLink?$targetStr:"")?>>
+          <a href="<?=(!$this->noHolds || $isOverDrive) ? $holdLink : ""?>"<?=($holdLink?$targetStr:"")?>>
         <? endif; ?>
-        <button class="btn-default leftButton"<?=$holdClick?><?=((($this->canHold && (!$holdableCopyHere || $hasVolumes)) || $this->canCheckOut || ($isOverDrive && $this->holdArgs) || $accessOnline)?"":" disabled")?>><?=$holdLabel?></button>
+        <button class="btn-default leftButton"<?=$holdClick?><?=((($this->canHold && ($isOverDrive || $accessOnline || !$this->noHolds) && (!$holdableCopyHere || $hasVolumes)) || $this->canCheckOut || ($isOverDrive && $this->holdArgs) || $accessOnline)?"":" disabled")?>><?=$holdLabel?></button>
         <? if($holdLink != null): ?>
           </a>
         <? endif; ?>

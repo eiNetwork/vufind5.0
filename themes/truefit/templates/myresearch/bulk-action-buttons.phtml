@@ -271,7 +271,7 @@
         <ul role="navigation" class="dropdown-menu standardDropdown manageListDropdown" style="width:100%">
           <? if (isset($list)): ?>
             <li class="BulkCheckout"><button class="btn-dropdown btn-standardDropdown" onclick="ConfirmSelected($(this).parents('form'), '<?=$bulkID?>', 'listCheckout')">Check Out</button></li>
-            <li class="BulkHold"><button class="btn-dropdown btn-standardDropdown" onclick="HoldSelected($(this).parents('form'), '<?=$bulkID?>'); return false;"><?=$this->transEsc('hold_button_place_hold')?></button></li>
+            <li class="BulkHold<?=($this->noHolds ? " hidden" : "")?>"><button class="btn-dropdown btn-standardDropdown" onclick="HoldSelected($(this).parents('form'), '<?=$bulkID?>'); return false;"><?=$this->transEsc('hold_button_place_hold')?></button></li>
             <li><button class="btn-dropdown btn-standardDropdown" onclick="$('#bulkAction<?=$bulkID?>').attr('name','delete');$(this).parents('form').submit();return false;">Remove...</button></li>
             <hr class="stretchHR">
             <? if( $lists = $user->getLists() ): ?>
@@ -311,7 +311,7 @@
         <ul role="navigation" class="dropdown-menu standardDropdown manageListDropdown" style="width:100%">
           <? if (isset($list)): ?>
             <li class="BulkCheckout"><button class="btn-dropdown btn-standardDropdown" onclick="ConfirmSelected($(this).parents('form'), '<?=$bulkID?>', 'checkout')">Check Out</button></li>
-            <li class="BulkHold"><button class="btn-dropdown btn-standardDropdown" onclick="HoldSelected($(this).parents('form'), '<?=$bulkID?>'); return false;"><?=$this->transEsc('hold_button_place_hold')?></button></li>
+            <li class="BulkHold<?=($this->noHolds ? " hidden" : "")?>"><button class="btn-dropdown btn-standardDropdown" onclick="HoldSelected($(this).parents('form'), '<?=$bulkID?>'); return false;"><?=$this->transEsc('hold_button_place_hold')?></button></li>
             <li><button class="btn-dropdown btn-standardDropdown" onclick="$('#bulkAction<?=$bulkID?>').attr('name','delete');bulkActionSubmit($(this).parents('form'));return false;">Remove...</button></li>
             <hr class="stretchHR">
             <? if( $lists = $user->getLists() ): ?>
