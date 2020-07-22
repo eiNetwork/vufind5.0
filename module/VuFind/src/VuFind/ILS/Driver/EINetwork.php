@@ -1209,10 +1209,10 @@ class EINetwork extends SierraRest implements
 
         // if they don't have an email address on their account, they should add one
         if( empty($profile["email"]) ) {
-            $notifications[] = ["attnSubject" => "<span class=\"messageWarning\">Please specify your email address.</span> Click here to learn how.",
-                                "subject" => "Specify an email",
-                                "message" => "You have not yet specified your email address in your profile. Doing so will make using the library much easier, since you can then be notified about upcoming due dates " .
-                                             "for checked out items and holds being ready for pickup. You can set your email on the <a class=\"messageLink\" href=\"/MyResearch/Profile\" data-lightbox-ignore>profile page</a>."];
+            $notifications[] = ["attnSubject" => "<span class=\"messageWarning\">Please provide your email address.</span> Click here to learn how.",
+                                "subject" => "Provide an email",
+                                "message" => "There is no email address in your library account. Please visit your <a class=\"messageLink\" href=\"/MyResearch/Profile\" data-lightbox-ignore>profile</a> to update this " .
+                                             "information. Doing so will allow you to receive library notifications by email and request eContent items from OverDrive."];
         }
 
         // warn them if their card is expired
