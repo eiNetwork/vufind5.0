@@ -12,10 +12,23 @@
   </div><br>
   <div class="privacyText">
     <div class="privacySubtitle">Recent Changes:</div><br>
-    <div class="privacyHeader">Library Catalog v3.8.1 (May 7, 2020)</div><br>
+    <div class="privacyHeader">Library Catalog v3.9.0 (July 27, 2020)</div><br>
     <div>
       <ul>
-        <li>Fixed bugs with multiple processes that maintain accurate data within the system and overall system stability.</li>
+        <li>Bugfixes for issues with the "On Selected" Menu in Book Carts/Lists:
+          <ul>
+            <li>Users prompted to select a pickup location when placing OverDrive holds in bulk.</li>
+            <li>Incorrect menu options display for selected items (for example displaying "Request" when available OverDrive items are selected).</li>
+          </ul>
+        </li>
+        <li>Improvements for user with no email address in their library account:
+          <ul>
+            <li>Improve error message when a user with no email address attempts to request an OverDrive item.</li>
+            <li>Add message to notification center for users with no email address in their library account.</li>
+          </ul>
+        </li>
+        <li>Bugfix for Reading History page timeouts affecting users a with very large reading history.</li>
+        <li>Bugfix for an issue preventing users from placing item holds on certain magazines and periodicals that require you to select a specific item.</li>
       </ul>
     </div>
     <div>
@@ -24,6 +37,12 @@
         <a class="moreLink" onClick="ToggleAccordion('Changes',1)">Show Earlier Changes</a>
       </span>
       <span id="accordionMoreChanges" style="display:none">
+        <br><div class="privacyHeader">Library Catalog v3.8.1 (May 7, 2020)</div><br>
+        <div>
+          <ul>
+            <li>Fixed bugs with multiple processes that maintain accurate data within the system and overall system stability.</li>
+          </ul>
+        </div>
         <br><div class="privacyHeader">Library Catalog v3.8.0 (April 6, 2020)</div><br>
         <div>
           <ul>
