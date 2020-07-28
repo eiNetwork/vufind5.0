@@ -770,7 +770,7 @@ class EINetwork extends SierraRest implements
     /**
      * Checkout Holds
      *
-     * This is responsible for checkint out a patron's OverDrive holds.
+     * This is responsible for checking out a patron's OverDrive holds.
      *
      * @param array  $holds  The holds to checkout
      *
@@ -802,6 +802,27 @@ class EINetwork extends SierraRest implements
         }
 
         return ["success" => $success];
+    }
+
+    /**
+     * Bulk OD Checkout
+     *
+     * This is responsible for checking out multiple OverDrive items.
+     *
+     * @param array  $IDs  The ids of the items to check out
+     *
+     * @return boolean     Whether or not all checkouts were successful
+     */
+    public function bulkODCheckout($IDs){
+        // invalidate the cached data
+        $this->sessionCache->staleCheckoutsHash = md5(json_encode($this->sessionCache->checkouts));
+
+        $success = true;
+        foreach($IDs as $overDriveID) {
+            $overDriveResults = $this->connector->doOverdriveCheckout($overDriveID);
+            $success &= $overDriveResults->status;
+        }
+        return $success;
     }
 
     /**

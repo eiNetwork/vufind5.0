@@ -1300,6 +1300,43 @@ class MyResearchController extends AbstractBase
     }
 
     /**
+     * Checkout a batch of records.
+     *
+     * @return mixed
+     */
+    public function checkoutBulkAction()
+    {
+        // Retrieve ID list:
+        $catalog = $this->getILS();
+        $overDriveIds = [];
+        $ids = null === $this->params()->fromPost('selectAll')
+            ? $this->params()->fromPost('ids')
+            : $this->params()->fromPost('idsAll');
+        foreach($ids as $id) {
+            $thisId = explode("|", $id)[1];
+            if( $odId = $catalog->getOverDriveID($thisId) ) {
+                $overDriveIds[] = $odId;
+            }
+        }
+
+        // do the checkouts
+        $success = $catalog->bulkODCheckout($overDriveIds);
+
+        // return the results
+        if ($success) {
+            $msg = (count($overDriveIds) == 1) ? 'hold_checkout_success_single' : 'hold_checkout_success_multiple';
+            $this->flashMessenger()->addMessage(['html' => true, 'msg' => $msg], 'info');
+        } else {
+            $msg = (count($overDriveIds) == 1) ? 'hold_checkout_fail_single' : 'hold_checkout_fail_multiple';
+            $this->flashMessenger()->addMessage(['html' => true, 'msg' => $msg], 'error');
+        }
+        $view = $this->createViewModel(['skip' => true, 'title' => 'Checkout Results', 'reloadParent' => true]);
+        $view->setTemplate('blankModal');
+
+        return $view;
+    }
+
+    /**
      * Send list of holds to view
      *
      * @return mixed
@@ -1372,14 +1409,21 @@ class MyResearchController extends AbstractBase
                 $view->preferredLibrary = $this->getUser()->preferred_library;
                 $view->alternateLibrary = $this->getUser()->alternate_library;
                 $rawIds = $this->params()->fromPost('ids');
+                $overDriveIds = [];
                 $ids = [];
                 $checkHolds = null;
                 foreach($rawIds as $id) {
-                    $ids[] = explode("|", $id)[1];
+                    $thisId = explode("|", $id)[1];
                     if( !isset($checkHolds["defaultRequiredDate"]) ) {
-                        $checkHolds = $catalog->checkFunction('Holds', ['id' => $ids[-1] ?? "",'patron' => $patron]);
+                        $checkHolds = $catalog->checkFunction('Holds', ['id' => $thisId ?? "",'patron' => $patron]);
+                    }
+                    if( $catalog->getOverDriveID($thisId) ) {
+                        $overDriveIds[] = $thisId;
+                    } else {
+                        $ids[] = $thisId;
                     }
                 }
+                $view->overDriveIds = $overDriveIds;
                 $view->ids = $ids;
                 $defaultRequired = $this->holds()->getDefaultRequiredDate(
                     $checkHolds, $catalog, $patron, null
