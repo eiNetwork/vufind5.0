@@ -180,6 +180,7 @@ class EINGetListContents extends AbstractBase //implements TranslatorAwareInterf
             $sortHtml = $this->renderer->render('search/controls/sort.phtml', $cachedListContents[$sort]["sortArgs"]);
             $bulkArgs = $cachedListContents[$sort]["bulkArgs"];
             $bulkArgs["list"] = $this->listTable->getExisting($bulkArgs["list"]);
+            $bulkArgs["noHolds"] = $this->ils->placeHoldsDisabled();
             $bulkHtml = $this->renderer->render('myresearch/bulk-action-buttons.phtml', $bulkArgs);
             foreach($items as $i => $thisResult) {
                 $record = $this->loader->load($thisResult["ID"], DEFAULT_SEARCH_BACKEND, true);

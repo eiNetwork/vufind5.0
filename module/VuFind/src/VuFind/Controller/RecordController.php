@@ -224,6 +224,7 @@ class RecordController extends AbstractRecord
         }
 
         $view->canCheckOut = $canCheckOut;
+        $view->noHolds = $catalog->placeHoldsDisabled();
         $view->canHold = $canHold;
         $view->numberOfHolds = ($overDriveHolds == -1) ? $catalog->getNumberOfHoldsOnRecord($bib) : $overDriveHolds;
         $view->idArgs = str_replace("\"", "'", json_encode(["id" => $bib]));

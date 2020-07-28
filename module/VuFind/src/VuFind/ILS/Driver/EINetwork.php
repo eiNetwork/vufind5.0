@@ -975,6 +975,9 @@ class EINetwork extends SierraRest implements
         return $pickupLocations;
     }
 
+    public function placeHoldsDisabled() {
+        return $this->config["Catalog"]["placing_holds_disabled"];
+    }
 
     /**
      * Place Hold

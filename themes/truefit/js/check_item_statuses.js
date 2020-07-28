@@ -80,7 +80,8 @@ function checkItemStatuses() {
   }
 }
 
-function handleItemStatusResponse(response) { 
+function handleItemStatusResponse(response) {
+  var noHolds = response.data.hasOwnProperty("no_holds") && response.data.no_holds;
   $.each(response.data.statuses, function(i, result) {
     var item = $('.hiddenId[value="' + result.fullID + '"]').parents('.ajaxItem').first();
     if(result.availability_message.constructor === Array) {
@@ -173,7 +174,7 @@ function handleItemStatusResponse(response) {
     } else if( result.holdArgs != '' ) {
       var isOverDrive = (result.location == "OverDrive");
       var holdArgs = JSON.parse(result.holdArgs.replace(/'/g,"\""));
-      leftButton.prop('disabled', false);
+      leftButton.prop('disabled', false || (noHolds && !isOverDrive));
       var holdLink = isOverDrive ? ("/Overdrive/") : ("/Record/" + holdArgs.id + "/");
       if( result.hasVolumes ) {
         holdLink += "SelectItem";
@@ -190,13 +191,15 @@ function handleItemStatusResponse(response) {
       if( leftButton.parent("a").length == 0 ) {
         leftButton.wrap("<a data-lightbox></a>");
       }
-      leftButton.parent().attr("href", holdLink);
+      leftButton.parent().attr("href", (isOverDrive || !noHolds) ? holdLink : "");
       if( isOverDrive ) {
         leftButton.parent().removeAttr("data-lightbox").attr({"target":"loginFrame","data-lightbox-ignore":true});
         leftButton.attr('onClick', "$(this).html('<i class=\\\'fa fa-spinner bwSpinner\\\'></i>&nbsp;Loading...')");
       }
       leftButton.empty().append('Request');
-      item.find('.maybeHoldTarget').removeClass("maybeHoldTarget").addClass("holdTarget");
+      if( isOverDrive || !noHolds ) {
+        item.find('.maybeHoldTarget').removeClass("maybeHoldTarget").addClass("holdTarget");
+      }
     } else if( result.learnMoreURL != null ) {
       leftButton.empty().append('Learn More');
       leftButton.prop('disabled', false);
