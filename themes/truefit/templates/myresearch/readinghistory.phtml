@@ -5,6 +5,19 @@
 
   // Set up page title:
   $this->headTitle($this->translate('Reading History'));
+
+
+  $maxPage = ceil($this->readingHistory["total_records"] / 1000);
+  $previous = ($this->readingHistory["page"] == 1) ? null : ($this->readingHistory["page"] - 1);
+  $next = ($this->readingHistory["page"] == $maxPage) ? null : ($this->readingHistory["page"] + 1);
+  $range = [];
+  $start = $this->readingHistory["page"] - (($maxPage == $this->readingHistory["page"]) ? 4 : (($maxPage == $next) ? 3 : (($this->readingHistory["page"] == 2) ? 1 : (($this->readingHistory["page"] == 1) ? 0 : 2))));
+  for( $i=$start; $i<$start+5; $i++ ) {
+    if( ($i > 0) && ($i <= $maxPage) ) {
+      $range[] = $i;
+    }
+  }
+  $paginationInfo = [ "pageCount" => $maxPage, "previous" => $previous, "next" => $next, "current" => $this->readingHistory["page"], "pagesInRange" => $range ];
 ?>
 
 <?=$this->flashmessages()?>
@@ -30,9 +43,13 @@
       <div>You do not have any items in your reading list. It may take up to 3 hours for your reading history to be updated after you start recording your history.</div>
     <? else: ?>
       <div class="clearfix hidden-print center">
+        <? if( $this->readingHistory["numTitles"] < $this->readingHistory["total_records"] ): ?>
+          <?=$this->render('myresearch/readinghistorypagination.phtml', $paginationInfo)?>
+          <div class="EIN-hide-m EIN-col-t-12 EIN-col-12" style="height:10px"></div>
+        <? endif; ?>
         <table style="margin:auto;display:inline-block">
           <tr>
-            <td><span>Showing <strong id="historyCount"><?=$this->readingHistory["total_records"]?> of <?=$this->readingHistory["total_records"]?></strong> sorted by </span></td>
+            <td><span>Showing <strong id="historyCount"><?=((($this->readingHistory["page"] - 1) * 1000) + 1) . "-" . ((($this->readingHistory["page"] * 1000) < $this->readingHistory["total_records"]) ? ($this->readingHistory["page"] * 1000) : $this->readingHistory["total_records"])?> of <?=$this->readingHistory["total_records"]?></strong> sorted by </span></td>
             <td style="padding-left:5px" class="ajaxListSortControls"><?=$this->render('myresearch/readinghistorysort.phtml', ['sort' => $this->sort])?></td>
           </tr>
         </table>
@@ -40,6 +57,7 @@
       <div class="center">Search for:&nbsp;
         <input type="text" onkeyup="SearchReadingHistory(this);" value="Enter a term" class="formControl textBox" onfocus="if (this.value=='Enter a term') {this.value = '';this.style.color='#3d3d3d';}" onblur="if (this.value=='') {this.value = 'Enter a term';this.style.color='#949494';}" id="readingHistorySearch" disabled />
       </div>
+      <div id="searchCount" class="center">&nbsp;</div>
       <form class="form-inline" method="post" name="bulkActionForm" action="<?=$this->url('cart-myresearchbulk')?>" data-lightbox>
         <span class="ajaxReadingHistory">
           <?=$this->context($this)->renderInContext('myresearch/bulk-action-buttons.phtml', array('idPrefix' => 'delete', 'history' => 'history'))?>
@@ -95,6 +113,11 @@
           </tr>
         <? endforeach; ?>
       </table>
+      <? if( $this->readingHistory["numTitles"] < $this->readingHistory["total_records"] ): ?>
+        <div class="clearfix hidden-print center">
+          <?=$this->render('myresearch/readinghistorypagination.phtml', $paginationInfo)?>
+        </div>
+      <? endif; ?>
     <? endif; ?>
     <div class="center" style="margin:20px 0px">
       <form method="post">
@@ -135,7 +158,11 @@
       } );
 
       // fix the count
-      $('#historyCount').html($('.historyItem').not('.checkToggleOff').size() + " of " + $('.historyItem').size());
+      if( $('.historyItem').not('.checkToggleOff').size() < $('.historyItem').size() ) {
+        $('#searchCount').html("Matches " + $('.historyItem').not('.checkToggleOff').size() + " of " + $('.historyItem').size() + " items from this page");
+      } else {
+        $('#searchCount').html("&nbsp;");
+      }
 
       // en/disable the select all button
       $('.selectAllBulk').prop('disabled', $('.historyItem.checkToggleOff').size() ? true : false);
