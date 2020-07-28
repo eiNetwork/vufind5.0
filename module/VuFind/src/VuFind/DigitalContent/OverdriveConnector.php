@@ -546,20 +546,26 @@ class OverdriveConnector implements LoggerAwareInterface,
         if ($config = $this->getConfig()) {
             //TODO: Make this a configuration option
             $ignoreHoldEmail = false;
+            $email = $email ?? $user["email"];
             $url = $config->circURL . '/v1/patrons/me/holds';
             $params = array(
                 'reserveId' => $overDriveId,
-                'emailAddress' => $email ?? $user["email"],
+                'emailAddress' => $email,
                 'ignoreHoldEmail' => $ignoreHoldEmail,
             );
 
-            $response = $this->callPatronUrl(
-                $user["cat_username"],
-                $user["cat_password"],
-                $url,
-                $params,
-                "POST"
-            );
+            if( $ignoreHoldEmail || $email ) {
+                $response = $this->callPatronUrl(
+                    $user["cat_username"],
+                    $user["cat_password"],
+                    $url,
+                    $params,
+                    "POST"
+                );
+            } else {
+                $holdResult->msg = '<i class=\'fa fa-exclamation-triangle\'></i>You must have an email address in your profile to place an OverDrive request on this title. Please set one on the <a href=\'/MyResearch/Profile\'>profile page</a>.';
+                return $holdResult;
+            }
 
             if (!empty($response)) {
                 if (isset($response->holdListPosition)) {
