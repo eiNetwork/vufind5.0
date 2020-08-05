@@ -24,7 +24,7 @@
 
   <h2 class="lightbox-header"><?=$this->transEsc('Login')?></h2>
   <span id="loginFlashMessages">
-    <?=$this->flashmessages(false)?>
+    <?=($this->skipFlashMessages ?? false) ? : $this->flashmessages(false)?>
   </span>
 
   <? if ($hideLogin): ?>

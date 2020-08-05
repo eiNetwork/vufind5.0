@@ -178,6 +178,7 @@ class OverdriveController extends AbstractBase implements LoggerAwareInterface
         $this->debug("ODC Hold action");
 
         if (!is_array($patron = $this->catalogLogin())) {
+            $patron->skipFlashMessages = true;
             return $patron;
         }
         $this->debug("patron: " . print_r($patron, true));

@@ -320,9 +320,6 @@ class AbstractBase extends AbstractActionController
                 $this->flashMessenger()->addMessage($e->getMessage(), 'error');
             }
         }
-        if (!empty($msg)) {
-            $this->flashMessenger()->addMessage($msg, 'error');
-        }
 
         if ($forward) {
             return $this->forwardTo('MyResearch', 'Login');
