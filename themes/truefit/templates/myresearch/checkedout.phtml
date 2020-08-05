@@ -157,7 +157,7 @@
             $(".ajaxCheckoutLoad").each( function() {
               if( data.checkout.length < 50 ) {
                 data.checkout.push( { key: $(this).children(".checkoutKey").html(),
-                                      type: $(this).children(".checkoutType").html(),
+                                      checkoutType: $(this).children(".checkoutType").html(),
                                       checkout: $(this).children(".checkout").html() } );
               }
             } );
