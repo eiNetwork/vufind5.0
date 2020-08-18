@@ -206,7 +206,8 @@ class Results extends BaseResults
             $recordsToRequest[] = [
                 'id' => $row->record_id, 'source' => $row->source,
                 'extra_fields' => [
-                    'title' => $row->title
+                    'title' => $row->title,
+                    'author' => $row->author
                 ]
             ];
         }
