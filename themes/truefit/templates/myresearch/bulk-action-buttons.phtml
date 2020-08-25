@@ -285,7 +285,7 @@
             <hr class="stretchHR">
             <li><span class="modalNote">Click a list name to add all selected titles.  Click 'Remove...' to remove selected titles from this list.</span></li>
           <? elseif (isset($hold) && ($hold == "all")): ?>
-            <li class="BulkCheckout"><button class="btn-dropdown btn-standardDropdown" onclick="ConfirmSelected($(this).parents('form'), '<?=$bulkID?>', 'listCheckout')">Check Out</button></li>
+            <li class="BulkCheckout"><button class="btn-dropdown btn-standardDropdown" onclick="ConfirmSelected($(this).parents('form'), '<?=$bulkID?>', 'checkout')">Check Out</button></li>
             <li class="BulkPickupLocation"><button class="btn-dropdown btn-standardDropdown" onclick="$('#bulkAction<?=$bulkID?>').attr('name','changePickup');">Change Pickup</button></li>
             <li class="BulkEmailAddress"><button class="btn-dropdown btn-standardDropdown" onclick="$('#bulkAction<?=$bulkID?>').attr('name','changeEmail');">Change Email</button></li>
             <li class="BulkChangeFreezeDate"><button class="btn-dropdown btn-standardDropdown" onclick="ConfirmSelected($(this).parents('form'), '<?=$bulkID?>', 'freeze')">Change Freeze Date</button></li>
@@ -310,7 +310,7 @@
       <div class="dropdown" id="listBulkDropdownMobile<?=$bulkID?>">
         <ul role="navigation" class="dropdown-menu standardDropdown manageListDropdown" style="width:100%">
           <? if (isset($list)): ?>
-            <li class="BulkCheckout"><button class="btn-dropdown btn-standardDropdown" onclick="ConfirmSelected($(this).parents('form'), '<?=$bulkID?>', 'checkout')">Check Out</button></li>
+            <li class="BulkCheckout"><button class="btn-dropdown btn-standardDropdown" onclick="ConfirmSelected($(this).parents('form'), '<?=$bulkID?>', 'listCheckout')">Check Out</button></li>
             <li class="BulkHold"><button class="btn-dropdown btn-standardDropdown" onclick="HoldSelected($(this).parents('form'), '<?=$bulkID?>'); return false;"><?=$this->transEsc('hold_button_place_hold')?></button></li>
             <li><button class="btn-dropdown btn-standardDropdown" onclick="$('#bulkAction<?=$bulkID?>').attr('name','delete');bulkActionSubmit($(this).parents('form'));return false;">Remove...</button></li>
             <hr class="stretchHR">
