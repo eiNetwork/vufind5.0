@@ -103,4 +103,32 @@ class Missing extends SolrDefault
         $title = parent::getShortTitle();
         return empty($title) ? $this->determineMissingTitle() : $title;
     }
+
+    /**
+     * Get the author of the record.
+     *
+     * @return string
+     */
+    public function getAuthor()
+    {
+        // If available, use details from ILS:
+        $ilsDetails = $this->getExtraDetail('ils_details');
+        if (isset($ilsDetails['author'])) {
+            return $ilsDetails['author'];
+        }
+
+        // If available, load author from database:
+        $id = $this->getUniqueId();
+        if ($id) {
+            $table = $this->getDbTable('Resource');
+            $resource = $table
+                ->findResource($id, $this->getSourceIdentifier(), false);
+            if (!empty($resource) && !empty($resource->author)) {
+                return $resource->author;
+            }
+        }
+
+        // Default -- empty string:
+        return "";
+    }
 }

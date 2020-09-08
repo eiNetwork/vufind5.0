@@ -165,6 +165,10 @@ class EINGetListContents extends AbstractBase //implements TranslatorAwareInterf
                 $runnerItems = $this->runner->run($request, 'Favorites', $setupCallback);
                 foreach($runnerItems->getResults() as $i => $thisResult) {
                     $newItem = ["ID" => $thisResult->getUniqueID(), "source" => $thisResult->getResourceSource()];
+                    if( get_class($thisResult) == "VuFind\RecordDriver\Missing" ) {
+                        $newItem["title"] = $thisResult->getTitle();
+                        $newItem["author"] = $thisResult->getAuthor();
+                    }
                     $items[] = $newItem;
                     $cachedListContents[$sort]["items"][(($page - 1) * $limit) + $i] = $newItem;
                 }

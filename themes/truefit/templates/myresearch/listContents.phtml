@@ -14,17 +14,19 @@
       <div class="row result ajaxItem EIN-col-m-12">
         <div class="EIN-col-m-12"><hr style="margin:5px 0"></div>
         <table class="EIN-col-m-12"><tr>
-          <td class="EIN-col-m-1" style="margin:auto"></td>
-          <td class="EIN-col-m-3" style="vertical-align:top">
-            <div class="text-center" style="padding:10px">
-              <img src="<?=$this->url('cover-unavailable')?>" class="recordcover" alt="<?=$this->transEsc('No Cover Image')?>"/>
-            </div>
+          <td class="EIN-col-m-1" style="margin:auto">
+            <span class="pull-left flip"><?=$this->context()->renderInContext('record/checkbox.phtml', ['overruleId' => $thisResult["source"] . "|" . $thisResult["ID"], 'page' => 'list_' . $list_id])?></span>
+            <input type="hidden" value="<?=$this->escapeHtmlAttr($thisResult["ID"])?>" class="hiddenId" />
+            <input type="hidden" value="<?=$this->escapeHtmlAttr($thisResult["source"])?>" class="hiddenSource" />
           </td>
-          <td class="EIN-col-m-8">
-            <div class="highlightContainer EIN-col-m-12 EIN-col-t-8 EIN-col-8">
-              <h1 property="name" class="itemTitle">This record is no longer available</h1>
+          <td class="EIN-col-m-11">
+            <div class="highlightContainer EIN-col-m-12">
+              <span class="itemTitle"><?=$thisResult["title"]?></span><?=
+                ($thisResult["author"] ? (" by <span class=\"itemTitle\">" . $thisResult["author"] . "</span>") : "")
+              ?>  used to be here. This record is no longer available. Click <a href="/Search/Results?type=Keyword&lookfor=<?=
+                $thisResult["title"] . ($thisResult["author"] ? (" " . $thisResult["author"]) : "")
+              ?>">here</a> to search for alternate versions or editions.
             </div>
-            <div class="EIN-hide-m EIN-col-t-4 EIN-col-4" style="padding:5px 0px 10px">
             </div>
           </td>
         </tr></table>
