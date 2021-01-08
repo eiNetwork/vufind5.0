@@ -156,11 +156,6 @@ JS;
       <iframe style="display:none" id="backgroundLoaderCheckouts"></iframe>
     <?
         endif;
-        if( $this->ils()->getDriver()->getSessionVar('readingHistory') === null ):
-    ?>
-      <iframe style="display:none" id="backgroundLoaderHistory"></iframe>
-    <?
-        endif;
       endif;
     ?>
     <?php // Set up the search box -- there are three possible cases:

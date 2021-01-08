@@ -1672,12 +1672,13 @@ class EINetwork extends SierraRest implements
         }
 
         // see if it's there
-        if( count($ids) ) {
+        while( count($ids) ) {
             // grab a bit more information from Solr
             $solrBaseURL = $this->config['Solr']['url'];
             $curl_url = $solrBaseURL . "/biblio/select?q=*%3A*&fq=";
             $addOr = false;
-            foreach( $ids as $thisID ) {
+            $thisSection = array_splice($ids, 0, 50);
+            foreach( $thisSection as $thisID ) {
                 $curl_url .= ($addOr ? "%20OR%20" : "") . "id%3A%22" . $thisID . "%22";
                 $addOr = true;
             }
@@ -1732,14 +1733,14 @@ class EINetwork extends SierraRest implements
             $done = false;
 
             $result = $this->makeRequest(
-                ['v' . $this->apiVersion, 'patrons', $patron["id"], 'checkouts', 'history'], ['limit' => 50, 'offset' => count($readingHistoryTitles)], 'GET', $patron
+                ['v' . $this->apiVersion, 'patrons', $patron["id"], 'checkouts', 'history'], ['limit' => 1000, 'offset' => count($readingHistoryTitles)], 'GET', $patron
             );
 
             if( (($result["httpStatus"] ?? 200) == 400) && (($result["code"] ?? 0) == 146) ) {
                 $enabled = false;
             }
 
-            // fetch it by pages of 50
+            // fetch it by pages of 1000
             while( $enabled && count($readingHistoryTitles) < $result["total"] ) {
                 // grab the author and title
                 $ids = [];
@@ -1780,7 +1781,7 @@ class EINetwork extends SierraRest implements
 
                 // grab the next page
                 $result = $this->makeRequest(
-                    ['v5', 'patrons', $patron["id"], 'checkouts', 'history'], ['limit' => 50, 'offset' => count($readingHistoryTitles)], 'GET', $patron
+                    ['v5', 'patrons', $patron["id"], 'checkouts', 'history'], ['limit' => 1000, 'offset' => count($readingHistoryTitles)], 'GET', $patron
                 );
             }
 
@@ -1833,11 +1834,11 @@ class EINetwork extends SierraRest implements
         if( $patronID != null ) {
             $hierarchy = ['v' . $this->apiVersion, 'patrons', $patronID, 'checkouts', 'history'];
             $offset = 0;
-            $params = ['limit' => 50, 'offset' => $offset];
+            $params = ['limit' => 1000, 'offset' => $offset];
             $hash = md5(json_encode($hierarchy) . ($params ? ("###" . json_encode($params)) : ""));
             while( $this->memcached->get($hash) ) {
               $this->memcached->set($hash, null);
-              $params['offset'] += 50;
+              $params['offset'] += 1000;
               $hash = md5(json_encode($hierarchy) . ($params ? ("###" . json_encode($params)) : ""));
             }
             $this->memcached->delete("readingHistory" . $patronID);
