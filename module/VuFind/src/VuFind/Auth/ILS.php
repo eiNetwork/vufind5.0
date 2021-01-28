@@ -231,6 +231,8 @@ class ILS extends AbstractBase
             $user = $userTable->getByCatalogId($info['id']);
             if (empty($user)) {
                 $user = $userTable->getByUsername($info[$usernameField]);
+                $user->preferred_library = 'none';
+                $user->alternate_library = 'none';
                 $user->saveCatalogId($info['id']);
             }
         } else {
