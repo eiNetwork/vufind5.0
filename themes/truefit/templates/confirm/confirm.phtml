@@ -54,7 +54,7 @@
           <? endif; ?>
         <? endforeach; ?>
       <? endif;?>
-      <? if( $showSelector ): ?>
+      <? if( $showSelector ?? false ): ?>
         <input type="hidden" name="freezeLength" value="0">
       <? endif;?>
     </form>

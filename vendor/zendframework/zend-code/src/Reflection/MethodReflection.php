@@ -271,22 +271,22 @@ class MethodReflection extends PhpReflectionMethod implements ReflectionInterfac
                         //closure test
                         if ($firstBrace && $tokenType == "T_FUNCTION") {
                             $body .= $tokenValue;
-                            continue;
+                            continue 2;
                         }
                         $capture = false;
-                        continue;
+                        continue 2;
                     }
                     break;
 
                 case "{":
                     if ($capture === false) {
-                        continue;
+                        continue 2;
                     }
 
                     if ($firstBrace === false) {
                         $firstBrace = true;
                         if ($bodyOnly === true) {
-                            continue;
+                            continue 2;
                         }
                     }
 
@@ -295,7 +295,7 @@ class MethodReflection extends PhpReflectionMethod implements ReflectionInterfac
 
                 case "}":
                     if ($capture === false) {
-                        continue;
+                        continue 2;
                     }
 
                     //check to see if this is the last brace
@@ -313,12 +313,12 @@ class MethodReflection extends PhpReflectionMethod implements ReflectionInterfac
 
                 default:
                     if ($capture === false) {
-                        continue;
+                        continue 2;
                     }
 
                     // if returning body only wait for first brace before capturing
                     if ($bodyOnly === true && $firstBrace !== true) {
-                        continue;
+                        continue 2;
                     }
 
                     $body .= $tokenValue;
