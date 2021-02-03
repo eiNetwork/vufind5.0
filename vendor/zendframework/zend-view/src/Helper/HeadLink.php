@@ -383,6 +383,7 @@ class HeadLink extends Placeholder\Container\AbstractStandalone
         $media                 = 'screen';
         $conditionalStylesheet = false;
         $href                  = array_shift($args);
+        $extras                = [];
 
         if ($this->isDuplicateStylesheet($href)) {
             return false;
