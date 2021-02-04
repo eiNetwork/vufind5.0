@@ -279,6 +279,11 @@ class EINetwork extends SierraRest implements
         // add in the extra details we need
         $results2 = [];
         for($i=0; $i<count($results); $i++) {
+            // trigger garbage collection if we have too many attached items
+            if( ($i % 100) == 99 ) {
+                gc_collect_cycles();
+            }
+
             // throw out online items
             if( $results[$i]['locationID'] == "xronl" ) {
                 continue;
