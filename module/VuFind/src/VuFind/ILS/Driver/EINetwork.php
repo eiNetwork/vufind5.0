@@ -280,7 +280,7 @@ class EINetwork extends SierraRest implements
         $results2 = [];
         for($i=0; $i<count($results); $i++) {
             // trigger garbage collection if we have too many attached items
-            if( ($i % 100) == 99 ) {
+            if( ($i % 50) == 49 ) {
                 gc_collect_cycles();
             }
 
