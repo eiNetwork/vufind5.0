@@ -173,11 +173,7 @@
 
       $('.readingHistoryTable tr').not('.historyHeaderRow').each( function() {
         // get the needed properties
-        $title = $(this).children('td.itemTitle').children('a:first');
-        if( $title.size() == 0 )
-        {
-          $title = $(this).children('td.itemTitle').children('.unlinkedTitle')
-        }
+        $title = $(this).find('.unlinkedTitle');
         $author = $(this).find('.authorLink');
         $format = $(this).find('.formatTag');
         $date = $(this).children('td:nth-child(4)');
