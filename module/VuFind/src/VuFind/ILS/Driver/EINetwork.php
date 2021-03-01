@@ -298,20 +298,23 @@ class EINetwork extends SierraRest implements
 
             // get shelving details
             if( !$this->memcached->get("shelvingLocationByCode" . $results[$i]['locationID']) ) {
-                $this->memcached->set("shelvingLocationByCode" . $results[$i]['locationID'], $this->getDBTable('shelvinglocation')->getByCode($results[$i]['locationID']));
+                $shelfLoc = $this->getDBTable('shelvinglocation')->getByCode($results[$i]['locationID']);
+                $this->memcached->set("shelvingLocationByCode" . $results[$i]['locationID'], $shelfLoc ? $shelfLoc->toArray() : null);
             }
             $shelfLoc = $this->memcached->get("shelvingLocationByCode" . $results[$i]['locationID'] );
-            $locationId = (isset($shelfLoc) && $shelfLoc) ? $shelfLoc->locationId : null;
+            $locationId = (isset($shelfLoc) && $shelfLoc) ? $shelfLoc["locationId"] : null;
             if( $locationId && !$this->memcached->get("locationByID" . $locationId) ) {
-                $this->memcached->set("locationByID" . $locationId, $this->getDBTable('location')->getByLocationId($locationId));
+                $location = $this->getDBTable('location')->getByLocationId($locationId);
+                $this->memcached->set("locationByID" . $locationId, $location ? $location->toArray() : null);
             } else if( !$locationId && (strlen($results[$i]['locationID']) == 2) && !$this->memcached->get("locationByCode" . $results[$i]['locationID']) ) {
-                $this->memcached->set("locationByCode" . $results[$i]['locationID'], $this->getDBTable('location')->getByCode($results[$i]['locationID']));
+                $location = $this->getDBTable('location')->getByCode($results[$i]['locationID']);
+                $this->memcached->set("locationByCode" . $results[$i]['locationID'], $location ? $location->toArray() : null);
             }
             $location = $locationId ? $this->memcached->get("locationByID" . $locationId ) : ((strlen($results[$i]['locationID']) == 2) ? $this->memcached->get("locationByCode" . $results[$i]['locationID']) : null);
-            $results[$i]['branchName'] = $location ? $location->displayName : (($results[$i]['statusCode'] == 'order') ? $results[$i]['locationID'] : null);
-            $results[$i]['branchCode'] = $location ? $location->code : null;
-            $results[$i]['shelvingLocation'] = $shelfLoc ? $shelfLoc->shortName : null;
-            $results[$i]['sierraLocation'] = $shelfLoc ? $shelfLoc->sierraName : null;
+            $results[$i]['branchName'] = $location ? $location["displayName"] : (($results[$i]['statusCode'] == 'order') ? $results[$i]['locationID'] : null);
+            $results[$i]['branchCode'] = $location ? $location["code"] : null;
+            $results[$i]['shelvingLocation'] = $shelfLoc ? $shelfLoc["shortName"] : null;
+            $results[$i]['sierraLocation'] = $shelfLoc ? $shelfLoc["sierraName"] : null;
 
             for($j=0; $j<count($results2) && (($results[$i]['branchName'] > $results2[$j]['branchName']) || (($results[$i]['branchName'] == $results2[$j]['branchName']) && ($results[$i]['number'] > $results2[$j]['number']))); $j++) {}
             array_splice($results2, $j, 0, [$results[$i]]);
@@ -338,7 +341,8 @@ class EINetwork extends SierraRest implements
             foreach( array_keys($checkinRecords) as $key ) {
                 // find this location in the database
                 if( !$this->memcached->get("shelvingLocationBySierraName" . md5($checkinRecords[$key]["location"])) ) {
-                    $this->memcached->set("shelvingLocationBySierraName" . md5($checkinRecords[$key]["location"]), $this->getDBTable('shelvinglocation')->getBySierraName($checkinRecords[$key]["location"])->toArray());
+                    $locations = $this->getDBTable('shelvinglocation')->getBySierraName($checkinRecords[$key]["location"]);
+                    $this->memcached->set("shelvingLocationBySierraName" . md5($checkinRecords[$key]["location"]), $locations ? $locations->toArray() : null);
                 }
                 $checkinRecords[$key]["code"] = [];
                 $checkinRecords[$key]["branchCode"] = [];
@@ -354,19 +358,21 @@ class EINetwork extends SierraRest implements
             // add details for locations with no checkin records but held items
             foreach( $neededLocations as $code ) {
                 if( !$this->memcached->get("shelvingLocationByCode" . $code) ) {
-                    $this->memcached->set("shelvingLocationByCode" . $code, $this->getDBTable('shelvinglocation')->getByCode($code));
+                    $shelfLoc = $this->getDBTable('shelvinglocation')->getByCode($code);
+                    $this->memcached->set("shelvingLocationByCode" . $code, $shelfLoc ? $shelfLoc->toArray() : null);
                 }
                 $shelfLoc = $this->memcached->get("shelvingLocationByCode" . $code );
                 if( $shelfLoc == null ) {
                     if( !$this->memcached->get("locationByCode" . $code) ) {
-                        $this->memcached->set("locationByCode" . $code, $this->getDBTable('location')->getByCode($code));
+                        $shelfLoc = $this->getDBTable('location')->getByCode($code);
+                        $this->memcached->set("locationByCode" . $code, $shelfLoc ? $shelfLoc->toArray() : null);
                     }
                     $shelfLoc = $this->memcached->get("locationByCode" . $code );
                 }
                 $thisCode = [];
-                $thisCode["location"] = isset($shelfLoc->sierraName) ? $shelfLoc->sierraName : $shelfLoc->displayName;
+                $thisCode["location"] = isset($shelfLoc["sierraName"]) ? $shelfLoc["sierraName"] : $shelfLoc["displayName"];
                 $thisCode["code"][] = $code;
-                $thisCode["branchCode"][] = isset($shelfLoc->branchCode) ? $shelfLoc->branchCode : $code;
+                $thisCode["branchCode"][] = isset($shelfLoc["branchCode"]) ? $shelfLoc["branchCode"] : $code;
                 for( $j=0; $j<count($results3) && ($results3[$j]['location'] < $thisCode["location"]); $j++) {}
                 array_splice($results3, $j, 0, [$thisCode]);
                 unset($neededLocations[$code]);
@@ -425,12 +431,13 @@ class EINetwork extends SierraRest implements
         $patron['showTemporaryClosureMessage'] = false;
         $patron['showPermanentClosureMessage'] = false;
         if( !$this->memcached->get("locationByCode" . $patron['homelibrarycode']) ) {
-            $this->memcached->set("locationByCode" . $patron['homelibrarycode'], $this->getDbTable('Location')->getByCode($patron['homelibrarycode']));
+            $location = $this->getDbTable('Location')->getByCode($patron['homelibrarycode']);
+            $this->memcached->set("locationByCode" . $patron['homelibrarycode'], $location ? $location->toArray() : null);
         }
         $location = $this->memcached->get("locationByCode" . $patron['homelibrarycode']);
-        $patron['homelibrary'] = ($location != null && $location->validHoldPickupBranch) ? $location->displayName : null;
-        $patron['showTemporaryClosureMessage'] |= ($location != null && ($location->validHoldPickupBranch == Location::VHPB_TEMPORARY_CLOSURE));
-        $patron['showPermanentClosureMessage'] |= ($location != null && ($location->validHoldPickupBranch == Location::VHPB_PERMANENT_CLOSURE));
+        $patron['homelibrary'] = ($location != null && $location["validHoldPickupBranch"]) ? $location["displayName"] : null;
+        $patron['showTemporaryClosureMessage'] |= ($location != null && ($location["validHoldPickupBranch"] == Location::VHPB_TEMPORARY_CLOSURE));
+        $patron['showPermanentClosureMessage'] |= ($location != null && ($location["validHoldPickupBranch"] == Location::VHPB_PERMANENT_CLOSURE));
         if( !$patron['homelibrary'] ) {
             $patron['homelibrarycode'] = null;
         }
@@ -439,24 +446,26 @@ class EINetwork extends SierraRest implements
 
         $patron['preferredlibrarycode'] = $user->preferred_library;
         if( !$this->memcached->get("locationByCode" . $patron['preferredlibrarycode']) ) {
-            $this->memcached->set("locationByCode" . $patron['preferredlibrarycode'], $this->getDbTable('Location')->getByCode($patron['preferredlibrarycode']));
+            $location = $this->getDbTable('Location')->getByCode($patron['preferredlibrarycode']);
+            $this->memcached->set("locationByCode" . $patron['preferredlibrarycode'], $location ? $location->toArray() : null);
         }
         $location = $this->memcached->get("locationByCode" . $patron['preferredlibrarycode']);
-        $patron['preferredlibrary'] = ($location != null && $location->validHoldPickupBranch) ? $location->displayName : null;
-        $patron['showTemporaryClosureMessage'] |= ($location != null && ($location->validHoldPickupBranch == Location::VHPB_TEMPORARY_CLOSURE));
-        $patron['showPermanentClosureMessage'] |= ($location != null && ($location->validHoldPickupBranch == Location::VHPB_PERMANENT_CLOSURE));
+        $patron['preferredlibrary'] = ($location != null && $location["validHoldPickupBranch"]) ? $location["displayName"] : null;
+        $patron['showTemporaryClosureMessage'] |= ($location != null && ($location["validHoldPickupBranch"] == Location::VHPB_TEMPORARY_CLOSURE));
+        $patron['showPermanentClosureMessage'] |= ($location != null && ($location["validHoldPickupBranch"] == Location::VHPB_PERMANENT_CLOSURE));
         if( !$patron['preferredlibrary'] ) {
             $patron['preferredlibrarycode'] = null;
         }
 
         $patron['alternatelibrarycode'] = $user->alternate_library;
         if( !$this->memcached->get("locationByCode" . $patron['alternatelibrarycode']) ) {
-            $this->memcached->set("locationByCode" . $patron['alternatelibrarycode'], $this->getDbTable('Location')->getByCode($patron['alternatelibrarycode']));
+            $location = $this->getDbTable('Location')->getByCode($patron['alternatelibrarycode']);
+            $this->memcached->set("locationByCode" . $patron['alternatelibrarycode'], $location ? $location->toArray() : null);
         }
         $location = $this->memcached->get("locationByCode" . $patron['alternatelibrarycode'] );
-        $patron['alternatelibrary'] = ($location != null && $location->validHoldPickupBranch) ? $location->displayName : null;
-        $patron['showTemporaryClosureMessage'] |= ($location != null && ($location->validHoldPickupBranch == Location::VHPB_TEMPORARY_CLOSURE));
-        $patron['showPermanentClosureMessage'] |= ($location != null && ($location->validHoldPickupBranch == Location::VHPB_PERMANENT_CLOSURE));
+        $patron['alternatelibrary'] = ($location != null && $location["validHoldPickupBranch"]) ? $location["displayName"] : null;
+        $patron['showTemporaryClosureMessage'] |= ($location != null && ($location["validHoldPickupBranch"] == Location::VHPB_TEMPORARY_CLOSURE));
+        $patron['showPermanentClosureMessage'] |= ($location != null && ($location["validHoldPickupBranch"] == Location::VHPB_PERMANENT_CLOSURE));
         if( !$patron['alternatelibrary'] ) {
             $patron['alternatelibrarycode'] = null;
         }
@@ -732,10 +741,11 @@ class EINetwork extends SierraRest implements
         foreach( $sierraHolds as $key => $thisHold ) {
             $sierraHolds[$key]["locationID"] = $sierraHolds[$key]["location"];
             if( !$this->memcached->get("locationByCode" . $sierraHolds[$key]["locationID"]) ) {
-                $this->memcached->set("locationByCode" . $sierraHolds[$key]["locationID"], $this->getDbTable('Location')->getByCode($sierraHolds[$key]["locationID"]));
+                $location = $this->getDbTable('Location')->getByCode($sierraHolds[$key]["locationID"]);
+                $this->memcached->set("locationByCode" . $sierraHolds[$key]["locationID"], $location ? $location->toArray() : null);
             }
             $location = $this->memcached->get("locationByCode" . $sierraHolds[$key]["locationID"] );
-            $sierraHolds[$key]["location"] = $location->holdingBranchLabel;
+            $sierraHolds[$key]["location"] = $location ? $location["holdingBranchLabel"] : null;
         }
 
         $overDriveHolds = json_decode(json_encode($this->connector->getHolds(true)), true)["data"];
