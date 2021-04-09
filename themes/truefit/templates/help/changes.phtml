@@ -12,10 +12,15 @@
   </div><br>
   <div class="privacyText">
     <div class="privacySubtitle">Recent Changes:</div><br>
-    <div class="privacyHeader">Library Catalog v3.12.0 (February 28, 2021)</div><br>
+    <div class="privacyHeader">Library Catalog v3.13.0 (April 19, 2021)</div><br>
     <div>
       <ul>
-        <li>Upgraded server operating systems and components (Ubuntu, MySQL, PHP) to their latest versions.</li>
+        <li>Bugfixes for reading history:
+          <ul>
+            <li>Exported data now correctly includes all titles.</li>
+            <li>Removing items from very long reading histories should now work as expected.</li>
+          </ul>
+        </li>
       </ul>
     </div>
     <div>
@@ -24,6 +29,12 @@
         <a class="moreLink" onClick="ToggleAccordion('Changes',1)">Show Earlier Changes</a>
       </span>
       <span id="accordionMoreChanges" style="display:none">
+        <br><div class="privacyHeader">Library Catalog v3.12.0 (February 28, 2021)</div><br>
+        <div>
+          <ul>
+            <li>Upgraded server operating systems and components (Ubuntu, MySQL, PHP) to their latest versions.</li>
+          </ul>
+        </div>
         <br><div class="privacyHeader">Library Catalog v3.11.0 (January 26, 2021)</div><br>
         <div>
           <ul>
