@@ -124,7 +124,7 @@
       if( $(this).prop('checked') ) {
         $(this).append('<input type="hidden" class="temporaryInput" name="' + action + 'SelectedIDS[]" value="' + $(this).attr('value') + '">');
         var twin = form.siblings('.ajaxItem').find('.checkbox-select-item[value="' + $(this).attr("value") + '"]');
-        var title = twin.parents('tr').find('.unlinkedTitle').html();
+        var title = twin.parents('tr').find('.itemTitle').children('a, .unlinkedTitle').html();
         $(this).append('<input type="hidden" class="temporaryInput" name="holdTitles[]" value="' + encodeURI(title) + '">');
       }
     } );
