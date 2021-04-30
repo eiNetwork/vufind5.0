@@ -73,26 +73,43 @@
     scrollSpeed = 0;
   }
 
+  function WaitOnToggleLoginModal(elementID) {
+    if( typeof ToggleLoginModal === "function" ) {
+      ToggleLoginModal(document.getElementById(elementID));
+    } else {
+      setTimeout( function() { WaitOnToggleLoginModal(elementID); }, 100);
+    }
+  }
+
+  function WaitOnHelpSection(helpHash) {
+    if( $('#section1').length > 0 ) {
+      location.hash = '#test';
+      location.hash = helpHash;
+    } else {
+      setTimeout( function() { WaitOnHelpSection(helpHash); }, 100);
+    }
+  }
+
   jQuery(document).ready(function() {
     // if they're trying to show the text notices help, give it to them
     if( window.location.href.toLowerCase().indexOf("/myresearch/smshelp") != -1 ) {
       $('a[href$="/Help/Home"]:first').click();
-      $('#modal').on('shown.bs.modal', function() { setTimeout( function() { location.hash = "#section4-11"; }, 33); } );
+      $('#modal').on('shown.bs.modal', function() { WaitOnHelpSection("#section4-11"); } );
     }
     // if they're trying to show the pin reset dialog, give it to them
     else if( window.location.href.toLowerCase().indexOf("/myresearch/pinreset") != -1 ) {
       $('a[href$="/MyResearch/Login"]:first').click();
-      $('#modal').on('shown.bs.modal', function() { ToggleLoginModal(document.getElementById('loginModalReset')); });
+      $('#modal').on('shown.bs.modal', function() { WaitOnToggleLoginModal('loginModalReset'); } );
     }
     // if they're trying to show the register dialog, give it to them
     else if( window.location.href.toLowerCase().indexOf("/myresearch/getcard") != -1 ) {
       $('a[href$="/MyResearch/Login"]:first').click();
-      $('#modal').on('shown.bs.modal', function() { ToggleLoginModal(document.getElementById('loginModalRegister')); });
+      $('#modal').on('shown.bs.modal', function() { WaitOnToggleLoginModal('loginModalRegister'); } );
     // if they're trying to show the help, give it to them
     } else if( window.location.href.toLowerCase().indexOf("/help/home") != -1 ) {
       $('a[href$="/Help/Home"]:first').click();
       if( window.location.hash ) {
-        $('#modal').on('shown.bs.modal', function() { setTimeout( function() { var origHash = window.location.hash; location.hash = '#test'; location.hash = origHash; }, 33); } );
+        $('#modal').on('shown.bs.modal', function() { setTimeout( function() { WaitOnHelpSection(window.location.hash); }, 33); } );
       }
     }
 
