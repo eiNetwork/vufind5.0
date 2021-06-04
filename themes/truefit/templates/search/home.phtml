@@ -82,9 +82,11 @@
   }
 
   function WaitOnHelpSection(helpHash) {
-    if( $('#section1').length > 0 ) {
-      location.hash = '#test';
-      location.hash = helpHash;
+    if( $(helpHash).length > 0 ) {
+      setTimeout( function() {
+        location.hash = '#test';
+        location.hash = helpHash;
+      }, 100);
     } else {
       setTimeout( function() { WaitOnHelpSection(helpHash); }, 100);
     }
