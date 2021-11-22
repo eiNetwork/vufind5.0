@@ -78,7 +78,7 @@ class OverdriveConnectorFactory implements
             $container->get('Zend\Session\SessionManager')
         );
 
-        $connector = new $requestedName($config, $odConfig, $session, $auth);
+        $connector = new $requestedName($config, $odConfig, $auth, $session);
 
         // Populate cache storage
         $connector->setCacheStorage(

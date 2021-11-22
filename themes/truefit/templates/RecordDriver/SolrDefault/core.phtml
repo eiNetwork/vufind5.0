@@ -362,7 +362,7 @@
                 endforeach;
               ?>
               <li>
-                <a href="/Overdrive/SelectFormat?<?="rec_id=".$this->driver->getUniqueID()."&od_id=".$this->driver->getOverDriveID()?>" data-lightbox><button class="btn-dropdown btn-standardDropdown"><?=($streamingVideo?"Watch Now":"Download")?></button></a>
+                <a href="/Overdrive/Hold?<?="od_id=".$this->driver->getOverDriveID()."&rec_id=".$this->driver->getUniqueID()."&action=getTitleRedirect" ?>" target="_blank"><button class="btn-dropdown btn-standardDropdown"><?=($streamingVideo?"Watch Now":"Download")?></button></a>
               </li>
             <? endif; ?>
             <? if( $this->canReturn ): ?>
