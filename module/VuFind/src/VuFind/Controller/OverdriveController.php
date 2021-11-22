@@ -102,6 +102,7 @@ class OverdriveController extends AbstractBase implements LoggerAwareInterface
                 $checkoutsUnavailable = true;
             } else {
                 foreach ($checkoutResults->data as $checkout) {
+                    $mycheckout = [];
                     $mycheckout['checkout'] = $checkout;
                     $mycheckout['record']
                         = $this->serviceLocator->get('VuFind\Record\Loader')
@@ -121,6 +122,7 @@ class OverdriveController extends AbstractBase implements LoggerAwareInterface
                 $holdsUnavailable = true;
             } else {
                 foreach ($holdsResults->data as $hold) {
+                    $myhold = [];
                     $myhold['hold'] = $hold;
                     $myhold['record']
                         = $this->serviceLocator->get('VuFind\Record\Loader')
@@ -188,6 +190,7 @@ class OverdriveController extends AbstractBase implements LoggerAwareInterface
         $od_id = $this->params()->fromQuery('od_id');
         $rec_id = $this->params()->fromQuery('rec_id');
         $action = $this->params()->fromQuery('action');
+        $holdEmail = "";
 
         //place hold action comes in through the form
         if (null !== $this->params()->fromPost('doAction')) {
@@ -232,17 +235,20 @@ class OverdriveController extends AbstractBase implements LoggerAwareInterface
                 $result->data->checkout = $checkout;
                 $result->code = "OD_CODE_ALREADY_CHECKED_OUT";
             } elseif ($hold = $this->connector->getHold($od_id, false)) {
-                $result->status = false;
-                $result->data->hold = $hold;
-                $result->code = "OD_CODE_ALREADY_ON_HOLD";
+                if($hold->holdReadyForCheckout){
+                    $this->debug("hold is avail for checkout: $od_id");
+                    $result->status = true;
+                }else {
+                    $result->status = false;
+                    $result->data->hold = $hold;
+                    $result->code = "OD_CODE_ALREADY_ON_HOLD";
+                }
             } else {
                 $result->status = true;
             }
             $actionTitleCode = "od_checkout";
-
         } elseif ($action == "holdConfirm") {
             $result = $this->connector->getResultObject();
-            //check to make sure they don't already have this checked out
             //check to make sure they don't already have this checked out
             //shouldn't need to refresh.
             if ($checkout = $this->connector->getCheckout($od_id, false)) {
@@ -259,19 +265,26 @@ class OverdriveController extends AbstractBase implements LoggerAwareInterface
                 $result->status = true;
             }
             $actionTitleCode = "od_hold";
-
         } elseif ($action == "cancelHoldConfirm") {
             $actionTitleCode = "od_cancel_hold";
+        } elseif ($action == "suspHoldConfirm") {
+            $actionTitleCode = "od_susp_hold";
+        } elseif ($action == "editHoldConfirm") {
+            $actionTitleCode = "od_susp_hold_edit";
+        } elseif ($action == "editHoldEmailConfirm") {
+            $actionTitleCode = "od_edit_hold_email";
+            $hold = $this->connector->getHold($od_id, false);
+            $holdEmail = $hold->emailAddress;
 
         } elseif ($action == "returnTitleConfirm") {
             $actionTitleCode = "od_early_return";
-
+/*
         } elseif ($action == "getTitleConfirm") {
             //$checkout = $this->connector->getCheckout($od_id, false);
             //get only formats that are available...
             $formats = $driver->getAvailableDigitalFormats();
             $actionTitleCode = "od_get_title";
-
+*/
         } elseif ($action == "doCheckout") {
             $actionTitleCode = "od_checkout";
             $result = $this->connector->doOverdriveCheckout($od_id);
@@ -292,15 +305,28 @@ class OverdriveController extends AbstractBase implements LoggerAwareInterface
 
             if( $result->status ) {
                 $this->getILS()->removeFromBookCart($rec_id);
+                $result->code = "od_hold_place_success";
+            }else{
+                $result->code = "od_hold_place_failure";
             }
         } elseif ($action == "cancelHold") {
             $actionTitleCode = "od_cancel_hold";
             $result = $this->connector->cancelHold($od_id);
+            if($result->status){
+                $result->code = "od_hold_cancel_success";
+            }else{
+                $result->code = "od_hold_cancel_failure";
+            }
 
         } elseif ($action == "returnTitle") {
             $actionTitleCode = "od_early_return";
             $result = $this->connector->returnResource($od_id);
             $this->getILS()->clearSessionVar("checkouts");
+            if($result->status){
+                $result->code = "od_return_success";
+            }else{
+                $result->code = "od_return_failure";
+            }
 
         } elseif ($action == "getTitle") {
             $actionTitleCode = "od_get_title";
@@ -323,6 +349,26 @@ class OverdriveController extends AbstractBase implements LoggerAwareInterface
                 exit();
             }
 
+        } elseif ($action == "getTitleRedirect") {
+            $actionTitleCode = "od_get_title";
+            $this->debug(
+                "Get Title action. Getting downloadredirect"
+            );
+            $result = $this->connector->getDownloadRedirect($od_id);
+            if ($result->status) {
+                $this->debug("DL redir: ".$result->data->downloadRedirect);
+
+                //Redirect to resource
+                $url = $result->data->downloadRedirect;
+                $this->debug("redirecting to: $url");
+                //$this->redirect()
+                //$this->redirect()->toUrl($url);
+                header("Location: $url");
+                exit();
+            }else{
+                $this->debug("result: ".print_r($result,true));
+                $result->code = "od_gettitle_failure";
+            }
         } else {
             $this->logWarning("overdrive action not defined: $action");
         }
