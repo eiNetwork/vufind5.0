@@ -239,13 +239,13 @@ class EINGetItemStatuses extends GetItemStatuses
                         $notDownloadableFormats = ['ebook-mediado','magazine-overdrive','ebook-overdrive','video-streaming','audiobook-overdrive'];
                         foreach($thisItem["availableFormats"] as $possibleFormat) {
                             if( !in_array($possibleFormat, $notDownloadableFormats) ) {
-                                $downloadableFormats[] = ["id" => $possibleFormat, "URL" => "/Overdrive/SelectFormat?rec_id=".$thisItem['id']."&od_id=".$thisItem['reserveId']];
+                                $downloadableFormats[] = ["id" => $possibleFormat, "URL" => "/Overdrive/Hold?rec_id=".$thisItem['id']."&od_id=".$thisItem['reserveId']."&action=getTitleRedirect"];
                             }
                         }
                         // add the video-streaming option if it's not locked in yet
                         foreach($thisItem["actions"]["format"]["fields"] ?? [] as $thisFormat) {
                             if( $thisFormat["name"] == "formatType" && !$thisItem["isFormatLockedIn"] ) {
-                                $downloadableFormats[] = ["id" => $thisFormat["options"][0], "URL" => "/Overdrive/SelectFormat?rec_id=".$thisItem['id']."&od_id=".$thisItem['reserveId']];
+                                $downloadableFormats[] = ["id" => $thisFormat["options"][0], "URL" => "/Overdrive/Hold?rec_id=".$thisItem['id']."&od_id=".$thisItem['reserveId']."&action=getTitleRedirect"];
                             }
                         }
 

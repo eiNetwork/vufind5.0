@@ -196,10 +196,10 @@
                       $nookPeriodical |= ($thisFormat == "periodicals-nook");
                       $isDownloadable |= !in_array($thisFormat, $notDownloadableFormats);
                     endforeach;
-                    if( $isDownloadable || ($streamingVideo && !$this->checkout["isFormatLockedIn"]) ):
+                    if( ($isDownloadable || ($streamingVideo && !$this->checkout["isFormatLockedIn"])) && isset($this->checkout["links"]["downloadRedirect"]["href"]) ):
                   ?>
                   <li>
-                    <a href="/Overdrive/SelectFormat?<?="rec_id=".$this->checkout["id"]."&od_id=".$this->checkout["reserveId"]?>" data-lightbox><button class="btn-dropdown btn-standardDropdown"><?=($streamingVideo?"Watch Now":"Download")?></button></a>
+                    <a href="/Overdrive/Hold?<?="od_id=".$this->checkout['reserveId']."&rec_id=".$this->checkout["id"]."&action=getTitleRedirect" ?>" target="_blank"><button class="btn-dropdown btn-standardDropdown"><?=(($streamingVideo && !$this->checkout["isFormatLockedIn"]) ? "Watch Now" : "Download")?></button></a>
                   </li>
                   <? endif; ?>
                 <? endif; ?>
