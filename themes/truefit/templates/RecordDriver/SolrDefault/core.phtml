@@ -352,6 +352,7 @@
                 <a href="<?=$this->streamingVideo?>" target="_blank"><button class="btn-dropdown btn-standardDropdown">Watch Now</button></a>
               </li>
             <? endif; ?>
+            
             <? if( $this->downloadFormats && count($this->downloadFormats) > 0 ): ?>
               <?
                 $streamingVideo = false;
@@ -364,6 +365,11 @@
               <li>
                 <a href="/Overdrive/Hold?<?="od_id=".$this->driver->getOverDriveID()."&rec_id=".$this->driver->getUniqueID()."&action=getTitleRedirect" ?>" target="_blank"><button class="btn-dropdown btn-standardDropdown"><?=($streamingVideo?"Watch Now":"Download")?></button></a>
               </li>
+            <? endif; ?>
+            <? if( $this->fullfillment ?? false ): ?>
+                <li>
+                  <a href="<?=$this->fullfillment?>" target="_blank"><button class="btn-dropdown btn-standardDropdown">Get Title</button></a>
+                </li>
             <? endif; ?>
             <? if( $this->canReturn ): ?>
               <li>
@@ -1274,6 +1280,7 @@
           }
           return hash;
         }
+
       </script>
     </div>
   </div>

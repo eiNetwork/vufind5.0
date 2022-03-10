@@ -162,6 +162,9 @@ function handleItemStatusResponse(response) {
           }
           leftButtonMenu.children(".standardDropdown").append("<li><a href=\"" + result.downloadFormats[0].URL + "\" target=\"_blank\"><button class=\"btn-dropdown btn-standardDropdown\">" + (streamingVideo ? "Watch Now" : "Download") + "</button></a></li>");
         }
+        if( ("fullfillment" in result) && result.fullfillment ) {
+          leftButtonMenu.children(".standardDropdown").append("<li><a href=\"" + result.fullfillment + "\" target=\"_blank\"><button class=\"btn-dropdown btn-standardDropdown\">Get Title</button></a></li>");
+        }
         if( ("canReturn" in result) && result.canReturn ) {
           leftButtonMenu.children(".standardDropdown").append("<li><a href=\"" + result.canReturn + "\" target=\"loginFrame\"><button class=\"btn-dropdown btn-standardDropdown\" onClick=\"$(this).parents('.dropdown').siblings('.leftButton').html('<i class=\\'fa fa-spinner bwSpinner\\'></i>&nbsp;Loading...')\">Return</button></a></li>");
         }
