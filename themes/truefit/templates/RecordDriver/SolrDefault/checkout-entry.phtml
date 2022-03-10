@@ -182,7 +182,12 @@
                 <? endif; ?>
                 <? if( $this->checkout["streamingVideo"] ?? false ): ?>
                   <li>
-                    <a href="<?=$this->checkout["streamingVideo"]["data"]["downloadLink"]?>" target="_blank"><button class="btn-dropdown btn-standardDropdown">Watch Now</button></a>
+                      <a href="<?=$this->checkout["streamingVideo"]["data"]["downloadLink"]?>" target="_blank"><button class="btn-dropdown btn-standardDropdown">Watch Now</button></a>
+                  </li>
+                <? endif; ?>
+                <? if( $this->checkout["links"]['downloadRedirect'] ?? false ): ?>
+                  <li>
+                    <a href="/Overdrive/Hold?<?="od_id=".$this->checkout['reserveId']."&rec_id=".$this->checkout["id"]."&action=getTitleRedirect" ?>" target="_blank"><button class="btn-dropdown btn-standardDropdown">Get Title</button></a>
                   </li>
                 <? endif; ?>
                 <? if( isset($this->checkout["availableFormats"]) && count($this->checkout["availableFormats"]) > 0 ): ?>

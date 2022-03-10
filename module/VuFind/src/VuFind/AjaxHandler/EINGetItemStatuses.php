@@ -233,6 +233,11 @@ class EINGetItemStatuses extends GetItemStatuses
                                 $overDriveInfo[$linkKey] = $thisItem[$linkKey]->data->downloadLink;
                             }
                         }
+                        // If the available formats are empty -- and the item is checked out, then try to offer a download link
+                        if(empty($thisItem["availableFormats"]))
+                        {
+                            $overDriveInfo['fullfillment'] = "/Overdrive/Hold?rec_id=".$thisItem['id']."&od_id=".$thisItem['reserveId']."&action=getTitleRedirect";
+                        }
 
                         // get the download links
                         $downloadableFormats = [];
