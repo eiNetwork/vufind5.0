@@ -1123,7 +1123,7 @@ class EINetwork extends SierraRest implements
         $holds = $this->getMyHolds($patron);
         $shownCurbsideMsg = false;
         foreach( $holds as $thisHold ) {
-            if( !$shownCurbsideMsg && ($thisHold["available"] ?? false) && !($thisHold["reserveId"] ?? false) ) {
+            if( $shownCurbsideMsg && ($thisHold["available"] ?? false) && !($thisHold["reserveId"] ?? false) ) {
                 $notifications[] = ["attnSubject" => "<span class=\"messageWarning\">Some libraries now offering limited pickup services.</span> Click here to learn more.",
                                     "subject" => "Some libraries now offering limited pickup services",
                                     "message" => "Allegheny County public libraries are preparing to resume some services, and some have already begun offering limited services for pickup of requested items.  Please contact the library you have chosen as a pickup location for details.  You can check your pickup location by visiting the Requests page."];
