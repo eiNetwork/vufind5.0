@@ -32,12 +32,12 @@
 
 usage()
 {
-    echo "Usage: $0 {start|stop|restart|status}"
+    echo "DEPRECATED - use 'sudo service solr stop|start|restart|status' instead"
     exit 1
 }
 
 
-[ $# -gt 0 ] || usage
+usage
 
 # Set VUFIND50_HOME
 if [ -z "$VUFIND50_HOME" ]
@@ -87,7 +87,7 @@ then
   SOLR_ADDITIONAL_JVM_OPTIONS=""
 fi
 
-JAVA_HOME="/usr/lib/jvm/java-8-oracle"
+JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64/"
 
 export SOLR_LOGS_DIR=$SOLR_LOGS_DIR
 "$SOLR_BIN/solr" "$1" ${SOLR_ADDITIONAL_START_OPTIONS} -p "$SOLR_PORT" -s "$SOLR_HOME" -m "$SOLR_HEAP" -a "-Ddisable.configEdit=true -Dsolr.log=$SOLR_LOGS_DIR $SOLR_ADDITIONAL_JVM_OPTIONS"
