@@ -501,7 +501,7 @@ class EINetwork extends SierraRest implements
             }
 
             $result = $this->makeRequest(
-                ['v5', 'patrons', $patron['id']],
+                ['v6', 'patrons', $patron['id']],
                 json_encode($updatedInfo),
                 'PUT',
                 $patron
@@ -564,7 +564,7 @@ class EINetwork extends SierraRest implements
 
         // get count of sierra checkouts
         $result = $this->makeRequest(
-            ['v5', 'patrons', $patron['id'], 'checkouts'],
+            ['v6', 'patrons', $patron['id'], 'checkouts'],
             ['limit' => 1, 'offset' => 0],
             'GET',
             $patron
@@ -696,7 +696,7 @@ class EINetwork extends SierraRest implements
 
         // get count of sierra holds
         $result = $this->makeRequest(
-            ['v5', 'patrons', $patron['id'], 'holds'],
+            ['v6', 'patrons', $patron['id'], 'holds'],
             ['limit' => 1, 'offset' => 0],
             'GET',
             $patron
@@ -936,7 +936,7 @@ class EINetwork extends SierraRest implements
         // process the sierra holds
         foreach( $holds["details"] ?? [] as $thisHold ) {
             $result = $this->makeRequest(
-                ['v5', 'patrons', 'holds', $thisHold], json_encode(['freeze' => $doFreeze]), 'PUT', $holds["patron"]
+                ['v6', 'patrons', 'holds', $thisHold], json_encode(['freeze' => $doFreeze]), 'PUT', $holds["patron"]
             );
             $success &= empty($result['code']);
         }
@@ -1098,7 +1098,7 @@ class EINetwork extends SierraRest implements
         $success = true;
         foreach( $holds["details"] ?? [] as $thisHold ) {
             $result = $this->makeRequest(
-                ['v5', 'patrons', 'holds', $thisHold], json_encode(['pickupLocation' => $holds["newLocation"]]), 'PUT', $holds["patron"]
+                ['v6', 'patrons', 'holds', $thisHold], json_encode(['pickupLocation' => $holds["newLocation"]]), 'PUT', $holds["patron"]
             );
             $success &= empty($result['code']);
         }
@@ -1791,7 +1791,7 @@ class EINetwork extends SierraRest implements
 
                 // grab the next page
                 $result = $this->makeRequest(
-                    ['v5', 'patrons', $patron["id"], 'checkouts', 'history'], ['limit' => 1000, 'offset' => count($readingHistoryTitles)], 'GET', $patron
+                    ['v6', 'patrons', $patron["id"], 'checkouts', 'history'], ['limit' => 1000, 'offset' => count($readingHistoryTitles)], 'GET', $patron
                 );
             }
 

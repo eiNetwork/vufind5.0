@@ -146,7 +146,7 @@ class SierraRest extends AbstractBase implements TranslatorAwareInterface,
      *
      * @var int
      */
-    protected $apiVersion = 5;
+    protected $apiVersion = 6;
     protected $checkoutParams = ['limit' => 10000, 'offset' => 0, 'fields' => 'item,dueDate,numberOfRenewals,outDate,recallDate,callNumber,barcode'];
     protected $holdParams = ['limit' => 10000, 'offset' => 0, 'fields' => 'id,record,frozen,placed,location,pickupLocation,status,recordType,priority,priorityQueueLength,pickupByDate'];
 
