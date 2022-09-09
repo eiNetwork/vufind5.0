@@ -878,7 +878,7 @@ class SierraRest extends AbstractBase implements TranslatorAwareInterface,
 
         foreach ($details as $holdId) {
             $result = $this->makeRequest(
-                ['v5', 'patrons', 'holds', $holdId], '', 'DELETE', $patron
+                ['v6', 'patrons', 'holds', $holdId], '', 'DELETE', $patron
             );
 
             if (!empty($result['code'])) {
@@ -939,7 +939,7 @@ class SierraRest extends AbstractBase implements TranslatorAwareInterface,
         }
 
         $result = $this->makeRequest(
-            ['v4', 'branches', 'pickupLocations'],
+            ['v6', 'branches', 'pickupLocations'],
             [
                 'limit' => 10000,
                 'offset' => 0,
@@ -1162,7 +1162,7 @@ class SierraRest extends AbstractBase implements TranslatorAwareInterface,
                 $itemId = $this->extractId($entry['item']);
                 // Fetch bib ID from item
                 $item = $this->makeRequest(
-                    ['v3', 'items', $itemId],
+                    ['v6', 'items', $itemId],
                     ['fields' => 'bibIds'],
                     'GET',
                     $patron
